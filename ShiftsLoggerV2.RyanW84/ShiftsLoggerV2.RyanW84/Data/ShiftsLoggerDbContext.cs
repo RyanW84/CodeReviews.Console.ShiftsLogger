@@ -9,27 +9,20 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
     public DbSet<Locations> Locations { get; set; }
     public DbSet<Workers> Workers { get; set; }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		modelBuilder
+			.Entity<Shifts>()
+			.HasOne(s => s.Worker)
+			.WithMany(w=>w.Shifts)
+			.HasForeignKey(s => s.WorkerId)
+			.OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder
-            .Entity<Shifts>()
-            .HasOne(s => s.Worker)
-            .WithMany(w => w.Shifts)
-            .HasForeignKey(s => s.WorkerId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder
-            .Entity<Shifts>()
-            .HasOne(s => s.Location)
-            .WithMany(l => l.Shifts)
-            .HasForeignKey(s => s.LocationId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder
-            .Entity<Locations>()
-            .HasMany(l => l.Shifts)
-            .WithOne(s => s.Location)
-            .HasForeignKey(s => s.LocationId)
-            .OnDelete(DeleteBehavior.Cascade);
-    }
+            .Entity<Workers>()
+            .HasOne(w=>w.Shifts)
+            .WithOne(w=>w.Location)
+	}
 
     public void SeedData()
     {

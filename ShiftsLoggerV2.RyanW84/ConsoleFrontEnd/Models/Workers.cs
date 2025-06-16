@@ -15,6 +15,6 @@ public class Workers
     [EmailAddress]
     public string? Email { get; set; }
 
-    public virtual ICollection<Shifts?> Shifts { get; set; }
-    public virtual ICollection<Locations?> Locations { get; set; }
+    public virtual Shifts? Shifts { get; set; }
+    public virtual Locations? Locations { get; set; }
 }

@@ -8,88 +8,41 @@ namespace ConsoleFrontEnd.Services;
 
 public class LocationService : ILocationService
 {
-    private readonly HttpClient httpClient = new HttpClient()
+    private readonly HttpClient httpClient = new()
     {
         BaseAddress = new Uri("https://localhost:7009/"),
     };
 
-    public async Task<ApiResponseDto<List<Locations>>> GetAllLocations(
-        LocationFilterOptions locationFilterOptions
-    )
+    public async Task<ApiResponseDto<List<Locations>>> GetAllLocations(LocationFilterOptions locationFilterOptions)
     {
-        HttpResponseMessage response;
         try
         {
-            // Debug log for incoming search parameter
-            AnsiConsole.MarkupLine(
-                $"[yellow]Filter options received:[/]\n\n"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.LocationId}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.Name}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.Address}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.TownOrCity}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.StateOrCounty}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.ZipOrPostCode}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.Country}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.Search}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.SortBy}\t"
-                    + $"[blue]LocationId:[/] {locationFilterOptions.SortOrder}\t"
-            );
+            PrintFilterOptions(locationFilterOptions);
 
-            var queryParams = new List<string>();
-            if (locationFilterOptions.LocationId != null)
-                queryParams.Add($"locationId={locationFilterOptions.LocationId}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.Name))
-                queryParams.Add($"name={locationFilterOptions.Name}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.Address))
-                queryParams.Add($"name={locationFilterOptions.Address}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.TownOrCity))
-                queryParams.Add($"name={locationFilterOptions.TownOrCity}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.StateOrCounty))
-                queryParams.Add($"name={locationFilterOptions.StateOrCounty}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.ZipOrPostCode))
-                queryParams.Add($"name={locationFilterOptions.ZipOrPostCode}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.Country))
-                queryParams.Add($"name={locationFilterOptions.Country}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.Search))
-                queryParams.Add($"search={locationFilterOptions.Search}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.SortBy))
-                queryParams.Add($"sortBy={locationFilterOptions.SortBy}");
-            if (!string.IsNullOrWhiteSpace(locationFilterOptions.SortOrder))
-                queryParams.Add($"sortOrder={locationFilterOptions.SortOrder}");
+            var queryString = BuildQueryString("api/locations", locationFilterOptions);
 
-            var queryString = "api/locations";
-            if (queryParams.Count > 0)
-                queryString += "?" + string.Join("&", queryParams);
+            AnsiConsole.MarkupLine($"[blue]Final request URL: {httpClient.BaseAddress}{queryString}[/]\n");
 
-            AnsiConsole.MarkupLine(
-                $"[blue]Final request URL: {httpClient.BaseAddress}{queryString}[/]\n"
-            );
-
-            response = await httpClient.GetAsync(queryString);
+            var response = await httpClient.GetAsync(queryString);
             if (!response.IsSuccessStatusCode)
             {
-                AnsiConsole.Markup("[Red]Locations not retrieved.[/]\n");
+                AnsiConsole.Markup("[red]Locations not retrieved.[/]\n");
                 return new ApiResponseDto<List<Locations>>
                 {
                     ResponseCode = response.StatusCode,
-                    Message = response.ReasonPhrase,
+                    Message = response.ReasonPhrase ?? "Unknown error",
                     Data = null,
                 };
             }
-            else
-            {
-                AnsiConsole.Markup("[Green]Locations retrieved successfully.[/]\n");
-                var locations =
-                    await response.Content.ReadFromJsonAsync<ApiResponseDto<List<Locations>>>()
-                    ?? new ApiResponseDto<List<Locations>>
-                    {
-                        ResponseCode = response.StatusCode,
-                        Message = "Data obtained",
-                        Data = new List<Locations>(),
-                    };
 
-                return locations;
-            }
+            AnsiConsole.Markup("[green]Locations retrieved successfully.[/]\n");
+            return await response.Content.ReadFromJsonAsync<ApiResponseDto<List<Locations>>>()
+                ?? new ApiResponseDto<List<Locations>>
+                {
+                    ResponseCode = response.StatusCode,
+                    Message = "Data obtained",
+                    Data = new List<Locations>(),
+                };
         }
         catch (Exception ex)
         {
@@ -100,33 +53,30 @@ public class LocationService : ILocationService
 
     public async Task<ApiResponseDto<List<Locations?>>> GetLocationById(int id)
     {
-        HttpResponseMessage response;
         try
         {
-            response = await httpClient.GetAsync($"api/locations/{id}");
+            var response = await httpClient.GetAsync($"api/locations/{id}");
 
-            if (response.StatusCode is not System.Net.HttpStatusCode.OK)
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
-                AnsiConsole.Markup($"[Red]Error: Location not found[/]\n");
+                AnsiConsole.Markup("[red]Error: Location not found[/]\n");
                 return new ApiResponseDto<List<Locations>>
                 {
                     ResponseCode = response.StatusCode,
-                    Message = response.ReasonPhrase,
+                    Message = response.ReasonPhrase ?? "Not found",
                     Data = null,
                 };
             }
-            else
-            {
-                AnsiConsole.Markup("[Green]Location retrieved successfully.[/]\n");
-                return await response.Content.ReadFromJsonAsync<ApiResponseDto<List<Locations>>>()
-                    ?? new ApiResponseDto<List<Locations>>
-                    {
-                        ResponseCode = response.StatusCode,
-                        Message = "Location found",
-                        Data = new List<Locations>(),
-                        TotalCount = 0,
-                    };
-            }
+
+            AnsiConsole.Markup("[green]Location retrieved successfully.[/]\n");
+            return await response.Content.ReadFromJsonAsync<ApiResponseDto<List<Locations>>>()
+                ?? new ApiResponseDto<List<Locations>>
+                {
+                    ResponseCode = response.StatusCode,
+                    Message = "Location found",
+                    Data = response.Content.ReadFromJsonAsync<List<Locations>>().Result ?? new List<Locations>() ,
+					TotalCount = 0,
+                };
         }
         catch (Exception ex)
         {
@@ -137,30 +87,26 @@ public class LocationService : ILocationService
 
     public async Task<ApiResponseDto<Locations>> CreateLocation(Locations createdLocation)
     {
-        HttpResponseMessage response;
         try
         {
-            response = await httpClient.PostAsJsonAsync("api/locations", createdLocation);
-            if (response.StatusCode is not System.Net.HttpStatusCode.Created)
+            var response = await httpClient.PostAsJsonAsync("api/locations", createdLocation);
+            if (response.StatusCode != System.Net.HttpStatusCode.Created)
             {
                 Console.WriteLine($"Error: Status Code - {response.StatusCode}");
                 return new ApiResponseDto<Locations>
                 {
                     ResponseCode = response.StatusCode,
-                    Message = response.ReasonPhrase,
+                    Message = response.ReasonPhrase ?? "Creation failed",
                     Data = null,
                 };
             }
-            else
+
+            Console.WriteLine("Location created successfully.");
+            return new ApiResponseDto<Locations>
             {
-                Console.WriteLine("Location created successfully.");
-                return new ApiResponseDto<Locations>
-                {
-                    ResponseCode = response.StatusCode,
-                    Data =
-                        response.Content.ReadFromJsonAsync<Locations>().Result ?? createdLocation,
-                };
-            }
+                ResponseCode = response.StatusCode,
+                Data = await response.Content.ReadFromJsonAsync<Locations>() ?? createdLocation,
+            };
         }
         catch (Exception ex)
         {
@@ -171,33 +117,29 @@ public class LocationService : ILocationService
 
     public async Task<ApiResponseDto<Locations?>> UpdateLocation(int id, Locations updatedLocation)
     {
-        HttpResponseMessage response;
         try
         {
-            response = await httpClient.PutAsJsonAsync($"api/locations/{id}", updatedLocation);
-            if (response.StatusCode is not System.Net.HttpStatusCode.OK)
+            var response = await httpClient.PutAsJsonAsync($"api/locations/{id}", updatedLocation);
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
                 Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
                 return new ApiResponseDto<Locations>
                 {
                     ResponseCode = response.StatusCode,
-                    Message = response.ReasonPhrase,
+                    Message = response.ReasonPhrase ?? "Update failed",
                     Data = null,
                 };
             }
-            else
+
+            AnsiConsole.Markup("[green]Location updated successfully.[/]\n");
+            Console.WriteLine("Press any key to continue");
+            Console.ReadKey();
+            Console.Clear();
+            return new ApiResponseDto<Locations>
             {
-                AnsiConsole.Markup("[Green]Location updated successfully.[/]\n");
-                Console.WriteLine("Press any key to continue");
-                Console.ReadKey();
-                Console.Clear();
-                return new ApiResponseDto<Locations>
-                {
-                    ResponseCode = response.StatusCode,
-                    Data =
-                        response.Content.ReadFromJsonAsync<Locations>().Result ?? updatedLocation,
-                };
-            }
+                ResponseCode = response.StatusCode,
+                Data = await response.Content.ReadFromJsonAsync<Locations>() ?? updatedLocation,
+            };
         }
         catch (Exception ex)
         {
@@ -208,11 +150,10 @@ public class LocationService : ILocationService
 
     public async Task<ApiResponseDto<string?>> DeleteLocation(int id)
     {
-        HttpResponseMessage response;
         try
         {
-            response = await httpClient.DeleteAsync($"api/locations/{id}");
-            if (response.StatusCode is not System.Net.HttpStatusCode.NoContent)
+            var response = await httpClient.DeleteAsync($"api/locations/{id}");
+            if (response.StatusCode != System.Net.HttpStatusCode.NoContent)
             {
                 AnsiConsole.Markup("[red]Error: Location not found please try again![/]\n");
                 return new ApiResponseDto<string>
@@ -222,21 +163,69 @@ public class LocationService : ILocationService
                     Data = null,
                 };
             }
-            else
+
+            AnsiConsole.Markup("[green]Location deleted successfully![/]");
+            return new ApiResponseDto<string>
             {
-                AnsiConsole.Markup("[green]Location deleted successfully![/]");
-                return new ApiResponseDto<string>
-                {
-                    ResponseCode = response.StatusCode,
-                    Message = response.ReasonPhrase,
-                    Data = null,
-                };
-            }
+                ResponseCode = response.StatusCode,
+                Message = response.ReasonPhrase,
+                Data = null,
+            };
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Try catch failed for DeleteLocation: {ex}");
             throw;
         }
+    }
+
+    private static void PrintFilterOptions(LocationFilterOptions options)
+    {
+        AnsiConsole.MarkupLine(
+            $"[yellow]Filter options received:[/]\n" +
+            $"[blue]LocationId:[/] {options.LocationId}\t" +
+            $"[blue]Name:[/] {options.Name}\t" +
+            $"[blue]Address:[/] {options.Address}\t" +
+            $"[blue]TownOrCity:[/] {options.TownOrCity}\t" +
+            $"[blue]StateOrCounty:[/] {options.StateOrCounty}\t" +
+            $"[blue]ZipOrPostCode:[/] {options.ZipOrPostCode}\t" +
+            $"[blue]Country:[/] {options.Country}\t" +
+            $"[blue]Search:[/] {options.Search}\t" +
+            $"[blue]SortBy:[/] {options.SortBy}\t" +
+            $"[blue]SortOrder:[/] {options.SortOrder}"
+        );
+    }
+
+    private static string BuildQueryString(string basePath, LocationFilterOptions options)
+    {
+        var queryParams = new List<string>();
+
+        void AddIfNotNullOrEmpty(string key, object? value)
+        {
+            switch (value)
+            {
+                case int intValue:
+                    queryParams.Add($"{key}={intValue}");
+                    break;
+                case string strValue when !string.IsNullOrWhiteSpace(strValue):
+                    queryParams.Add($"{key}={strValue}");
+                    break;
+            }
+        }
+
+        AddIfNotNullOrEmpty("locationId", options.LocationId);
+        AddIfNotNullOrEmpty("name", options.Name);
+        AddIfNotNullOrEmpty("address", options.Address);
+        AddIfNotNullOrEmpty("townOrCity", options.TownOrCity);
+        AddIfNotNullOrEmpty("stateOrCounty", options.StateOrCounty);
+        AddIfNotNullOrEmpty("zipOrPostCode", options.ZipOrPostCode);
+        AddIfNotNullOrEmpty("country", options.Country);
+        AddIfNotNullOrEmpty("search", options.Search);
+        AddIfNotNullOrEmpty("sortBy", options.SortBy);
+        AddIfNotNullOrEmpty("sortOrder", options.SortOrder);
+
+        return queryParams.Count > 0
+            ? $"{basePath}?{string.Join("&", queryParams)}"
+            : basePath;
     }
 }

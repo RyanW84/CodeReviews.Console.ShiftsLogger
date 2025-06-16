@@ -13,6 +13,6 @@ public class Locations
     public required string ZipOrPostCode { get; set; }
     public required string Country { get; set; }
 
-    public virtual ICollection<Shifts> Shifts { get; set; } // Navigation property to the Shifts entity
-    public virtual ICollection<Workers> Workers { get; set; } // Navigation property to the Workers entity
+    public virtual Shifts? Shifts { get; set; } // Navigation property to the Shifts entity
+    public virtual Workers? Workers { get; set; } // Navigation property to the Workers entity
 }
