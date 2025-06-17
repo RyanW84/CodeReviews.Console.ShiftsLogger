@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.Dtos;
 using ConsoleFrontEnd.Models.FilterOptions;
@@ -74,6 +75,7 @@ public class WorkerService : IWorkerService
                     await response.Content.ReadFromJsonAsync<ApiResponseDto<List<Workers>>>()
                     ?? new ApiResponseDto<List<Workers>>
                     {
+                        RequestFailed=false,
                         ResponseCode = response.StatusCode,
                         Message = "Data obtained",
                         Data = new List<Workers>(),
@@ -99,8 +101,9 @@ public class WorkerService : IWorkerService
             if (response.StatusCode is not System.Net.HttpStatusCode.OK)
             {
                 AnsiConsole.Markup($"[Red]Error: Worker not found[/]\n");
-                return new ApiResponseDto<List<Workers>>
+                return new ApiResponseDto<List<Workers?>>
                 {
+                    RequestFailed = true,
                     ResponseCode = response.StatusCode,
                     Message = response.ReasonPhrase,
                     Data = null,
@@ -109,20 +112,25 @@ public class WorkerService : IWorkerService
             else
             {
                 AnsiConsole.Markup("[Green]Worker retrieved successfully.[/]\n");
-                return await response.Content.ReadFromJsonAsync<ApiResponseDto<List<Workers>>>()
-                    ?? new ApiResponseDto<List<Workers>>
+                return await response.Content.ReadFromJsonAsync<ApiResponseDto<List<Workers?>>>()
+                    ?? new ApiResponseDto<List<Workers?>>
                     {
-                        ResponseCode = response.StatusCode,
-                        Message = "Worker found",
-                        Data = new List<Workers>(),
-                        TotalCount = 0,
+                        RequestFailed = false,
+                        Message = "Worker data obtained successfully",
+                        Data = new List<Workers?>(),
                     };
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Try catch failed for GetWorkerById: {ex}");
-            throw;
+            return new ApiResponseDto<List<Workers?>>
+            {
+                RequestFailed = true,
+                ResponseCode = HttpStatusCode.InternalServerError,
+                Message = "An error occurred while retrieving the worker.",
+                Data = null,
+            };
         }
     }
 

@@ -13,15 +13,25 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
 	{
 		modelBuilder
 			.Entity<Shifts>()
-			.HasOne(s => s.Worker)
-			.WithMany(w=>w.Shifts)
-			.HasForeignKey(s => s.WorkerId)
-			.OnDelete(DeleteBehavior.Cascade);
-
+            .HasOne(s => s.Location)
+            .WithMany()
+            .HasForeignKey(s => s.LocationId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder
+            .Entity<Shifts>()
+            .HasOne(s => s.Worker)
+            .WithMany()
+            .HasForeignKey(s => s.WorkerId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder
             .Entity<Workers>()
-            .HasOne(w=>w.Shifts)
-            .WithOne(w=>w.Location)
+            .HasIndex(w => w.Email)
+            .IsUnique(); // Ensure unique email addresses for workers
+		modelBuilder
+            .Entity<Workers>()
+            .HasIndex(w=> w.PhoneNumber)
+            .IsUnique();
+
 	}
 
     public void SeedData()

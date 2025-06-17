@@ -12,7 +12,4 @@ public class Locations
     public string StateOrCounty { get; set; } = string.Empty;
     public string ZipOrPostCode { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
-
-    public virtual Shifts? Shifts { get; set; } // Navigation property to the Shifts entity
-    public virtual Workers? Workers { get; set; } // Navigation property to the Workers entity
 }

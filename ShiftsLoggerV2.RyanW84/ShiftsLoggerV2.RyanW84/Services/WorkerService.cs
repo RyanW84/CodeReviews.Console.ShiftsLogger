@@ -24,13 +24,10 @@ public class WorkerService(ShiftsLoggerDbContext dbContext) : IWorkerService
                 + $"  [blue]Search:[/] '{workerOptions.Search ?? "null"}'"
         );
 
-        var query = dbContext
-            .Workers.Include(w => w.Locations)
-            .Include(w => w.Shifts)
-            .AsQueryable();
+        var query = dbContext.Workers.AsQueryable<Workers>();
 
-        // Apply all filters
-        if (workerOptions.WorkerId != null && workerOptions.WorkerId is not 0)
+		// Apply all filters
+		if (workerOptions.WorkerId != null && workerOptions.WorkerId is not 0)
         {
             query = query.Where(w => w.WorkerId == workerOptions.WorkerId);
         }
@@ -124,12 +121,9 @@ public class WorkerService(ShiftsLoggerDbContext dbContext) : IWorkerService
 
     public async Task<ApiResponseDto<List<Workers?>>> GetWorkerById(int id)
     {
-        Workers? worker = await dbContext
-            .Workers.Include(w => w.Locations)
-            .Include(w => w.Shifts)
-            .FirstOrDefaultAsync(w => w.WorkerId == id);
+		 Workers? worker = await dbContext.Workers.FirstOrDefaultAsync<Workers>(w => w.WorkerId == id);
 
-        if (worker is null)
+		if (worker is null)
         {
             return new ApiResponseDto<List<Workers?>>
             {

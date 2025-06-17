@@ -22,12 +22,9 @@ public class LocationService(ShiftsLoggerDbContext dbContext) : ILocationService
                 + $"  [blue]Search:[/] '{locationOptions.Search ?? "null"}'"
         );
 
-        var query = dbContext
-            .Locations.Include(l => l.Workers)
-            .Include(l => l.Shifts)
-            .AsQueryable();
+        var query = dbContext.Locations.AsQueryable();
 
-        ApplyFilters(ref query, locationOptions);
+		ApplyFilters(ref query, locationOptions);
 
         // Sorting
         if (!string.IsNullOrWhiteSpace(locationOptions.SortBy))
@@ -102,12 +99,9 @@ public class LocationService(ShiftsLoggerDbContext dbContext) : ILocationService
 
     public async Task<ApiResponseDto<Locations?>> GetLocationById(int id)
     {
-        Locations? location = await dbContext
-            .Locations.Include(l => l.Workers)
-            .Include(l => l.Shifts)
-            .FirstOrDefaultAsync(l => l.LocationId == id);
+        Locations? location = await dbContext.Locations.FirstOrDefaultAsync<Locations> (l=> l.LocationId == id);
 
-        if (location is null)
+		if (location is null)
         {
             return new ApiResponseDto<Locations?>
             {
