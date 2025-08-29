@@ -26,6 +26,15 @@ ShiftsLogger is a WebAPI-based application designed for recording and managing w
 - **Cross-platform database support** (SQL Server for Windows, SQL Server for Linux)
 - **In-memory database** for testing environments
 
+## Requirements
+- This is an application where you should record a worker's shifts.
+- You need to create two applications: the Web API and the UI that will call it.
+- All validation and user input should happen in the UI app.
+- Your API's controller should be lean. Any logic should be handled in a separate "service".
+- You should use SQL Server, not SQLite
+- You should use the "code first" approach to create your database, using Entity Framework's migrations tool.
+- Your front-end project needs to have try-catch blocks around the API calls so it handles unexpected errors (i.e. the API isn't running or returns a 500 error.)
+
 ## 🏗️ Architecture
 
 The solution follows a clean architecture approach with clear separation of concerns:
@@ -414,7 +423,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Microsoft for the excellent .NET ecosystem
-- The open-source community for the amazing packages used in this project
-- Entity Framework team for the robust ORM
-- xUnit and Moq teams for excellent testing tools
+- The CSharp Academy
+- The CSharp School (premium membership of C# Academy)
+- Pablo De Souza
+- [The C sharp School API module](https://thecsharpschool.getlearnworlds.com/course/aspnet-core-web-apis)
+- [Back-end Web Development with .NET for Beginners](https://learn.microsoft.com/en-us/shows/back-end-web-development-with-dotnet-for-beginners/)
+- [Introduction to web APIs](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Client-side_APIs/Introduction)
+- [Tutorial: Create a Controller-based Web Api](https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-9.0&preserve-view=true&tabs=visual-studio)
