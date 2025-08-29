@@ -478,3 +478,426 @@ $RECYCLE.BIN/
 
 # Rider
 .idea/
+
+# ASP.NET Core
+# ASP.NET Core specific files
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+!appsettings.Production.json
+
+# User secrets
+secrets.json
+
+# Entity Framework
+*.db
+*.db-shm
+*.db-wal
+*.efmodel
+
+# Entity Framework Migrations
+**/Migrations/**/*.Designer.cs
+**/Migrations/**/*.ModelSnapshot.cs
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+Dockerfile.*
+docker-compose.*.yml
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Certificates
+*.pfx
+*.p12
+*.cer
+*.crt
+*.key
+*.pem
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.cache
+*.bak
+*.swp
+*.swo
+*~
+
+# Build artifacts
+build/
+dist/
+out/
+publish/
+
+# Package management
+**/node_modules/
+**/packages/
+**/lib/
+**/vendor/
+
+# Test results and coverage
+TestResults/
+*.trx
+*.testsettings
+*.runsettings
+coverage/
+*.coverage
+*.coveragexml
+*.coverlet
+coverage.opencover.xml
+coverage.cobertura.xml
+
+# IDE and Editor files
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Windows
+$RECYCLE.BIN/
+*.stackdump
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# Database files
+*.mdf
+*.ldf
+*.ndf
+*.sdf
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+
+# NuGet
+**/packages/
+*.nupkg
+*.snupkg
+.nuget/
+project.nuget.cache
+project.packagespec.json
+
+# MSBuild
+*.binlog
+*.cache
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+*.sln.iml
+
+# GitHub Copilot
+# Copilot chat history and conversations
+.copilot/
+.github/copilot/
+**/copilot/
+**/.copilot/
+
+# Copilot workspace data and transactions
+*.copilot-chat
+*.copilot-transaction
+*.copilot-log
+copilot-*.json
+copilot-*.log
+
+# Copilot cache and temporary files
+.copilot-cache/
+.github/copilot-cache/
+**/copilot-cache/
+**/.copilot-cache/
+
+# Copilot suggestions and completions data
+.copilot-suggestions/
+.github/copilot-suggestions/
+**/copilot-suggestions/
+**/.copilot-suggestions/
+
+# Additional .NET patterns
+# Project specific
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# User secrets and sensitive files
+**/secrets.json
+**/appsettings.*.json
+!**/appsettings.json
+!**/appsettings.Development.json
+!**/appsettings.Production.json
+
+# Entity Framework
+**/Migrations/**/*.cs
+!**/Migrations/**/*.Designer.cs
+!**/Migrations/**/*.ModelSnapshot.cs
+
+# Test results
+**/TestResults/
+**/coverage/
+**/coverage.*.xml
+**/coverage.*.json
+
+# IDE specific
+# VS Code
+**/.vscode/
+!**/.vscode/settings.json
+!**/.vscode/tasks.json
+!**/.vscode/launch.json
+!**/.vscode/extensions.json
+
+# JetBrains
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+
+# Visual Studio
+**/*.suo
+**/*.user
+**/*.userosscache
+**/*.sln.docstates
+**/.vs/
+
+# Temporary and cache files
+**/*.tmp
+**/*.temp
+**/*.cache
+**/*.bak
+**/*.swp
+**/*.swo
+**/Thumbs.db
+**/.DS_Store
+**/Desktop.ini
+
+# Build artifacts
+**/build/
+**/dist/
+**/artifacts/
+
+# NuGet
+**/packages/
+**/*.nupkg
+**/*.snupkg
+**/.nuget/
+
+# Docker
+**/Dockerfile.*
+**/docker-compose.*.yml
+**/.dockerignore
+
+# Environment files
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Certificates and keys
+**/*.pfx
+**/*.p12
+**/*.cer
+**/*.crt
+**/*.key
+**/*.pem
+
+# Database files
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.sqlite
+**/*.sqlite3
+**/*.mdf
+**/*.ldf
+**/*.ndf
+
+# Logs
+**/*.log
+**/logs/
+**/Logs/
+
+# MSBuild
+**/*.binlog
+**/*.cache
+
+# Node.js (if used)
+**/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# Python (if used)
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/env/
+**/venv/
+**/ENV/
+**/env.bak/
+**/venv.bak/
+
+# macOS
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/Icon
+**/_*
+**/.DocumentRevisions-V100
+**/.fseventsd
+**/.Spotlight-V100
+**/.TemporaryItems
+**/.Trashes
+**/*.VolumeIcon.icns
+**/.com.apple.timemachine.donotpresent
+
+# Windows
+**/$RECYCLE.BIN/
+**/*.stackdump
+**/*.lnk
+**/ehthumbs.db
+**/ehthumbs_vista.db
+
+# Linux
+**/*~
+**/.directory
+**/.Trash-*
+
+# Project specific exclusions
+# User files
+**/*.user
+**/*.userosscache
+**/*.slnLaunch.user
+
+# Launch settings (usually safe but can contain user-specific paths)
+**/Properties/launchSettings.json
+
+# Build artifacts (already covered but being explicit)
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Test artifacts
+**/TestResults/
+**/coverage/
+**/*.trx
+**/*.testsettings
+**/*.runsettings
+
+# Entity Framework specific
+**/Migrations/**/*.cs
+!**/Migrations/**/*.Designer.cs
+!**/Migrations/**/*.ModelSnapshot.cs
+
+# ASP.NET Core specific
+**/wwwroot/
+**/appsettings.*.json
+!**/appsettings.json
+!**/appsettings.Development.json
+!**/appsettings.Production.json
+
+# Docker specific
+**/Dockerfile.*
+**/docker-compose.*.yml
+**/.dockerignore
+
+# Package management
+**/packages/
+**/*.nupkg
+**/*.snupkg
+**/.nuget/
+
+# IDE specific (additional patterns)
+**/.vscode/settings.json
+**/.vscode/tasks.json
+**/.vscode/launch.json
+**/.vscode/extensions.json
+**/*.code-workspace
+
+# Temporary files
+**/*.tmp
+**/*.temp
+**/*.bak
+**/*.orig
+**/*.rej
+
+# OS specific (additional)
+# Windows
+**/Thumbs.db
+**/ehthumbs.db
+**/ehthumbs_vista.db
+**/$RECYCLE.BIN/
+**/Desktop.ini
+
+# macOS
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/Icon
+**/_*
+**/.DocumentRevisions-V100
+**/.fseventsd
+**/.Spotlight-V100
+**/.TemporaryItems
+**/.Trashes
+**/*.VolumeIcon.icns
+**/.com.apple.timemachine.donotpresent
+
+# Linux
+**/*~
+**/.directory
+**/.Trash-*

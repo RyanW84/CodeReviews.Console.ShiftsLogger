@@ -1,0 +1,29 @@
+{
+  "TestSettings": {
+    "DefaultTimeout": 30000,
+    "DatabaseName": "TestDatabase",
+    "LogLevel": "Information"
+  },
+  "IntegrationTests": {
+    "Enabled": true,
+    "Reason": "Database provider conflicts resolved with CustomWebApplicationFactory"
+  },
+  "TestCategories": {
+    "Models": {
+      "Enabled": true,
+      "Pattern": "FullyQualifiedName~Models"
+    },
+    "Services": {
+      "Enabled": true,
+      "Pattern": "FullyQualifiedName~Services"
+    },
+    "Controllers": {
+      "Enabled": true,
+      "Pattern": "FullyQualifiedName~Controllers"
+    },
+    "Integration": {
+      "Enabled": true,
+      "Pattern": "FullyQualifiedName~Integration"
+    }
+  }
+}
