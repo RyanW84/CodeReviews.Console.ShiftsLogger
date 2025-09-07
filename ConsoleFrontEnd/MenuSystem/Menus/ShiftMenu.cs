@@ -127,6 +127,7 @@ public class ShiftMenu : BaseMenu
     private readonly ILocationService _locationService;
     private readonly IShiftUi _shiftUi;
     private readonly ShiftInputHelper _shiftInputHelper;
+    private readonly Dictionary<string, Func<Task<bool>>> MenuActions;
 
     public ShiftMenu(
         IConsoleDisplayService displayService,
@@ -149,6 +150,19 @@ public class ShiftMenu : BaseMenu
         _shiftUi = shiftUi ?? throw new ArgumentNullException(nameof(shiftUi));
         _shiftInputHelper =
             shiftInputHelper ?? throw new ArgumentNullException(nameof(shiftInputHelper));
+
+        MenuActions = new Dictionary<string, Func<Task<bool>>>
+        {
+            ["View All Shifts"] = async () => { await ViewAllShiftsAsync(); return false; },
+            ["View Shift by ID"] = async () => { await ViewShiftByIdAsync(); return false; },
+            ["Create New Shift"] = async () => { await CreateShiftAsync(); return false; },
+            ["Update Shift"] = async () => { await UpdateShiftAsync(); return false; },
+            ["Delete Shift"] = async () => { await DeleteShiftAsync(); return false; },
+            ["Filter Shifts"] = async () => { await FilterShiftsAsync(); return false; },
+            ["View Shifts by Worker"] = async () => { await ViewShiftsByWorkerAsync(); return false; },
+            ["View Shifts by Date Range"] = async () => { await ViewShiftsByDateRangeAsync(); return false; },
+            ["Back to Main Menu"] = () => Task.FromResult(true)
+        };
     }
 
     public override string Title => "Shift Management";
@@ -250,59 +264,16 @@ public class ShiftMenu : BaseMenu
         if (await HandleCommonActions(choice))
             return true;
 
-        try
+        if (MenuActions.TryGetValue(choice, out var action))
         {
-            switch (choice)
-            {
-                case "View All Shifts":
-                    await ViewAllShiftsAsync();
-                    break;
-
-                case "View Shift by ID":
-                    await ViewShiftByIdAsync();
-                    break;
-
-                case "Create New Shift":
-                    await CreateShiftAsync();
-                    break;
-
-                case "Update Shift":
-                    await UpdateShiftAsync();
-                    break;
-
-                case "Delete Shift":
-                    await DeleteShiftAsync();
-                    break;
-
-                case "Filter Shifts":
-                    await FilterShiftsAsync();
-                    break;
-
-                case "View Shifts by Worker":
-                    await ViewShiftsByWorkerAsync();
-                    break;
-
-                case "View Shifts by Date Range":
-                    await ViewShiftsByDateRangeAsync();
-                    break;
-
-                case "Back to Main Menu":
-                    return true;
-
-                default:
-                    DisplayService.DisplayError("Invalid choice");
-                    InputService.WaitForKeyPress();
-                    break;
-            }
+            return await action();
         }
-        catch (Exception ex)
+        else
         {
-            Logger.LogError(ex, "Error handling shift choice: {Choice}", choice);
-            DisplayService.DisplayError($"An error occurred: {ex.Message}");
+            DisplayService.DisplayError("Invalid choice");
             InputService.WaitForKeyPress();
+            return false;
         }
-
-        return false;
     }
 
     private async Task ViewAllShiftsAsync()

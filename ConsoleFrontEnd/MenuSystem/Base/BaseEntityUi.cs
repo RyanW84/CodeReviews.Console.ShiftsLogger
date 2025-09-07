@@ -19,9 +19,9 @@ public abstract class BaseEntityUi<T, TFilter>(IConsoleDisplayService display, I
     protected readonly ILogger Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     // Abstract methods that must be implemented by derived classes
-    public abstract T CreateEntityUi();
-    public abstract T UpdateEntityUi(T existingEntity);
-    public abstract TFilter FilterEntityUi();
+    public abstract Task<T> CreateUiAsync();
+    public abstract Task<T> UpdateUiAsync(T existingEntity);
+    public abstract Task<TFilter> FilterUiAsync();
     protected abstract string EntityName { get; }
     protected abstract string EntityPluralName { get; }
 
@@ -31,14 +31,14 @@ public abstract class BaseEntityUi<T, TFilter>(IConsoleDisplayService display, I
         _display.DisplayTable(entities, EntityPluralName);
     }
 
-    public virtual int GetEntityByIdUi()
+    public virtual Task<int> GetEntityByIdUiAsync()
     {
-        return AnsiConsole.Ask<int>($"[green]Enter {EntityName.ToLower()} ID:[/]");
+        return Task.FromResult(AnsiConsole.Ask<int>($"[green]Enter {EntityName.ToLower()} ID:[/]"));
     }
 
-    public virtual int SelectEntityUi()
+    public virtual Task<int> SelectEntityUiAsync()
     {
-        return AnsiConsole.Ask<int>($"[green]Select {EntityName.ToLower()} ID:[/]");
+        return Task.FromResult(AnsiConsole.Ask<int>($"[green]Select {EntityName.ToLower()} ID:[/]"));
     }
 
     // Helper methods for common UI patterns

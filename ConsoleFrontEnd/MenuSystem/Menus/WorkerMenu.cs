@@ -15,6 +15,7 @@ public class WorkerMenu : BaseMenu
 {
     private readonly IWorkerService _workerService;
     private readonly IWorkerUi _workerUi;
+    private readonly Dictionary<string, Func<Task<bool>>> MenuActions;
 
     public WorkerMenu(
         IConsoleDisplayService displayService,
@@ -28,6 +29,19 @@ public class WorkerMenu : BaseMenu
     {
         _workerService = workerService ?? throw new ArgumentNullException(nameof(workerService));
         _workerUi = workerUi ?? throw new ArgumentNullException(nameof(workerUi));
+
+        MenuActions = new Dictionary<string, Func<Task<bool>>>
+        {
+            ["View All Workers"] = async () => { await ViewAllWorkersAsync(); return false; },
+            ["View Worker by ID"] = async () => { await ViewWorkerByIdAsync(); return false; },
+            ["Create New Worker"] = async () => { await CreateWorkerAsync(); return false; },
+            ["Update Worker"] = async () => { await UpdateWorkerAsync(); return false; },
+            ["Delete Worker"] = async () => { await DeleteWorkerAsync(); return false; },
+            ["Filter Workers"] = async () => { await FilterWorkersAsync(); return false; },
+            ["View Workers by Email Domain"] = async () => { await ViewWorkersByEmailDomainAsync(); return false; },
+            ["View Workers by Phone Area Code"] = async () => { await ViewWorkersByPhoneAreaCodeAsync(); return false; },
+            ["Back to Main Menu"] = () => Task.FromResult(true)
+        };
     }
 
     public override string Title => "Worker Management";
@@ -63,59 +77,16 @@ public class WorkerMenu : BaseMenu
         if (await HandleCommonActions(choice))
             return true;
 
-        try
+        if (MenuActions.TryGetValue(choice, out var action))
         {
-            switch (choice)
-            {
-                case "View All Workers":
-                    await ViewAllWorkersAsync();
-                    break;
-
-                case "View Worker by ID":
-                    await ViewWorkerByIdAsync();
-                    break;
-
-                case "Create New Worker":
-                    await CreateWorkerAsync();
-                    break;
-
-                case "Update Worker":
-                    await UpdateWorkerAsync();
-                    break;
-
-                case "Delete Worker":
-                    await DeleteWorkerAsync();
-                    break;
-
-                case "Filter Workers":
-                    await FilterWorkersAsync();
-                    break;
-
-                case "View Workers by Email Domain":
-                    await ViewWorkersByEmailDomainAsync();
-                    break;
-
-                case "View Workers by Phone Area Code":
-                    await ViewWorkersByPhoneAreaCodeAsync();
-                    break;
-
-                case "Back to Main Menu":
-                    return true;
-
-                default:
-                    DisplayService.DisplayError("Invalid choice");
-                    InputService.WaitForKeyPress();
-                    break;
-            }
+            return await action();
         }
-        catch (Exception ex)
+        else
         {
-            Logger.LogError(ex, "Error handling worker choice: {Choice}", choice);
-            DisplayService.DisplayError($"An error occurred: {ex.Message}");
+            DisplayService.DisplayError("Invalid choice");
             InputService.WaitForKeyPress();
+            return false;
         }
-
-        return false;
     }
 
     private async Task ViewAllWorkersAsync()
@@ -129,7 +100,7 @@ public class WorkerMenu : BaseMenu
     {
         DisplayService.DisplayHeader("Select Worker", "blue");
 
-        var workerId = await _workerUi.GetWorkerByIdUi();
+        var workerId = await _workerUi.GetEntityByIdUiAsync();
         if (workerId <= 0)
         {
             DisplayService.DisplayError("No worker selected.");
@@ -157,25 +128,17 @@ public class WorkerMenu : BaseMenu
 
         try
         {
-            var name = InputService.GetTextInput("Enter Worker Name:");
-            var email = InputService.GetTextInput("Enter Email Address (optional):", false);
-            var phoneNumber = InputService.GetTextInput("Enter Phone Number (optional):", false);
-
-            // Basic validation
-            if (!string.IsNullOrEmpty(email) && !email.Contains("@"))
+            var worker = await _workerUi.CreateUiAsync();
+            var response = await _workerService.CreateWorkerAsync(worker);
+            if (response.RequestFailed || response.Data == null)
             {
-                DisplayService.DisplayError("Invalid email format.");
-                InputService.WaitForKeyPress();
-                return;
+                DisplayService.DisplayError(response.Message ?? "Failed to create worker.");
             }
-
-            // Create worker (this would call the API)
-            DisplayService.DisplaySuccess("Worker created successfully!");
-            DisplayService.DisplayInfo($"Name: {name}");
-            if (!string.IsNullOrEmpty(email))
-                DisplayService.DisplayInfo($"Email: {email}");
-            if (!string.IsNullOrEmpty(phoneNumber))
-                DisplayService.DisplayInfo($"Phone: {phoneNumber}");
+            else
+            {
+                DisplayService.DisplaySuccess("Worker created successfully!");
+                DisplayService.DisplayTable([response.Data], "Created Worker");
+            }
         }
         catch (Exception ex)
         {
@@ -184,14 +147,13 @@ public class WorkerMenu : BaseMenu
         }
 
         InputService.WaitForKeyPress();
-        await Task.CompletedTask;
     }
 
     private async Task UpdateWorkerAsync()
     {
         DisplayService.DisplayHeader("Update Worker", "yellow");
 
-        var workerId = await _workerUi.GetWorkerByIdUi();
+        var workerId = await _workerUi.GetEntityByIdUiAsync();
         if (workerId <= 0)
         {
             DisplayService.DisplayError("No worker selected.");
@@ -211,19 +173,7 @@ public class WorkerMenu : BaseMenu
         }
 
         var worker = workerResponse.Data;
-        var name = InputService.GetTextInput($"Enter new name (current: {worker.Name}):", false);
-        var email = InputService.GetTextInput($"Enter new email (current: {worker.Email}):", false);
-        var phone = InputService.GetTextInput(
-            $"Enter new phone (current: {worker.PhoneNumber}):",
-            false
-        );
-        var updatedWorker = new Worker
-        {
-            WorkerId = worker.WorkerId,
-            Name = string.IsNullOrWhiteSpace(name) ? worker.Name : name,
-            Email = string.IsNullOrWhiteSpace(email) ? worker.Email : email,
-            PhoneNumber = string.IsNullOrWhiteSpace(phone) ? worker.PhoneNumber : phone,
-        };
+        var updatedWorker = await _workerUi.UpdateUiAsync(worker);
         var response = await _workerService.UpdateWorkerAsync(workerId, updatedWorker);
         if (response.RequestFailed || response.Data == null)
         {

@@ -1,5 +1,6 @@
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.Interfaces;
+using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
@@ -12,27 +13,28 @@ namespace ConsoleFrontEnd.MenuSystem;
 /// <summary>
 /// Refactored Worker UI implementation following SOLID principles with reduced code duplication
 /// </summary>
-public class WorkerUi : IWorkerUi
+public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
 {
     private readonly UiHelper _uiHelper;
     private readonly IWorkerService _workerService;
-    private readonly IConsoleDisplayService _display;
-    private const string EntityName = "Worker";
-    private const string EntityPluralName = "Workers";
 
     public WorkerUi(
         IConsoleDisplayService display,
         ILogger<WorkerUi> logger,
         IWorkerService workerService
-    )
+    ) : base(display, logger)
     {
         _uiHelper = new UiHelper(display, logger);
         _workerService = workerService;
         _display = display;
     }
 
-    public Worker CreateWorkerUi()
+    protected override string EntityName => "Worker";
+    protected override string EntityPluralName => "Workers";
+
+    public override async Task<Worker> CreateUiAsync()
     {
+        await Task.CompletedTask;
         _uiHelper.DisplayCreateHeader(EntityName);
 
         var name = _uiHelper.GetRequiredStringInput("Enter name");
@@ -43,7 +45,7 @@ public class WorkerUi : IWorkerUi
         if (!string.IsNullOrEmpty(email) && !_uiHelper.IsValidEmail(email))
         {
             _uiHelper.DisplayValidationError("Invalid email format.");
-            return CreateWorkerUi(); // Retry
+            return await CreateUiAsync(); // Retry
         }
 
         return new Worker
@@ -55,8 +57,19 @@ public class WorkerUi : IWorkerUi
         };
     }
 
-    public Worker UpdateWorkerUi(Worker existingWorker)
+    public async Task<Worker> CreateWorkerUiAsync()
     {
+        return await CreateUiAsync();
+    }
+
+    public Worker CreateWorkerUi()
+    {
+        return CreateUiAsync().GetAwaiter().GetResult();
+    }
+
+    public override async Task<Worker> UpdateUiAsync(Worker existingWorker)
+    {
+        await Task.CompletedTask;
         _uiHelper.DisplayUpdateHeader(EntityName, existingWorker.Name);
 
         var name =
@@ -72,7 +85,7 @@ public class WorkerUi : IWorkerUi
         if (!string.IsNullOrEmpty(email) && !_uiHelper.IsValidEmail(email))
         {
             _uiHelper.DisplayValidationError("Invalid email format.");
-            return UpdateWorkerUi(existingWorker); // Retry
+            return await UpdateUiAsync(existingWorker); // Retry
         }
 
         return new Worker
@@ -84,8 +97,19 @@ public class WorkerUi : IWorkerUi
         };
     }
 
-    public WorkerFilterOptions FilterWorkersUi()
+    public async Task<Worker> UpdateWorkerUiAsync(Worker existingWorker)
     {
+        return await UpdateUiAsync(existingWorker);
+    }
+
+    public Worker UpdateWorkerUi(Worker existingWorker)
+    {
+        return UpdateUiAsync(existingWorker).GetAwaiter().GetResult();
+    }
+
+    public override async Task<WorkerFilterOptions> FilterUiAsync()
+    {
+        await Task.CompletedTask;
         _uiHelper.DisplayFilterHeader(EntityPluralName);
 
         var name = _uiHelper.GetOptionalStringInput("Filter by name");
@@ -98,6 +122,16 @@ public class WorkerUi : IWorkerUi
             Email = email,
             PhoneNumber = phone,
         };
+    }
+
+    public async Task<WorkerFilterOptions> FilterWorkersUiAsync()
+    {
+        return await FilterUiAsync();
+    }
+
+    public WorkerFilterOptions FilterWorkersUi()
+    {
+        return FilterUiAsync().GetAwaiter().GetResult();
     }
 
     public void DisplayWorkersTable(IEnumerable<Worker> workers, int startingRowNumber = 1)

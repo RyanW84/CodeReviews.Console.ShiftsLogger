@@ -8,14 +8,14 @@ public interface IEntityUi<T, TFilter>
     where TFilter : class
 {
     // Core CRUD UI operations
-    T CreateEntityUi();
-    T UpdateEntityUi(T existingEntity);
-    TFilter FilterEntityUi();
+    Task<T> CreateUiAsync();
+    Task<T> UpdateUiAsync(T existingEntity);
+    Task<TFilter> FilterUiAsync();
 
     // Display operations
     void DisplayEntitiesTable(IEnumerable<T> entities);
 
     // Selection operations
-    int GetEntityByIdUi();
-    int SelectEntityUi();
+    Task<int> GetEntityByIdUiAsync();
+    Task<int> SelectEntityUiAsync();
 }

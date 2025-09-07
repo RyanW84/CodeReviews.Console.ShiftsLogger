@@ -1,5 +1,6 @@
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.Interfaces;
+using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
@@ -9,9 +10,8 @@ using Spectre.Console;
 
 namespace ConsoleFrontEnd.MenuSystem;
 
-public class LocationUI : ILocationUi
+public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocationUi
 {
-    private readonly IConsoleDisplayService _display;
     private readonly UiHelper _uiHelper;
     private readonly ILocationService _locationService;
 
@@ -19,16 +19,19 @@ public class LocationUI : ILocationUi
         IConsoleDisplayService display,
         ILogger<LocationUI> logger,
         ILocationService locationService
-    )
+    ) : base(display, logger)
     {
-        _display = display;
         _uiHelper = new UiHelper(display, logger);
         _locationService =
             locationService ?? throw new ArgumentNullException(nameof(locationService));
     }
 
-    public Location CreateLocationUi()
+    protected override string EntityName => "Location";
+    protected override string EntityPluralName => "Locations";
+
+    public override async Task<Location> CreateUiAsync()
     {
+        await Task.CompletedTask; // For async compatibility
         _display.DisplayHeader("Create New Location");
 
         var name = AnsiConsole.Ask<string>("[green]Enter location name:[/]");
@@ -50,8 +53,19 @@ public class LocationUI : ILocationUi
         };
     }
 
-    public Location UpdateLocationUi(Location existingLocation)
+    public async Task<Location> CreateLocationUiAsync()
     {
+        return await CreateUiAsync();
+    }
+
+    public Location CreateLocationUi()
+    {
+        return CreateUiAsync().GetAwaiter().GetResult();
+    }
+
+    public override async Task<Location> UpdateUiAsync(Location existingLocation)
+    {
+        await Task.CompletedTask;
         _display.DisplayHeader($"Update Location: {existingLocation.Name}");
 
         var name = AnsiConsole.Ask("[green]Enter new location name:[/]", existingLocation.Name);
@@ -73,13 +87,44 @@ public class LocationUI : ILocationUi
         };
     }
 
-    public LocationFilterOptions FilterLocationsUi()
+    public async Task<Location> UpdateLocationUiAsync(Location existingLocation)
     {
+        return await UpdateUiAsync(existingLocation);
+    }
+
+    public Location UpdateLocationUi(Location existingLocation)
+    {
+        return UpdateUiAsync(existingLocation).GetAwaiter().GetResult();
+    }
+
+    public override async Task<LocationFilterOptions> FilterUiAsync()
+    {
+        await Task.CompletedTask;
         _display.DisplayHeader("Filter Locations");
 
         var name = _uiHelper.GetOptionalStringInput("Filter by name");
 
         return new LocationFilterOptions { Name = name };
+    }
+
+    public async Task<LocationFilterOptions> FilterLocationsUiAsync()
+    {
+        return await FilterUiAsync();
+    }
+
+    public LocationFilterOptions FilterLocationsUi()
+    {
+        return FilterUiAsync().GetAwaiter().GetResult();
+    }
+
+    public override async Task<int> GetEntityByIdUiAsync()
+    {
+        return await GetLocationByIdUi();
+    }
+
+    public override void DisplayEntitiesTable(IEnumerable<Location> entities)
+    {
+        DisplayLocationsTable(entities, 1);
     }
 
     public void DisplayLocationsTable(IEnumerable<Location> locations, int startingRowNumber = 1)
