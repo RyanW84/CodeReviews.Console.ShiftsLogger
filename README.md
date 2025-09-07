@@ -506,12 +506,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Introduction to web APIs][intro-web-apis]
 - [Tutorial: Create a Controller-based Web Api][tutorial-web-api]
 
-[csharp-school-api]: https://thecsharpschool.getlearnworlds.com/course/
-aspnet-core-web-apis
-[backend-dotnet]: https://learn.microsoft.com/en-us/shows/back-end-web-development-
-with-dotnet-for-beginners/
-[intro-web-apis]: https://developer.mozilla.org/en-US/docs/Learn_web_development/
-Extensions/Client-side_APIs/Introduction
-[tutorial-web-api]: https://learn.microsoft.com/en-us/aspnet/core/tutorials/
-first-web-api?view=aspnetcore-9.0&preserve-view=true&tabs=visual-studio
+[csharp-school-api]: https://thecsharpschool.getlearnworlds.com/course/aspnet-core-web-apis
+[backend-dotnet]: https://learn.microsoft.com/en-us/shows/back-end-web-development-with-dotnet-for-beginners/
+[intro-web-apis]: https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Client-side_APIs/Introduction
+[tutorial-web-api]: https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-9.0&preserve-view=true&tabs=visual-studio
 [github-profile]: https://github.com/RyanW84
