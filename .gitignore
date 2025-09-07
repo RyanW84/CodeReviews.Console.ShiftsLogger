@@ -822,9 +822,6 @@ copilot-*.log
 **/*.userosscache
 **/*.slnLaunch.user
 
-# Launch settings (usually safe but can contain user-specific paths)
-**/Properties/launchSettings.json
-
 # Build artifacts (already covered but being explicit)
 **/bin/
 **/obj/
