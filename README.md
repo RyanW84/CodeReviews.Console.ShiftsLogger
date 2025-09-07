@@ -1,6 +1,9 @@
 # ShiftsLogger
 
-A comprehensive shift management system built with .NET 9.0, featuring a Web API backend, console frontend, and extensive testing suite. The application follows SOLID principles and clean architecture patterns to provide a robust solution for recording, storing, and managing work shifts.
+A comprehensive shift management system built with .NET 9.0, featuring a Web API
+backend, console frontend, and extensive testing suite. The application follows
+SOLID principles and clean architecture patterns to provide a robust solution
+for recording, storing, and managing work shifts.
 
 ## 📋 Table of Contents
 
@@ -18,12 +21,14 @@ A comprehensive shift management system built with .NET 9.0, featuring a Web API
 
 ## Overview
 
-ShiftsLogger is a WebAPI-based application designed for recording and managing work shifts. It provides:
+ShiftsLogger is a WebAPI-based application designed for recording and managing
+work shifts. It provides:
 
 - **RESTful API** for shift, worker, and location management
 - **Console-based frontend** with interactive menus using Spectre.Console
 - **Comprehensive testing suite** with xUnit, Moq, and FluentAssertions
-- **Cross-platform database support** (SQL Server for Windows, SQL Server for Linux)
+- **Cross-platform database support** (SQL Server for Windows, SQL Server
+  for Linux)
 - **In-memory database** for testing environments
 
 ## Requirements
@@ -31,14 +36,19 @@ ShiftsLogger is a WebAPI-based application designed for recording and managing w
 - This is an application where you should record a worker's shifts.
 - You need to create two applications: the Web API and the UI that will call it.
 - All validation and user input should happen in the UI app.
-- Your API's controller should be lean. Any logic should be handled in a separate "service".
+- Your API's controller should be lean. Any logic should be handled in a
+  separate "service".
 - You should use SQL Server, not SQLite
-- You should use the "code first" approach to create your database, using Entity Framework's migrations tool.
-- Your front-end project needs to have try-catch blocks around the API calls so it handles unexpected errors (i.e. the API isn't running or returns a 500 error.)
+- You should use the "code first" approach to create your database, using
+  Entity Framework's migrations tool.
+- Your front-end project needs to have try-catch blocks around the API calls
+  so it handles unexpected errors (i.e. the API isn't running or returns a 500
+  error.)
 
 ## Architecture
 
-The solution follows a clean architecture approach with clear separation of concerns:
+The solution follows a clean architecture approach with clear separation of
+concerns:
 
 ### Core Components
 
@@ -87,23 +97,32 @@ The solution follows a clean architecture approach with clear separation of conc
 
 ### Security & Configuration
 
-- ✅ **Database Credentials Secured**: Moved sensitive database passwords to user secrets
-- ✅ **Cross-Platform Compatibility**: Fixed VS Code configuration files for Windows/Linux compatibility
-- ✅ **Setup Scripts**: Created automated setup scripts for user secrets configuration
+- ✅ **Database Credentials Secured**: Moved sensitive database passwords to
+  user secrets
+- ✅ **Cross-Platform Compatibility**: Fixed VS Code configuration files for
+  Windows/Linux compatibility
+- ✅ **Setup Scripts**: Created automated setup scripts for user secrets
+  configuration
 
 ### Logging & Monitoring
 
-- ✅ **Structured Logging**: Replaced Console.WriteLine with proper ILogger implementation
-- ✅ **Health Checks**: Added comprehensive health check endpoints for monitoring
-- ✅ **Error Standardization**: Consistent error handling across all controllers
+- ✅ **Structured Logging**: Replaced Console.WriteLine with proper ILogger
+  implementation
+- ✅ **Health Checks**: Added comprehensive health check endpoints for
+  monitoring
+- ✅ **Error Standardization**: Consistent error handling across all
+  controllers
 
 ### Performance & Database
 
-- ✅ **Database Indexes**: Added performance indexes for frequently queried fields
+- ✅ **Database Indexes**: Added performance indexes for frequently queried
+  fields
 - ✅ **Query Optimization**: Composite indexes for common query patterns
 - ✅ **Connection Management**: Improved database connection handling
-- ✅ **Pagination Implementation**: Added efficient pagination across all endpoints to handle large datasets
-- ✅ **HTTP Response Optimization**: Resolved size limitations with paginated responses
+- ✅ **Pagination Implementation**: Added efficient pagination across all
+  endpoints to handle large datasets
+- ✅ **HTTP Response Optimization**: Resolved size limitations with paginated
+  responses
 
 ### Code Quality
 
@@ -119,67 +138,69 @@ The solution follows a clean architecture approach with clear separation of conc
 
 ### Web API Project (ShiftsLoggerV2.RyanW84)
 
-#### Entity Framework & Database
+### Entity Framework & Database
 
 - `Microsoft.EntityFrameworkCore` (9.0.8) - ORM framework
 - `Microsoft.EntityFrameworkCore.Abstractions` (9.0.8) - EF Core abstractions
 - `Microsoft.EntityFrameworkCore.Design` (9.0.8) - Design-time tools
 - `Microsoft.EntityFrameworkCore.SqlServer` (9.0.8) - SQL Server provider
-- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8) - In-memory provider for testing
+- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8) - In-memory provider
+  for testing
 - `Microsoft.EntityFrameworkCore.Tools` (9.0.8) - Migration tools
 
-#### API & Documentation
+### API & Documentation
 
 - `Microsoft.AspNetCore.OpenApi` (9.0.8) - OpenAPI support
 - `Microsoft.OpenApi` (1.6.24) - OpenAPI specifications
 - `Scalar.AspNetCore` (2.7.2) - Modern API documentation
 
-#### Mapping & DI
+### Mapping & DI
 
 - `AutoMapper` (15.0.1) - Object-to-object mapping
 - `Microsoft.Extensions.DependencyInjection` (9.0.8) - Dependency injection
 - `Microsoft.Extensions.Logging` (9.0.8) - Logging framework
 
-#### UI & Console Packages
+### UI & Console Packages
 
 - `Spectre.Console` (0.50.0) - Rich console applications
 
 ### Console Frontend Project (ConsoleFrontEnd)
 
-#### Core Dependencies
+### Core Dependencies
 
 - `AutoMapper` (15.0.1) - Object mapping
 
-#### Hosting & Configuration
+### Hosting & Configuration
 
 - `Microsoft.Extensions.DependencyInjection` (9.0.8) - DI container
 - `Microsoft.Extensions.Hosting` (9.0.8) - Host builder
 - `Microsoft.Extensions.Http` (9.0.8) - HTTP client factory
 - `Microsoft.Extensions.Logging` (9.0.8) - Logging
 
-#### UI & Console
+### UI & Console
 
 - `Spectre.Console` (0.50.0) - Console UI
 
 ### Test Project (ShiftsLoggerV2.RyanW84.Tests)
 
-#### Testing Framework
+### Testing Framework
 
 - `Microsoft.NET.Test.Sdk` (17.14.1) - Test SDK
 - `xunit` (2.9.3) - Testing framework
 - `xunit.runner.visualstudio` (3.1.4) - Visual Studio test runner
 
-#### Mocking & Assertions
+### Mocking & Assertions
 
 - `Moq` (4.20.72) - Mocking framework
 - `FluentAssertions` (8.6.0) - Fluent assertion library
 
-#### Integration Testing
+### Integration Testing
 
 - `Microsoft.AspNetCore.Mvc.Testing` (9.0.8) - ASP.NET Core testing
-- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8) - In-memory database for tests
+- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8) - In-memory database
+  for tests
 
-#### Code Coverage
+### Code Coverage
 
 - `coverlet.collector` (6.0.4) - Code coverage collection
 
@@ -226,7 +247,8 @@ ShiftsLogger/
 ### Shifts Controller (`/api/shifts`)
 
 - `GET /api/shifts` - Get all shifts with filtering and pagination
-  - Query parameters: `pageNumber`, `pageSize`, `workerId`, `locationId`, `startDate`, `endDate`
+  - Query parameters: `pageNumber`, `pageSize`, `workerId`, `locationId`,
+    `startDate`, `endDate`
 - `GET /api/shifts/{id}` - Get shift by ID
 - `POST /api/shifts` - Create new shift
 - `PUT /api/shifts/{id}` - Update shift
@@ -264,7 +286,8 @@ ShiftsLogger/
 
 ## Pagination
 
-The API implements efficient pagination for all list endpoints to handle large datasets effectively:
+The API implements efficient pagination for all list endpoints to handle large
+datasets effectively:
 
 ### Pagination Parameters
 
@@ -331,8 +354,10 @@ GET /api/locations?pageNumber=1&pageSize=5&country=USA
 
    # Then set your connection string
    cd ShiftsLoggerV2.RyanW84
-   dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
-   ```
+   dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" \
+     "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YOUR_PASSWORD;
+     TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
+   
 
 4. **Set up the database**
 
@@ -364,15 +389,17 @@ The project includes pre-configured VS Code tasks:
 
 ### Connection Strings
 
-The application automatically selects the appropriate connection string based on the operating system:
+The application automatically selects the appropriate connection string based on
+the operating system:
 
-#### Windows (LocalDB)
+### Windows (LocalDB)
 
 ```json
-"DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ShiftsLoggerDb;Trusted_Connection=yes;TrustServerCertificate=yes;"
+"DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ShiftsLoggerDb;
+Trusted_Connection=yes;TrustServerCertificate=yes;"
 ```
 
-#### Linux (SQL Server)
+### Linux (SQL Server)
 
 For Linux environments, configure the connection string using user secrets:
 
@@ -381,14 +408,18 @@ For Linux environments, configure the connection string using user secrets:
 cd ShiftsLoggerV2.RyanW84
 
 # Set the Linux SQL Server connection string in user secrets
-dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YourSecurePassword;TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
+dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" \
+  "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YourSecurePassword;
+  TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
 ```
 
-**Security Note**: Never commit database passwords to source control. Always use user secrets or environment variables for sensitive configuration.
+**Security Note**: Never commit database passwords to source control. Always use
+user secrets or environment variables for sensitive configuration.
 
-#### Testing (In-Memory)
+### Testing (In-Memory)
 
-For testing environments, the application uses Entity Framework's in-memory database provider.
+For testing environments, the application uses Entity Framework's in-memory
+database provider.
 
 ### Migrations
 
@@ -470,7 +501,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - The CSharp Academy
 - The CSharp School (premium membership of C# Academy)
 - Pablo De Souza
-- [The C sharp School API module](https://thecsharpschool.getlearnworlds.com/course/aspnet-core-web-apis)
-- [Back-end Web Development with .NET for Beginners](https://learn.microsoft.com/en-us/shows/back-end-web-development-with-dotnet-for-beginners/)
-- [Introduction to web APIs](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Client-side_APIs/Introduction)
-- [Tutorial: Create a Controller-based Web Api](https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-9.0&preserve-view=true&tabs=visual-studio)
+- [The C sharp School API module][csharp-school-api]
+- [Back-end Web Development with .NET for Beginners][backend-dotnet]
+- [Introduction to web APIs][intro-web-apis]
+- [Tutorial: Create a Controller-based Web Api][tutorial-web-api]
+
+[csharp-school-api]: https://thecsharpschool.getlearnworlds.com/course/
+aspnet-core-web-apis
+[backend-dotnet]: https://learn.microsoft.com/en-us/shows/back-end-web-development-
+with-dotnet-for-beginners/
+[intro-web-apis]: https://developer.mozilla.org/en-US/docs/Learn_web_development/
+Extensions/Client-side_APIs/Introduction
+[tutorial-web-api]: https://learn.microsoft.com/en-us/aspnet/core/tutorials/
+first-web-api?view=aspnetcore-9.0&preserve-view=true&tabs=visual-studio

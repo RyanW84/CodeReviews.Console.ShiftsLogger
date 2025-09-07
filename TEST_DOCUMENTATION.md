@@ -1,6 +1,7 @@
 # ShiftsLogger Unit Tests
 
-This document provides an overview of the comprehensive xUnit test suite for the ShiftsLogger project.
+This document provides an overview of the comprehensive xUnit test suite
+for the ShiftsLogger project.
 
 ## Test Project Structure
 
@@ -118,7 +119,8 @@ ShiftsLoggerV2.RyanW84.Tests/
 - **Moq**: Mocking framework for dependencies (v4.20.72)
 - **FluentAssertions**: Expressive assertion library (v8.6.0)
 - **Microsoft.AspNetCore.Mvc.Testing**: Integration testing (v9.0.8)
-- **Microsoft.EntityFrameworkCore.InMemory**: In-memory database for testing (v9.0.8)
+- **Microsoft.EntityFrameworkCore.InMemory**: In-memory database for testing
+  (v9.0.8)
 - **Microsoft.NET.Test.Sdk**: Test platform (v17.14.1)
 - **xunit.runner.visualstudio**: Visual Studio test runner (v3.1.4)
 - **coverlet.collector**: Code coverage (v6.0.4)
@@ -157,7 +159,8 @@ dotnet test --settings test-config.json
 ## Test Patterns and Best Practices
 
 1. **AAA Pattern**: All tests follow Arrange-Act-Assert structure
-2. **Descriptive Naming**: Test names clearly describe the scenario and expected outcome
+2. **Descriptive Naming**: Test names clearly describe the scenario and
+   expected outcome
 3. **Theory Tests**: Used for parameterized testing with multiple input values
 4. **Mock Objects**: Dependencies are mocked to isolate units under test
 5. **Fluent Assertions**: Makes test assertions more readable and maintainable
@@ -190,7 +193,8 @@ The `test-config.json` file provides centralized test configuration:
   },
   "IntegrationTests": {
     "Enabled": true,
-    "Reason": "Database provider conflicts resolved with CustomWebApplicationFactory"
+    "Reason": "Database provider conflicts resolved with
+    CustomWebApplicationFactory"
   }
 }
 ```
@@ -208,7 +212,8 @@ The `test-config.json` file provides centralized test configuration:
 - **Passing**: 104 tests
 - **Failing**: 0 tests
 - **Skipped**: 0 tests
-- **Test Categories**: Models (24), Services (29), Controllers (28), Business Services (37), Integration (6)
+- **Test Categories**: Models (24), Services (29), Controllers (28),
+  Business Services (37), Integration (6)
 - **Code Coverage**: Comprehensive coverage of all application layers
 - **Test Execution Time**: ~2.8 seconds
 
@@ -224,7 +229,8 @@ The `test-config.json` file provides centralized test configuration:
 ## Debug and Development
 
 - **debug_test.cs**: Contains debugging utilities for test development
-- **CustomWebApplicationFactory**: Provides test-specific application configuration
+- **CustomWebApplicationFactory**: Provides test-specific application
+  configuration
 - **TestDataHelper.cs**: Utilities for generating test data
 - **Integration Test Fixtures**: Support for full-stack testing scenarios
 
