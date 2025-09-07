@@ -41,7 +41,13 @@ public class LocationTests
     [InlineData("Warehouse B", "456 Industrial Blvd", "Chicago", "Cook", "60601", "USA")]
     [InlineData("", "", "", "", "", "")]
     public void Location_Properties_ShouldSetAndGetCorrectly(
-        string name, string address, string town, string county, string postCode, string country)
+        string name,
+        string address,
+        string town,
+        string county,
+        string postCode,
+        string country
+    )
     {
         // Arrange & Act
         var location = new Location
@@ -52,7 +58,7 @@ public class LocationTests
             Town = town,
             County = county,
             PostCode = postCode,
-            Country = country
+            Country = country,
         };
 
         // Assert
@@ -89,7 +95,7 @@ public class LocationTests
             LocationId = location.LocationId,
             WorkerId = 1,
             StartTime = DateTimeOffset.Now,
-            EndTime = DateTimeOffset.Now.AddHours(8)
+            EndTime = DateTimeOffset.Now.AddHours(8),
         };
 
         // Act
@@ -111,7 +117,7 @@ public class LocationTests
             Town = null!,
             County = null!,
             PostCode = null!,
-            Country = null!
+            Country = null!,
         };
 
         var location2 = new Location
@@ -121,7 +127,7 @@ public class LocationTests
             Town = "",
             County = "",
             PostCode = "",
-            Country = ""
+            Country = "",
         };
 
         // Assert - The properties might be initialized to empty string by default

@@ -1,8 +1,8 @@
+using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Core.Interfaces;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
-using ShiftsLoggerV2.RyanW84.Common;
 
 namespace ShiftsLoggerV2.RyanW84.Services.Interfaces;
 

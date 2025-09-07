@@ -1,8 +1,8 @@
-using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.MenuSystem.Common;
-using ConsoleFrontEnd.Services;
+using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
+using ConsoleFrontEnd.Services;
 using Microsoft.Extensions.Logging;
 
 namespace ConsoleFrontEnd.MenuSystem.Menus;
@@ -22,10 +22,12 @@ public class LocationMenu : BaseMenu
         INavigationService navigationService,
         ILogger<LocationMenu> logger,
         ILocationService locationService,
-        ILocationUi locationUi)
+        ILocationUi locationUi
+    )
         : base(displayService, inputService, navigationService, logger)
     {
-        _locationService = locationService ?? throw new ArgumentNullException(nameof(locationService));
+        _locationService =
+            locationService ?? throw new ArgumentNullException(nameof(locationService));
         _locationUi = locationUi ?? throw new ArgumentNullException(nameof(locationUi));
     }
 
@@ -197,18 +199,32 @@ public class LocationMenu : BaseMenu
         var locationResponse = await _locationService.GetLocationByIdAsync(locationId);
         if (locationResponse.RequestFailed || locationResponse.Data == null)
         {
-            DisplayService.DisplayError(locationResponse.Message ?? "Failed to retrieve location details.");
+            DisplayService.DisplayError(
+                locationResponse.Message ?? "Failed to retrieve location details."
+            );
             InputService.WaitForKeyPress();
             return;
         }
 
         var location = locationResponse.Data;
         var name = InputService.GetTextInput($"Enter new name (current: {location.Name}):", false);
-        var address = InputService.GetTextInput($"Enter new address (current: {location.Address}):", false);
+        var address = InputService.GetTextInput(
+            $"Enter new address (current: {location.Address}):",
+            false
+        );
         var town = InputService.GetTextInput($"Enter new town (current: {location.Town}):", false);
-        var county = InputService.GetTextInput($"Enter new county (current: {location.County}):", false);
-        var postCode = InputService.GetTextInput($"Enter new post code (current: {location.PostCode}):", false);
-        var country = InputService.GetTextInput($"Enter new country (current: {location.Country}):", false);
+        var county = InputService.GetTextInput(
+            $"Enter new county (current: {location.County}):",
+            false
+        );
+        var postCode = InputService.GetTextInput(
+            $"Enter new post code (current: {location.PostCode}):",
+            false
+        );
+        var country = InputService.GetTextInput(
+            $"Enter new country (current: {location.Country}):",
+            false
+        );
         var updatedLocation = new Location
         {
             LocationId = location.LocationId,
@@ -217,7 +233,7 @@ public class LocationMenu : BaseMenu
             Town = string.IsNullOrWhiteSpace(town) ? location.Town : town,
             County = string.IsNullOrWhiteSpace(county) ? location.County : county,
             PostCode = string.IsNullOrWhiteSpace(postCode) ? location.PostCode : postCode,
-            Country = string.IsNullOrWhiteSpace(country) ? location.Country : country
+            Country = string.IsNullOrWhiteSpace(country) ? location.Country : country,
         };
         var response = await _locationService.UpdateLocationAsync(locationId, updatedLocation);
         if (response.RequestFailed || response.Data == null)
@@ -253,7 +269,9 @@ public class LocationMenu : BaseMenu
             }
             else
             {
-                DisplayService.DisplaySuccess(response.Message ?? $"Location {locationId} deleted successfully.");
+                DisplayService.DisplaySuccess(
+                    response.Message ?? $"Location {locationId} deleted successfully."
+                );
             }
         }
         else
@@ -273,19 +291,34 @@ public class LocationMenu : BaseMenu
         string? country = null;
         if (allLocationsResponse.Data != null && allLocationsResponse.Data.Any())
         {
-            var counties = allLocationsResponse.Data.Select(l => l.County).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().OrderBy(c => c).ToList();
-            var countries = allLocationsResponse.Data.Select(l => l.Country).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().OrderBy(c => c).ToList();
+            var counties = allLocationsResponse
+                .Data.Select(l => l.County)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+            var countries = allLocationsResponse
+                .Data.Select(l => l.Country)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
             if (counties.Any())
             {
-                string[] countyChoices = ["Any", ..counties.Select(s => s!)];
+                string[] countyChoices = ["Any", .. counties.Select(s => s!)];
                 var selectedCounty = InputService.GetMenuChoice("Filter by County:", countyChoices);
-                if (selectedCounty != "Any") county = selectedCounty;
+                if (selectedCounty != "Any")
+                    county = selectedCounty;
             }
             if (countries.Any())
             {
-                string[] countryChoices = ["Any", ..countries.Select(s => s!)];
-                var selectedCountry = InputService.GetMenuChoice("Filter by Country:", countryChoices);
-                if (selectedCountry != "Any") country = selectedCountry;
+                string[] countryChoices = ["Any", .. countries.Select(s => s!)];
+                var selectedCountry = InputService.GetMenuChoice(
+                    "Filter by Country:",
+                    countryChoices
+                );
+                if (selectedCountry != "Any")
+                    country = selectedCountry;
             }
         }
 
@@ -295,8 +328,11 @@ public class LocationMenu : BaseMenu
             Address = InputService.GetTextInput("Filter by address (leave blank for any):", false),
             Town = InputService.GetTextInput("Filter by town (leave blank for any):", false),
             County = county,
-            PostCode = InputService.GetTextInput("Filter by post code (leave blank for any):", false),
-            Country = country
+            PostCode = InputService.GetTextInput(
+                "Filter by post code (leave blank for any):",
+                false
+            ),
+            Country = country,
             // If you add date/time fields in the future, use dd/MM/yyyy HH:mm format for prompts and parsing
         };
         var response = await _locationService.GetLocationsByFilterAsync(filter);
@@ -320,7 +356,9 @@ public class LocationMenu : BaseMenu
         var response = await _locationService.GetLocationsByFilterAsync(filter);
         if (response.RequestFailed || response.Data == null || !response.Data.Any())
         {
-            DisplayService.DisplayError(response.Message ?? $"No locations found in country '{country}'.");
+            DisplayService.DisplayError(
+                response.Message ?? $"No locations found in country '{country}'."
+            );
         }
         else
         {
@@ -338,7 +376,9 @@ public class LocationMenu : BaseMenu
         var response = await _locationService.GetLocationsByFilterAsync(filter);
         if (response.RequestFailed || response.Data == null || !response.Data.Any())
         {
-            DisplayService.DisplayError(response.Message ?? $"No locations found in county '{county}'.");
+            DisplayService.DisplayError(
+                response.Message ?? $"No locations found in county '{county}'."
+            );
         }
         else
         {

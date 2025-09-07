@@ -1,20 +1,27 @@
+using System;
+using System.Net;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Controllers;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Services.Interfaces;
-using ShiftsLoggerV2.RyanW84.Common;
-using System.Net;
 using Xunit;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Controllers;
 
 public class LocationsControllerTests
 {
+    static LocationsControllerTests()
+    {
+        // Suppress Fluent Assertions license warning
+        Environment.SetEnvironmentVariable("FluentAssertions.LicenseKey", "ACCEPT");
+    }
+
     private readonly Mock<ILocationBusinessService> _mockLocationBusinessService;
     private readonly Mock<ILogger<LocationsController>> _mockLogger;
     private readonly LocationsController _controller;
@@ -23,7 +30,10 @@ public class LocationsControllerTests
     {
         _mockLocationBusinessService = new Mock<ILocationBusinessService>();
         _mockLogger = new Mock<ILogger<LocationsController>>();
-        _controller = new LocationsController(_mockLocationBusinessService.Object, _mockLogger.Object);
+        _controller = new LocationsController(
+            _mockLocationBusinessService.Object,
+            _mockLogger.Object
+        );
     }
 
     [Fact]
@@ -33,13 +43,22 @@ public class LocationsControllerTests
         var filterOptions = new LocationFilterOptions();
         var locations = new List<Location>
         {
-            new() { LocationId = 1, Name = "Main Office", Address = "123 Main St" },
-            new() { LocationId = 2, Name = "Branch Office", Address = "456 Oak Ave" }
+            new()
+            {
+                LocationId = 1,
+                Name = "Main Office",
+                Address = "123 Main St",
+            },
+            new()
+            {
+                LocationId = 2,
+                Name = "Branch Office",
+                Address = "456 Oak Ave",
+            },
         };
 
         var result = Result<List<Location>>.Success(locations, "Locations retrieved successfully");
-        _mockLocationBusinessService.Setup(v => v.GetAllAsync(filterOptions))
-            .ReturnsAsync(result);
+        _mockLocationBusinessService.Setup(v => v.GetAllAsync(filterOptions)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetAllLocations(filterOptions);
@@ -62,10 +81,12 @@ public class LocationsControllerTests
     {
         // Arrange
         var filterOptions = new LocationFilterOptions();
-        var result = Result<List<Location>>.Failure("Database error", HttpStatusCode.InternalServerError);
+        var result = Result<List<Location>>.Failure(
+            "Database error",
+            HttpStatusCode.InternalServerError
+        );
 
-        _mockLocationBusinessService.Setup(v => v.GetAllAsync(filterOptions))
-            .ReturnsAsync(result);
+        _mockLocationBusinessService.Setup(v => v.GetAllAsync(filterOptions)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetAllLocations(filterOptions);
@@ -96,12 +117,11 @@ public class LocationsControllerTests
             Town = "Anytown",
             County = "AnyCounty",
             PostCode = "12345",
-            Country = "USA"
+            Country = "USA",
         };
         var result = Result<Location>.Success(location, "Location found");
 
-        _mockLocationBusinessService.Setup(v => v.GetByIdAsync(locationId))
-            .ReturnsAsync(result);
+        _mockLocationBusinessService.Setup(v => v.GetByIdAsync(locationId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetLocationById(locationId);
@@ -126,8 +146,7 @@ public class LocationsControllerTests
         const int locationId = 999;
         var result = Result<Location>.Failure("Location not found", HttpStatusCode.NotFound);
 
-        _mockLocationBusinessService.Setup(v => v.GetByIdAsync(locationId))
-            .ReturnsAsync(result);
+        _mockLocationBusinessService.Setup(v => v.GetByIdAsync(locationId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetLocationById(locationId);
@@ -156,7 +175,7 @@ public class LocationsControllerTests
             County = "NewCounty",
             State = "NY",
             PostCode = "67890",
-            Country = "USA"
+            Country = "USA",
         };
 
         var createdLocation = new Location
@@ -167,12 +186,11 @@ public class LocationsControllerTests
             Town = locationDto.Town,
             County = locationDto.County,
             PostCode = locationDto.PostCode,
-            Country = locationDto.Country
+            Country = locationDto.Country,
         };
 
         var result = Result<Location>.Success(createdLocation, "Location created successfully");
-        _mockLocationBusinessService.Setup(v => v.CreateAsync(locationDto))
-            .ReturnsAsync(result);
+        _mockLocationBusinessService.Setup(v => v.CreateAsync(locationDto)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.CreateLocation(locationDto);
@@ -222,7 +240,7 @@ public class LocationsControllerTests
             County = "UpdatedCounty",
             State = "CA",
             PostCode = "12345",
-            Country = "USA"
+            Country = "USA",
         };
 
         var updatedLocation = new Location
@@ -233,11 +251,12 @@ public class LocationsControllerTests
             Town = locationDto.Town,
             County = locationDto.County,
             PostCode = locationDto.PostCode,
-            Country = locationDto.Country
+            Country = locationDto.Country,
         };
 
         var result = Result<Location>.Success(updatedLocation, "Location updated successfully");
-        _mockLocationBusinessService.Setup(v => v.UpdateAsync(locationId, locationDto))
+        _mockLocationBusinessService
+            .Setup(v => v.UpdateAsync(locationId, locationDto))
             .ReturnsAsync(result);
 
         // Act
@@ -262,8 +281,7 @@ public class LocationsControllerTests
         const int locationId = 1;
         var result = Result.Success("Location deleted successfully");
 
-        _mockLocationBusinessService.Setup(v => v.DeleteAsync(locationId))
-            .ReturnsAsync(result);
+        _mockLocationBusinessService.Setup(v => v.DeleteAsync(locationId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.DeleteLocation(locationId);
@@ -286,8 +304,7 @@ public class LocationsControllerTests
         const int locationId = 999;
         var result = Result.Failure("Location not found", HttpStatusCode.NotFound);
 
-        _mockLocationBusinessService.Setup(v => v.DeleteAsync(locationId))
-            .ReturnsAsync(result);
+        _mockLocationBusinessService.Setup(v => v.DeleteAsync(locationId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.DeleteLocation(locationId);

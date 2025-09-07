@@ -41,10 +41,7 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services
-            .AddRepositories()
-            .AddBusinessServices();
-
+        services.AddRepositories().AddBusinessServices();
 
         return services;
     }

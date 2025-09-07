@@ -106,7 +106,11 @@ public static class InputValidator
     /// <summary>
     ///     Simple flexible DateTime parser - utility function only
     /// </summary>
-    public static DateTime GetFlexibleDateTime(string prompt, DateTime? minDate = null, DateTime? maxDate = null)
+    public static DateTime GetFlexibleDateTime(
+        string prompt,
+        DateTime? minDate = null,
+        DateTime? maxDate = null
+    )
     {
         while (true)
         {
@@ -122,16 +126,19 @@ public static class InputValidator
             var isValid = false;
 
             // Try multiple date formats with explicit culture
-            string[] acceptedFormats =
-            [
-                "dd/MM/yyyy HH:mm",
-                "dd/MM/yyyy H:mm"
-            ];
+            string[] acceptedFormats = ["dd/MM/yyyy HH:mm", "dd/MM/yyyy H:mm"];
 
             foreach (var format in acceptedFormats)
             {
-                if (DateTime.TryParseExact(input, format, CultureInfo.InvariantCulture, DateTimeStyles.None,
-                        out parsedDateTime))
+                if (
+                    DateTime.TryParseExact(
+                        input,
+                        format,
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out parsedDateTime
+                    )
+                )
                 {
                     isValid = true;
                     break;
@@ -140,23 +147,35 @@ public static class InputValidator
 
             if (!isValid)
             {
-                AnsiConsole.MarkupLine("[red]Invalid date/time format. Please use dd/MM/yyyy HH:mm format.[/]");
-                AnsiConsole.MarkupLine("[red]Invalid date/time format. Please use dd/MM/yyyy HH:mm format.[/]");
+                AnsiConsole.MarkupLine(
+                    "[red]Invalid date/time format. Please use dd/MM/yyyy HH:mm format.[/]"
+                );
+                AnsiConsole.MarkupLine(
+                    "[red]Invalid date/time format. Please use dd/MM/yyyy HH:mm format.[/]"
+                );
                 continue;
             }
 
             // Validate date range
             if (minDate.HasValue && parsedDateTime < minDate.Value)
             {
-                AnsiConsole.MarkupLine($"[red]Date must be after {minDate.Value:dd/MM/yyyy HH:mm}.[/]");
-                AnsiConsole.MarkupLine($"[red]Date must be after {minDate.Value:dd/MM/yyyy HH:mm}.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[red]Date must be after {minDate.Value:dd/MM/yyyy HH:mm}.[/]"
+                );
+                AnsiConsole.MarkupLine(
+                    $"[red]Date must be after {minDate.Value:dd/MM/yyyy HH:mm}.[/]"
+                );
                 continue;
             }
 
             if (maxDate.HasValue && parsedDateTime > maxDate.Value)
             {
-                AnsiConsole.MarkupLine($"[red]Date must be before {maxDate.Value:dd/MM/yyyy HH:mm}.[/]");
-                AnsiConsole.MarkupLine($"[red]Date must be before {maxDate.Value:dd/MM/yyyy HH:mm}.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[red]Date must be before {maxDate.Value:dd/MM/yyyy HH:mm}.[/]"
+                );
+                AnsiConsole.MarkupLine(
+                    $"[red]Date must be before {maxDate.Value:dd/MM/yyyy HH:mm}.[/]"
+                );
                 continue;
             }
 
@@ -167,11 +186,17 @@ public static class InputValidator
     /// <summary>
     /// Prompts for an optional DateTime. Returns null when the user presses Enter without typing a value.
     /// </summary>
-    public static DateTime? GetOptionalDateTime(string prompt, DateTime? minDate = null, DateTime? maxDate = null)
+    public static DateTime? GetOptionalDateTime(
+        string prompt,
+        DateTime? minDate = null,
+        DateTime? maxDate = null
+    )
     {
         while (true)
         {
-            var input = AnsiConsole.Ask<string>($"[green]{prompt}[/] [dim](dd/MM/yyyy HH:mm, leave blank for none)[/]");
+            var input = AnsiConsole.Ask<string>(
+                $"[green]{prompt}[/] [dim](dd/MM/yyyy HH:mm, leave blank for none)[/]"
+            );
 
             if (string.IsNullOrWhiteSpace(input))
                 return null;
@@ -184,13 +209,20 @@ public static class InputValidator
                 "dd/MM/yyyy HH:mm",
                 "dd/MM/yyyy H:mm",
                 "d/MM/yyyy HH:mm",
-                "d/MM/yyyy H:mm"
+                "d/MM/yyyy H:mm",
             ];
 
             foreach (var format in acceptedFormats)
             {
-                if (DateTime.TryParseExact(input, format, CultureInfo.InvariantCulture, DateTimeStyles.None,
-                        out parsedDateTime))
+                if (
+                    DateTime.TryParseExact(
+                        input,
+                        format,
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out parsedDateTime
+                    )
+                )
                 {
                     isValid = true;
                     break;
@@ -199,19 +231,25 @@ public static class InputValidator
 
             if (!isValid)
             {
-                AnsiConsole.MarkupLine("[red]Invalid date/time format. Please use dd/MM/yyyy HH:mm format.[/]");
+                AnsiConsole.MarkupLine(
+                    "[red]Invalid date/time format. Please use dd/MM/yyyy HH:mm format.[/]"
+                );
                 continue;
             }
 
             if (minDate.HasValue && parsedDateTime < minDate.Value)
             {
-                AnsiConsole.MarkupLine($"[red]Date must be after {minDate.Value:dd/MM/yyyy HH:mm}.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[red]Date must be after {minDate.Value:dd/MM/yyyy HH:mm}.[/]"
+                );
                 continue;
             }
 
             if (maxDate.HasValue && parsedDateTime > maxDate.Value)
             {
-                AnsiConsole.MarkupLine($"[red]Date must be before {maxDate.Value:dd/MM/yyyy HH:mm}.[/]");
+                AnsiConsole.MarkupLine(
+                    $"[red]Date must be before {maxDate.Value:dd/MM/yyyy HH:mm}.[/]"
+                );
                 continue;
             }
 

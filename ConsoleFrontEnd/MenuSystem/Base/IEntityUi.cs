@@ -11,10 +11,10 @@ public interface IEntityUi<T, TFilter>
     T CreateEntityUi();
     T UpdateEntityUi(T existingEntity);
     TFilter FilterEntityUi();
-    
+
     // Display operations
     void DisplayEntitiesTable(IEnumerable<T> entities);
-    
+
     // Selection operations
     int GetEntityByIdUi();
     int SelectEntityUi();

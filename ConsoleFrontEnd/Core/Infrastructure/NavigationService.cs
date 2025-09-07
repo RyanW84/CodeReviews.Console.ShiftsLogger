@@ -14,17 +14,15 @@ public class NavigationService : INavigationService
     private readonly Stack<string> _navigationStack;
     private bool _shouldExit;
 
-    public NavigationService(
-        IMenuFactory menuFactory,
-        ILogger<NavigationService> logger)
+    public NavigationService(IMenuFactory menuFactory, ILogger<NavigationService> logger)
     {
         _menuFactory = menuFactory ?? throw new ArgumentNullException(nameof(menuFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _navigationStack = new Stack<string>();
     }
 
-    public string CurrentContext => _navigationStack.Count > 0 ? 
-        string.Join(" > ", _navigationStack.Reverse()) : "Application";
+    public string CurrentContext =>
+        _navigationStack.Count > 0 ? string.Join(" > ", _navigationStack.Reverse()) : "Application";
 
     public async Task NavigateToMainMenuAsync()
     {

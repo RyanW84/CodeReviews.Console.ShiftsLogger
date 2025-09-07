@@ -14,9 +14,11 @@ public class ConsoleApplication : IApplication
 
     public ConsoleApplication(
         INavigationService navigationService,
-        ILogger<ConsoleApplication> logger)
+        ILogger<ConsoleApplication> logger
+    )
     {
-        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _navigationService =
+            navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -25,10 +27,10 @@ public class ConsoleApplication : IApplication
         try
         {
             _logger.LogInformation("Starting Console Application");
-            
+
             // Navigate to main menu to start the application
             await _navigationService.NavigateToMainMenuAsync();
-            
+
             _logger.LogInformation("Console Application ended gracefully");
         }
         catch (Exception ex)

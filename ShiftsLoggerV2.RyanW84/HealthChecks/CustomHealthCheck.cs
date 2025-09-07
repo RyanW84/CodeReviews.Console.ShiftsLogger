@@ -7,7 +7,10 @@ namespace ShiftsLoggerV2.RyanW84.HealthChecks;
 /// </summary>
 public class CustomHealthCheck : IHealthCheck
 {
-    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+    public Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default
+    )
     {
         // Perform custom health checks
         // For example: check if critical services are available, memory usage, etc.

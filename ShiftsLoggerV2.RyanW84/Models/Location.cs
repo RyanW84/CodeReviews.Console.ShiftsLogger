@@ -5,7 +5,8 @@ namespace ShiftsLoggerV2.RyanW84.Models;
 
 public class Location : IEntity
 {
-    [Key] public int LocationId { get; set; }
+    [Key]
+    public int LocationId { get; set; }
 
     public string Name { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;

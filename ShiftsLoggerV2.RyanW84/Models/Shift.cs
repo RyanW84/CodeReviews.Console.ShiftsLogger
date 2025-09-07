@@ -5,7 +5,8 @@ namespace ShiftsLoggerV2.RyanW84.Models;
 
 public class Shift : IEntity
 {
-    [Key] public int ShiftId { get; set; }
+    [Key]
+    public int ShiftId { get; set; }
 
     public int WorkerId { get; set; }
     public int LocationId { get; set; }

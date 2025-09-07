@@ -6,7 +6,8 @@ using ShiftsLoggerV2.RyanW84.Data;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Fixtures;
 
-public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
+public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
+    where TStartup : class
 {
     private static readonly string DatabaseName = $"InMemoryTestDb_{Guid.NewGuid()}";
 
@@ -15,14 +16,22 @@ public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStar
         builder.ConfigureServices(services =>
         {
             // Remove all existing DbContext registrations
-            var descriptors = services.Where(d => 
-                d.ServiceType == typeof(DbContextOptions<ShiftsLoggerDbContext>) ||
-                d.ServiceType == typeof(DbContextOptions) ||
-                (d.ServiceType.IsGenericType && d.ServiceType.GetGenericTypeDefinition() == typeof(DbContextOptions<>)) ||
-                d.ImplementationType == typeof(ShiftsLoggerDbContext) ||
-                (d.ServiceType.IsGenericType && d.ServiceType.GetGenericTypeDefinition() == typeof(DbContext)) ||
-                d.ServiceType == typeof(ShiftsLoggerDbContext)
-            ).ToList();
+            var descriptors = services
+                .Where(d =>
+                    d.ServiceType == typeof(DbContextOptions<ShiftsLoggerDbContext>)
+                    || d.ServiceType == typeof(DbContextOptions)
+                    || (
+                        d.ServiceType.IsGenericType
+                        && d.ServiceType.GetGenericTypeDefinition() == typeof(DbContextOptions<>)
+                    )
+                    || d.ImplementationType == typeof(ShiftsLoggerDbContext)
+                    || (
+                        d.ServiceType.IsGenericType
+                        && d.ServiceType.GetGenericTypeDefinition() == typeof(DbContext)
+                    )
+                    || d.ServiceType == typeof(ShiftsLoggerDbContext)
+                )
+                .ToList();
 
             foreach (var descriptor in descriptors)
             {
@@ -33,7 +42,6 @@ public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStar
             services.AddDbContext<ShiftsLoggerDbContext>(options =>
             {
                 options.UseInMemoryDatabase(DatabaseName);
-                options.EnableSensitiveDataLogging(); // Helpful for debugging
             });
 
             // Ensure the database is created

@@ -7,10 +7,7 @@ public static class MenuHelpers
     public static void ShowWelcomeScreen()
     {
         AnsiConsole.Clear();
-        var panel = new Panel(
-                new FigletText("Shifts Logger")
-                    .LeftJustified()
-                    .Color(Color.Blue))
+        var panel = new Panel(new FigletText("Shifts Logger").LeftJustified().Color(Color.Blue))
             .Header("[yellow]Welcome to[/]")
             .HeaderAlignment(Justify.Center)
             .Border(BoxBorder.Double)
@@ -20,8 +17,9 @@ public static class MenuHelpers
         AnsiConsole.WriteLine();
 
         var infoPanel = new Panel(
-                "Manage your shifts, workers, and locations efficiently.\n" +
-                "Navigate through the menus to perform various operations.")
+            "Manage your shifts, workers, and locations efficiently.\n"
+                + "Navigate through the menus to perform various operations."
+        )
             .Header("[green]System Information[/]")
             .Border(BoxBorder.Rounded)
             .BorderColor(Color.Green);
@@ -43,7 +41,8 @@ public static class MenuHelpers
         );
     }
 
-    public static T GetUserInput<T>(string prompt, T? defaultValue = default) where T : struct
+    public static T GetUserInput<T>(string prompt, T? defaultValue = default)
+        where T : struct
     {
         return AnsiConsole.Ask($"[green]{prompt}[/]", defaultValue ?? default(T));
     }
@@ -53,14 +52,18 @@ public static class MenuHelpers
         return AnsiConsole.Ask<string>($"[green]{prompt}[/]", defaultValue ?? string.Empty);
     }
 
-    public static T? GetOptionalUserInput<T>(string prompt, T? defaultValue = default) where T : struct
+    public static T? GetOptionalUserInput<T>(string prompt, T? defaultValue = default)
+        where T : struct
     {
         return AnsiConsole.Ask($"[green]{prompt}[/] [dim](or leave blank)[/]", defaultValue);
     }
 
     public static string? GetOptionalUserInput(string prompt, string? defaultValue = null)
     {
-        return AnsiConsole.Ask<string?>($"[green]{prompt}[/] [dim](or leave blank)[/]", defaultValue);
+        return AnsiConsole.Ask<string?>(
+            $"[green]{prompt}[/] [dim](or leave blank)[/]",
+            defaultValue
+        );
     }
 
     public static void ShowBreadcrumb(params string[] path)

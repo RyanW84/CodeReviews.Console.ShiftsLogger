@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
@@ -5,18 +6,20 @@ using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
 using ShiftsLoggerV2.RyanW84.Services.Base;
 using ShiftsLoggerV2.RyanW84.Services.Interfaces;
-using System.Text.RegularExpressions;
 
 namespace ShiftsLoggerV2.RyanW84.Services;
 
 /// <summary>
 /// Business logic service for Location operations
 /// </summary>
-public class LocationBusinessService : BaseService<Location, LocationFilterOptions, LocationApiRequestDto, LocationApiRequestDto>, ILocationBusinessService
+public class LocationBusinessService
+    : BaseService<Location, LocationFilterOptions, LocationApiRequestDto, LocationApiRequestDto>,
+        ILocationBusinessService
 {
     private readonly ILocationRepository _locationRepository;
 
-    public LocationBusinessService(ILocationRepository locationRepository) : base(locationRepository)
+    public LocationBusinessService(ILocationRepository locationRepository)
+        : base(locationRepository)
     {
         _locationRepository = locationRepository;
     }
@@ -31,7 +34,10 @@ public class LocationBusinessService : BaseService<Location, LocationFilterOptio
         return ValueTask.FromResult(Result.Success());
     }
 
-    protected override async ValueTask<Result> ValidateForUpdateAsync(int id, LocationApiRequestDto updateDto)
+    protected override async ValueTask<Result> ValidateForUpdateAsync(
+        int id,
+        LocationApiRequestDto updateDto
+    )
     {
         // Business logic validation for location updates
         var createValidation = await ValidateForCreateAsync(updateDto).ConfigureAwait(false);
@@ -55,13 +61,17 @@ public class LocationBusinessService : BaseService<Location, LocationFilterOptio
             return locationResult;
 
         var location = locationResult.Data!;
-        
+
         // Check if location has any associated shifts
-        var hasShifts = await _locationRepository.HasAssociatedShiftsAsync(id).ConfigureAwait(false);
-            
+        var hasShifts = await _locationRepository
+            .HasAssociatedShiftsAsync(id)
+            .ConfigureAwait(false);
+
         if (hasShifts)
         {
-            return Result.Failure($"Cannot delete location '{location.Name}' because it has associated shifts. Please reassign or delete the shifts first.");
+            return Result.Failure(
+                $"Cannot delete location '{location.Name}' because it has associated shifts. Please reassign or delete the shifts first."
+            );
         }
 
         return Result.Success();
@@ -114,7 +124,9 @@ public class LocationBusinessService : BaseService<Location, LocationFilterOptio
             return Result.Failure("Location post code is required.");
 
         if (!IsValidPostCode(dto.PostCode))
-            return Result.Failure("Post code must be at least 3 characters with letters or digits.");
+            return Result.Failure(
+                "Post code must be at least 3 characters with letters or digits."
+            );
 
         if (dto.PostCode.Length > 20)
             return Result.Failure("Location post code cannot exceed 20 characters.");
@@ -143,9 +155,9 @@ public class LocationBusinessService : BaseService<Location, LocationFilterOptio
 
         try
         {
-            return Regex.IsMatch(postCode.Trim(), postCodePattern) &&
-                   postCode.Trim().Length >= 3 &&
-                   postCode.Any(char.IsLetterOrDigit);
+            return Regex.IsMatch(postCode.Trim(), postCodePattern)
+                && postCode.Trim().Length >= 3
+                && postCode.Any(char.IsLetterOrDigit);
         }
         catch (RegexMatchTimeoutException)
         {

@@ -11,5 +11,9 @@ public interface IWorkerService
     Task<ApiResponseDto<Worker>> CreateWorkerAsync(Worker worker);
     Task<ApiResponseDto<Worker?>> UpdateWorkerAsync(int id, Worker updatedWorker);
     Task<ApiResponseDto<bool>> DeleteWorkerAsync(int id);
-    Task<ApiResponseDto<List<Worker>>> GetWorkersByFilterAsync(ConsoleFrontEnd.Models.FilterOptions.WorkerFilterOptions filter, int pageNumber = 1, int pageSize = 10);
+    Task<ApiResponseDto<List<Worker>>> GetWorkersByFilterAsync(
+        ConsoleFrontEnd.Models.FilterOptions.WorkerFilterOptions filter,
+        int pageNumber = 1,
+        int pageSize = 10
+    );
 }

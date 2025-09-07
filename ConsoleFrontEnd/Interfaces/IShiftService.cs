@@ -10,5 +10,9 @@ public interface IShiftService
     Task<ApiResponseDto<Shift>> CreateShiftAsync(Shift shift);
     Task<ApiResponseDto<Shift?>> UpdateShiftAsync(int id, Shift updatedShift);
     Task<ApiResponseDto<bool>> DeleteShiftAsync(int id);
-    Task<ApiResponseDto<List<Shift>>> GetShiftsByFilterAsync(Models.FilterOptions.ShiftFilterOptions filter, int pageNumber = 1, int pageSize = 10);
+    Task<ApiResponseDto<List<Shift>>> GetShiftsByFilterAsync(
+        Models.FilterOptions.ShiftFilterOptions filter,
+        int pageNumber = 1,
+        int pageSize = 10
+    );
 }

@@ -3,7 +3,7 @@
 namespace ConsoleFrontEnd.Models.Dtos;
 
 public class ApiResponseDto<T> // Generic <T> means the output can take the shape of different data types
-    (string message)
+(string message)
 {
     public bool RequestFailed { get; set; }
     public HttpStatusCode ResponseCode { get; set; }

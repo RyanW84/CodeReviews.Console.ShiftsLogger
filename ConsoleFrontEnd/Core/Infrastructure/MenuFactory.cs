@@ -13,34 +13,39 @@ public class MenuFactory : IMenuFactory
 
     public MenuFactory(IServiceProvider serviceProvider)
     {
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _serviceProvider =
+            serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
     public IMenu CreateMainMenu()
     {
-        return _serviceProvider.GetServices<IMenu>()
-            .FirstOrDefault(m => m.GetType().Name == "MainMenu")
+        return _serviceProvider
+                .GetServices<IMenu>()
+                .FirstOrDefault(m => m.GetType().Name == "MainMenu")
             ?? throw new InvalidOperationException("MainMenu not registered");
     }
 
     public IMenu CreateShiftMenu()
     {
-        return _serviceProvider.GetServices<IMenu>()
-            .FirstOrDefault(m => m.GetType().Name == "ShiftMenu")
+        return _serviceProvider
+                .GetServices<IMenu>()
+                .FirstOrDefault(m => m.GetType().Name == "ShiftMenu")
             ?? throw new InvalidOperationException("ShiftMenu not registered");
     }
 
     public IMenu CreateLocationMenu()
     {
-        return _serviceProvider.GetServices<IMenu>()
-            .FirstOrDefault(m => m.GetType().Name == "LocationMenu")
+        return _serviceProvider
+                .GetServices<IMenu>()
+                .FirstOrDefault(m => m.GetType().Name == "LocationMenu")
             ?? throw new InvalidOperationException("LocationMenu not registered");
     }
 
     public IMenu CreateWorkerMenu()
     {
-        return _serviceProvider.GetServices<IMenu>()
-            .FirstOrDefault(m => m.GetType().Name == "WorkerMenu")
+        return _serviceProvider
+                .GetServices<IMenu>()
+                .FirstOrDefault(m => m.GetType().Name == "WorkerMenu")
             ?? throw new InvalidOperationException("WorkerMenu not registered");
     }
 }

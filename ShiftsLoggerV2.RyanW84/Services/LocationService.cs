@@ -70,7 +70,6 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Back end location service - {ex}");
             var (status, message) = ErrorMapper.Map(ex);
             return new ApiResponseDto<Location>
             {

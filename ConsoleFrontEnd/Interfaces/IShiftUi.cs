@@ -1,6 +1,6 @@
+using System.Threading.Tasks;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
-using System.Threading.Tasks;
 
 namespace ConsoleFrontEnd.MenuSystem;
 

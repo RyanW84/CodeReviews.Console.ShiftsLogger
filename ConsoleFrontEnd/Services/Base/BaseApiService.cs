@@ -1,10 +1,9 @@
+using System.Net.Http;
+using System.Net.Http.Json;
 using ConsoleFrontEnd.Models.Dtos;
 using ConsoleFrontEnd.Services.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-
-using System.Net.Http;
-using System.Net.Http.Json;
 
 namespace ConsoleFrontEnd.Services.Base;
 
@@ -22,18 +21,21 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
     protected readonly ILogger _logger;
 
     protected BaseApiService(
-        IHttpClientFactory httpClientFactory, 
-        IConfiguration configuration, 
-        ILogger logger)
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration,
+        ILogger logger
+    )
     {
         _httpClient = httpClientFactory.CreateClient("ShiftsLoggerApi");
         _configuration = configuration;
         _logger = logger;
-        
+
         // Set base address if not already set
         if (_httpClient.BaseAddress == null)
         {
-            _httpClient.BaseAddress = new Uri(_configuration.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009");
+            _httpClient.BaseAddress = new Uri(
+                _configuration.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009"
+            );
         }
     }
 
@@ -50,34 +52,50 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
     {
         try
         {
-            _logger.LogInformation("Making request to: {RequestUrl}", $"{_httpClient.BaseAddress}{ApiEndpoint}");
+            _logger.LogInformation(
+                "Making request to: {RequestUrl}",
+                $"{_httpClient.BaseAddress}{ApiEndpoint}"
+            );
 
             var response = await _httpClient.GetAsync(ApiEndpoint).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<List<T>>(
-                response,
-                _logger,
-                $"Get All {EntityName}",
-                []
-            ).ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<List<T>>(response, _logger, $"Get All {EntityName}", [])
+                .ConfigureAwait(false);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "HTTP request error while fetching {EntityName} from API", EntityName);
+            _logger.LogError(
+                ex,
+                "HTTP request error while fetching {EntityName} from API",
+                EntityName
+            );
             return CreateErrorResponse<List<T>>($"Connection Error: {ex.Message}", []);
         }
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {
-            _logger.LogError(ex, "Request timeout while fetching {EntityName} from API", EntityName);
+            _logger.LogError(
+                ex,
+                "Request timeout while fetching {EntityName} from API",
+                EntityName
+            );
             return CreateErrorResponse<List<T>>("Request timed out. Please try again.", []);
         }
         catch (TaskCanceledException ex)
         {
-            _logger.LogError(ex, "Request was cancelled while fetching {EntityName} from API", EntityName);
+            _logger.LogError(
+                ex,
+                "Request was cancelled while fetching {EntityName} from API",
+                EntityName
+            );
             return CreateErrorResponse<List<T>>("Request was cancelled.", []);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error occurred while fetching {EntityName} from API", EntityName);
+            _logger.LogError(
+                ex,
+                "Unexpected error occurred while fetching {EntityName} from API",
+                EntityName
+            );
             return CreateErrorResponse<List<T>>($"Unexpected Error: {ex.Message}", []);
         }
     }
@@ -87,18 +105,24 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
         try
         {
             var endpoint = $"{ApiEndpoint}/{id}";
-            _logger.LogInformation("Making request to: {RequestUrl}", $"{_httpClient.BaseAddress}{endpoint}");
+            _logger.LogInformation(
+                "Making request to: {RequestUrl}",
+                $"{_httpClient.BaseAddress}{endpoint}"
+            );
 
             var response = await _httpClient.GetAsync(endpoint).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<T>(
-                response,
-                _logger,
-                $"Get {EntityName} by ID"
-            ).ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<T>(response, _logger, $"Get {EntityName} by ID")
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while fetching {EntityName} {Id} from API", EntityName, id);
+            _logger.LogError(
+                ex,
+                "Error occurred while fetching {EntityName} {Id} from API",
+                EntityName,
+                id
+            );
             return CreateErrorResponse<T>($"Connection Error: {ex.Message}");
         }
     }
@@ -107,14 +131,17 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
     {
         try
         {
-            _logger.LogInformation("Making POST request to: {RequestUrl}", $"{_httpClient.BaseAddress}{ApiEndpoint}");
+            _logger.LogInformation(
+                "Making POST request to: {RequestUrl}",
+                $"{_httpClient.BaseAddress}{ApiEndpoint}"
+            );
 
-            var response = await _httpClient.PostAsJsonAsync(ApiEndpoint, entity).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<T>(
-                response,
-                _logger,
-                $"Create {EntityName}"
-            ).ConfigureAwait(false);
+            var response = await _httpClient
+                .PostAsJsonAsync(ApiEndpoint, entity)
+                .ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<T>(response, _logger, $"Create {EntityName}")
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -128,14 +155,15 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
         try
         {
             var endpoint = $"{ApiEndpoint}/{id}";
-            _logger.LogInformation("Making PUT request to: {RequestUrl}", $"{_httpClient.BaseAddress}{endpoint}");
+            _logger.LogInformation(
+                "Making PUT request to: {RequestUrl}",
+                $"{_httpClient.BaseAddress}{endpoint}"
+            );
 
             var response = await _httpClient.PutAsJsonAsync(endpoint, entity).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<T>(
-                response,
-                _logger,
-                $"Update {EntityName}"
-            ).ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<T>(response, _logger, $"Update {EntityName}")
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -149,21 +177,22 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
         try
         {
             var endpoint = $"{ApiEndpoint}/{id}";
-            _logger.LogInformation("Making DELETE request to: {RequestUrl}", $"{_httpClient.BaseAddress}{endpoint}");
+            _logger.LogInformation(
+                "Making DELETE request to: {RequestUrl}",
+                $"{_httpClient.BaseAddress}{endpoint}"
+            );
 
             var response = await _httpClient.DeleteAsync(endpoint).ConfigureAwait(false);
-            var result = await HttpResponseHelper.HandleHttpResponseAsync<bool>(
-                response,
-                _logger,
-                $"Delete {EntityName}"
-            ).ConfigureAwait(false);
-            
+            var result = await HttpResponseHelper
+                .HandleHttpResponseAsync<bool>(response, _logger, $"Delete {EntityName}")
+                .ConfigureAwait(false);
+
             // If no specific response body, mark as successful if status is success
             if (response.IsSuccessStatusCode && !result.RequestFailed && !result.Data)
             {
                 result.Data = true;
             }
-            
+
             return result;
         }
         catch (Exception ex)
@@ -183,13 +212,13 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
 
             var filtered = ApplyFilters(allResponse.Data.AsQueryable(), filter);
             var resultList = filtered.ToList();
-            
+
             return new ApiResponseDto<List<T>>($"Filtered {EntityName} successfully")
             {
                 Data = resultList,
                 RequestFailed = false,
                 ResponseCode = System.Net.HttpStatusCode.OK,
-                TotalCount = resultList.Count
+                TotalCount = resultList.Count,
             };
         }
         catch (Exception ex)
@@ -200,13 +229,16 @@ public abstract class BaseApiService<T, TFilter, TKey> : IApiService<T, TFilter,
     }
 
     // Helper method to create consistent error responses
-    protected virtual ApiResponseDto<TResult> CreateErrorResponse<TResult>(string message, TResult? fallbackData = default)
+    protected virtual ApiResponseDto<TResult> CreateErrorResponse<TResult>(
+        string message,
+        TResult? fallbackData = default
+    )
     {
         return new ApiResponseDto<TResult>(message)
         {
             Data = fallbackData,
             RequestFailed = true,
-            ResponseCode = System.Net.HttpStatusCode.InternalServerError
+            ResponseCode = System.Net.HttpStatusCode.InternalServerError,
         };
     }
 

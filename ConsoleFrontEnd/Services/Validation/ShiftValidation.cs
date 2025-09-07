@@ -13,9 +13,15 @@ public static class ShiftValidation
             errors.Add("LocationId must be greater than zero.");
         if (dto.StartTime >= dto.EndTime)
             errors.Add("Start time must be before end time.");
-        if (dto.StartTime < DateTimeOffset.Now.AddYears(-5) || dto.StartTime > DateTimeOffset.Now.AddYears(5))
+        if (
+            dto.StartTime < DateTimeOffset.Now.AddYears(-5)
+            || dto.StartTime > DateTimeOffset.Now.AddYears(5)
+        )
             errors.Add("Start time is out of allowed range (5 years past/future).");
-        if (dto.EndTime < DateTimeOffset.Now.AddYears(-5) || dto.EndTime > DateTimeOffset.Now.AddYears(5))
+        if (
+            dto.EndTime < DateTimeOffset.Now.AddYears(-5)
+            || dto.EndTime > DateTimeOffset.Now.AddYears(5)
+        )
             errors.Add("End time is out of allowed range (5 years past/future).");
 
         // Additional business rules:

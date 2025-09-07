@@ -52,7 +52,11 @@ public class WorkerTests
     [InlineData("John Doe", "123-456-7890", "john@example.com")]
     [InlineData("Jane Smith", null, null)]
     [InlineData("", "", "")]
-    public void Worker_Properties_ShouldSetAndGetCorrectly(string name, string? phoneNumber, string? email)
+    public void Worker_Properties_ShouldSetAndGetCorrectly(
+        string name,
+        string? phoneNumber,
+        string? email
+    )
     {
         // Arrange & Act
         var worker = new Worker
@@ -60,7 +64,7 @@ public class WorkerTests
             WorkerId = 1,
             Name = name,
             PhoneNumber = phoneNumber,
-            Email = email
+            Email = email,
         };
 
         // Assert
@@ -95,7 +99,7 @@ public class WorkerTests
             WorkerId = worker.WorkerId,
             LocationId = 1,
             StartTime = DateTimeOffset.Now,
-            EndTime = DateTimeOffset.Now.AddHours(8)
+            EndTime = DateTimeOffset.Now.AddHours(8),
         };
 
         // Act

@@ -15,10 +15,9 @@ public class MainMenu : BaseMenu
         IConsoleDisplayService displayService,
         IConsoleInputService inputService,
         INavigationService navigationService,
-        ILogger<MainMenu> logger)
-        : base(displayService, inputService, navigationService, logger)
-    {
-    }
+        ILogger<MainMenu> logger
+    )
+        : base(displayService, inputService, navigationService, logger) { }
 
     public override string Title => "Shifts Logger - Main Menu";
     public override string Context => "Main Menu";
@@ -34,7 +33,7 @@ public class MainMenu : BaseMenu
         var choice = InputService.GetMenuChoice(
             "Select an option:",
             "Shift Management",
-            "Location Management", 
+            "Location Management",
             "Worker Management",
             "System Information",
             "Exit Application"

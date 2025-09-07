@@ -11,11 +11,12 @@ namespace ShiftsLoggerV2.RyanW84.Repositories;
 /// <summary>
 /// Repository implementation for Location entity operations
 /// </summary>
-public class LocationRepository : BaseRepository<Location, LocationFilterOptions, LocationApiRequestDto, LocationApiRequestDto>, ILocationRepository
+public class LocationRepository
+    : BaseRepository<Location, LocationFilterOptions, LocationApiRequestDto, LocationApiRequestDto>,
+        ILocationRepository
 {
-    public LocationRepository(ShiftsLoggerDbContext dbContext) : base(dbContext)
-    {
-    }
+    public LocationRepository(ShiftsLoggerDbContext dbContext)
+        : base(dbContext) { }
 
     protected override IQueryable<Location> BuildQuery(LocationFilterOptions filterOptions)
     {
@@ -46,13 +47,14 @@ public class LocationRepository : BaseRepository<Location, LocationFilterOptions
         // Search implementation
         if (!string.IsNullOrWhiteSpace(filterOptions.Search))
             query = query.Where(l =>
-                EF.Functions.Like(l.Name, $"%{filterOptions.Search}%") ||
-                EF.Functions.Like(l.Address, $"%{filterOptions.Search}%") ||
-                EF.Functions.Like(l.Town, $"%{filterOptions.Search}%") ||
-                EF.Functions.Like(l.County, $"%{filterOptions.Search}%") ||
-                EF.Functions.Like(l.PostCode, $"%{filterOptions.Search}%") ||
-                EF.Functions.Like(l.Country, $"%{filterOptions.Search}%") ||
-                l.LocationId.ToString().Contains(filterOptions.Search));
+                EF.Functions.Like(l.Name, $"%{filterOptions.Search}%")
+                || EF.Functions.Like(l.Address, $"%{filterOptions.Search}%")
+                || EF.Functions.Like(l.Town, $"%{filterOptions.Search}%")
+                || EF.Functions.Like(l.County, $"%{filterOptions.Search}%")
+                || EF.Functions.Like(l.PostCode, $"%{filterOptions.Search}%")
+                || EF.Functions.Like(l.Country, $"%{filterOptions.Search}%")
+                || l.LocationId.ToString().Contains(filterOptions.Search)
+            );
 
         // Apply sorting
         if (!string.IsNullOrWhiteSpace(filterOptions.SortBy))
@@ -85,7 +87,7 @@ public class LocationRepository : BaseRepository<Location, LocationFilterOptions
                     : query.OrderByDescending(l => l.Country),
                 _ => sortOrder == "asc"
                     ? query.OrderBy(l => l.LocationId)
-                    : query.OrderByDescending(l => l.LocationId)
+                    : query.OrderByDescending(l => l.LocationId),
             };
         }
         else
@@ -101,7 +103,9 @@ public class LocationRepository : BaseRepository<Location, LocationFilterOptions
         return await DbSet.FirstOrDefaultAsync(l => l.LocationId == id);
     }
 
-    protected override async Task<Location> CreateEntityFromDtoAsync(LocationApiRequestDto createDto)
+    protected override async Task<Location> CreateEntityFromDtoAsync(
+        LocationApiRequestDto createDto
+    )
     {
         // Business validation
         if (string.IsNullOrWhiteSpace(createDto.Name))
@@ -134,11 +138,14 @@ public class LocationRepository : BaseRepository<Location, LocationFilterOptions
             Town = createDto.Town.Trim(),
             County = createDto.County.Trim(),
             PostCode = createDto.PostCode.Trim(),
-            Country = createDto.Country.Trim()
+            Country = createDto.Country.Trim(),
         };
     }
 
-    protected override async Task UpdateEntityFromDtoAsync(Location entity, LocationApiRequestDto updateDto)
+    protected override async Task UpdateEntityFromDtoAsync(
+        Location entity,
+        LocationApiRequestDto updateDto
+    )
     {
         // Business validation
         if (string.IsNullOrWhiteSpace(updateDto.Name))
@@ -162,9 +169,13 @@ public class LocationRepository : BaseRepository<Location, LocationFilterOptions
         // Check for duplicate location name if different from current
         if (updateDto.Name.Trim() != entity.Name)
         {
-            var nameExists = await DbContext.Locations.AnyAsync(l => l.Name == updateDto.Name.Trim() && l.LocationId != entity.LocationId);
+            var nameExists = await DbContext.Locations.AnyAsync(l =>
+                l.Name == updateDto.Name.Trim() && l.LocationId != entity.LocationId
+            );
             if (nameExists)
-                throw new ArgumentException($"A location with name {updateDto.Name} already exists.");
+                throw new ArgumentException(
+                    $"A location with name {updateDto.Name} already exists."
+                );
         }
 
         entity.Name = updateDto.Name.Trim();

@@ -24,7 +24,12 @@ public static class WorkerValidation
                 errors.Add("Email must contain @ and be at least 5 characters.");
             // Check for basic format: something@something.something
             var parts = dto.Email.Split('@');
-            if (parts.Length != 2 || parts[0].Length < 1 || parts[1].Length < 3 || !parts[1].Contains("."))
+            if (
+                parts.Length != 2
+                || parts[0].Length < 1
+                || parts[1].Length < 3
+                || !parts[1].Contains(".")
+            )
                 errors.Add("Email must be in format: user@domain.extension");
         }
 
@@ -34,7 +39,12 @@ public static class WorkerValidation
         else
         {
             // Remove spaces, hyphens, and other common formatting
-            var phone = dto.PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace(".", "");
+            var phone = dto
+                .PhoneNumber.Replace(" ", "")
+                .Replace("-", "")
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace(".", "");
             if (phone.Length < 10)
                 errors.Add("Phone number must be at least 10 digits.");
             if (phone.Length > 15)

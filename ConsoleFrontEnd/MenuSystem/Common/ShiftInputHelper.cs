@@ -23,10 +23,12 @@ public class ShiftInputHelper
         IWorkerService workerService,
         ILocationService locationService,
         IConsoleDisplayService displayService,
-        ILogger<ShiftInputHelper> logger)
+        ILogger<ShiftInputHelper> logger
+    )
     {
         _workerService = workerService ?? throw new ArgumentNullException(nameof(workerService));
-        _locationService = locationService ?? throw new ArgumentNullException(nameof(locationService));
+        _locationService =
+            locationService ?? throw new ArgumentNullException(nameof(locationService));
         _displayService = displayService ?? throw new ArgumentNullException(nameof(displayService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -45,18 +47,17 @@ public class ShiftInputHelper
             var currentName = currentWorker?.Name ?? "None";
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine($"[yellow]Current worker:[/] {currentName}");
-            
+
             List<string> choices = ["(Keep current)"];
             choices.AddRange(workers.Select(w => w.Name));
-            
+
             var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Select Worker:")
-                    .AddChoices(choices));
+                new SelectionPrompt<string>().Title("Select Worker:").AddChoices(choices)
+            );
 
             if (selected == "(Keep current)")
                 return currentWorkerId.Value;
-            
+
             var worker = workers.FirstOrDefault(w => w.Name == selected);
             return worker?.WorkerId ?? currentWorkerId.Value;
         }
@@ -64,9 +65,8 @@ public class ShiftInputHelper
         {
             var choices = workers.Select(w => w.Name).ToList();
             var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Select Worker:")
-                    .AddChoices(choices));
+                new SelectionPrompt<string>().Title("Select Worker:").AddChoices(choices)
+            );
 
             var worker = workers.FirstOrDefault(w => w.Name == selected);
             return worker?.WorkerId ?? 0;
@@ -76,7 +76,10 @@ public class ShiftInputHelper
     /// <summary>
     /// Select location with current value handling
     /// </summary>
-    public async Task<int> SelectLocationAsync(int? currentLocationId, bool allowKeepCurrent = false)
+    public async Task<int> SelectLocationAsync(
+        int? currentLocationId,
+        bool allowKeepCurrent = false
+    )
     {
         var locationsResponse = await _locationService.GetAllLocationsAsync().ConfigureAwait(false);
         var locations = locationsResponse.Data ?? [];
@@ -87,18 +90,17 @@ public class ShiftInputHelper
             var currentName = currentLocation?.Name ?? "None";
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine($"[yellow]Current location:[/] {currentName}");
-            
+
             List<string> choices = ["(Keep current)"];
             choices.AddRange(locations.Select(l => l.Name));
-            
+
             var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Select Location:")
-                    .AddChoices(choices));
+                new SelectionPrompt<string>().Title("Select Location:").AddChoices(choices)
+            );
 
             if (selected == "(Keep current)")
                 return currentLocationId.Value;
-            
+
             var location = locations.FirstOrDefault(l => l.Name == selected);
             return location?.LocationId ?? currentLocationId.Value;
         }
@@ -106,9 +108,8 @@ public class ShiftInputHelper
         {
             var choices = locations.Select(l => l.Name).ToList();
             var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Select Location:")
-                    .AddChoices(choices));
+                new SelectionPrompt<string>().Title("Select Location:").AddChoices(choices)
+            );
 
             var location = locations.FirstOrDefault(l => l.Name == selected);
             return location?.LocationId ?? 0;
@@ -118,32 +119,47 @@ public class ShiftInputHelper
     /// <summary>
     /// Get datetime input with validation and current value handling
     /// </summary>
-    public DateTimeOffset GetDateTimeInput(string fieldName, DateTimeOffset? currentValue = null, bool allowKeepCurrent = false)
+    public DateTimeOffset GetDateTimeInput(
+        string fieldName,
+        DateTimeOffset? currentValue = null,
+        bool allowKeepCurrent = false
+    )
     {
         while (true)
         {
-            var prompt = allowKeepCurrent && currentValue.HasValue
-                ? $"Enter {fieldName} (current: {currentValue:dd/MM/yyyy HH:mm}, press Enter to keep):"
-                : $"Enter {fieldName} (dd/MM/yyyy HH:mm):";
+            var prompt =
+                allowKeepCurrent && currentValue.HasValue
+                    ? $"Enter {fieldName} (current: {currentValue:dd/MM/yyyy HH:mm}, press Enter to keep):"
+                    : $"Enter {fieldName} (dd/MM/yyyy HH:mm):";
 
             var input = AnsiConsole.Ask<string>(prompt, "");
-            
+
             if (string.IsNullOrWhiteSpace(input) && allowKeepCurrent && currentValue.HasValue)
             {
                 return currentValue.Value;
             }
 
-            if (DateTime.TryParseExact(input, "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out var value))
+            if (
+                DateTime.TryParseExact(
+                    input,
+                    "dd/MM/yyyy HH:mm",
+                    null,
+                    System.Globalization.DateTimeStyles.None,
+                    out var value
+                )
+            )
             {
                 return new DateTimeOffset(value);
             }
-            
+
             if (DateTime.TryParse(input, out var any))
             {
                 return new DateTimeOffset(any);
             }
-            
-            _displayService.DisplayError("Invalid date format. Please use dd/MM/yyyy HH:mm or dd-MM-yyyy HH:mm");
+
+            _displayService.DisplayError(
+                "Invalid date format. Please use dd/MM/yyyy HH:mm or dd-MM-yyyy HH:mm"
+            );
         }
     }
 }

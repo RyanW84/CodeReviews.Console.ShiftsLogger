@@ -1,13 +1,13 @@
+using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
 using ShiftsLoggerV2.RyanW84.Services;
-using ShiftsLoggerV2.RyanW84.Common;
-using System.Net;
 using Xunit;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Services
@@ -30,12 +30,25 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
             var filterOptions = new LocationFilterOptions();
             var locations = new List<Location>
             {
-                new() { LocationId = 1, Name = "Main Office", Address = "123 Main St" },
-                new() { LocationId = 2, Name = "Branch Office", Address = "456 Oak Ave" }
+                new()
+                {
+                    LocationId = 1,
+                    Name = "Main Office",
+                    Address = "123 Main St",
+                },
+                new()
+                {
+                    LocationId = 2,
+                    Name = "Branch Office",
+                    Address = "456 Oak Ave",
+                },
             };
 
-            _mockLocationRepository.Setup(s => s.GetAllAsync(filterOptions))
-                .ReturnsAsync(Result<List<Location>>.Success(locations, "Locations retrieved successfully"));
+            _mockLocationRepository
+                .Setup(s => s.GetAllAsync(filterOptions))
+                .ReturnsAsync(
+                    Result<List<Location>>.Success(locations, "Locations retrieved successfully")
+                );
 
             // Act
             var result = await _service.GetAllAsync(filterOptions);
@@ -48,23 +61,31 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
             result.Data[1].Name.Should().Be("Branch Office");
         }
 
-    [Fact]
-    public async Task GetAllAsync_WhenExceptionThrown_ShouldReturnFailure()
-    {
-        // Arrange
-        var filterOptions = new LocationFilterOptions();
-        _mockLocationRepository.Setup(s => s.GetAllAsync(filterOptions))
-            .ReturnsAsync(Result<List<Location>>.Failure("Database error", HttpStatusCode.InternalServerError));
+        [Fact]
+        public async Task GetAllAsync_WhenExceptionThrown_ShouldReturnFailure()
+        {
+            // Arrange
+            var filterOptions = new LocationFilterOptions();
+            _mockLocationRepository
+                .Setup(s => s.GetAllAsync(filterOptions))
+                .ReturnsAsync(
+                    Result<List<Location>>.Failure(
+                        "Database error",
+                        HttpStatusCode.InternalServerError
+                    )
+                );
 
-        // Act
-        var result = await _service.GetAllAsync(filterOptions);
+            // Act
+            var result = await _service.GetAllAsync(filterOptions);
 
-        // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeFalse();
-        result.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-        result.Message.Should().Contain("Database error");
-    }        [Fact]
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            result.Message.Should().Contain("Database error");
+        }
+
+        [Fact]
         public async Task GetByIdAsync_WhenLocationExists_ShouldReturnLocation()
         {
             // Arrange
@@ -77,10 +98,11 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Town = "Anytown",
                 County = "AnyCounty",
                 PostCode = "12345",
-                Country = "USA"
+                Country = "USA",
             };
 
-            _mockLocationRepository.Setup(s => s.GetByIdAsync(locationId))
+            _mockLocationRepository
+                .Setup(s => s.GetByIdAsync(locationId))
                 .ReturnsAsync(Result<Location>.Success(location, "Location found"));
 
             // Act
@@ -99,8 +121,11 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
         {
             // Arrange
             const int locationId = 999;
-            _mockLocationRepository.Setup(s => s.GetByIdAsync(locationId))
-                .ReturnsAsync(Result<Location>.Failure("Location not found", HttpStatusCode.NotFound));
+            _mockLocationRepository
+                .Setup(s => s.GetByIdAsync(locationId))
+                .ReturnsAsync(
+                    Result<Location>.Failure("Location not found", HttpStatusCode.NotFound)
+                );
 
             // Act
             var result = await _service.GetByIdAsync(locationId);
@@ -124,7 +149,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Town = "Newtown",
                 County = "NewCounty",
                 PostCode = "67890",
-                Country = "USA"
+                Country = "USA",
             };
 
             var createdLocation = new Location
@@ -135,11 +160,14 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Town = locationDto.Town,
                 County = locationDto.County,
                 PostCode = locationDto.PostCode,
-                Country = locationDto.Country
+                Country = locationDto.Country,
             };
 
-            _mockLocationRepository.Setup(s => s.CreateAsync(locationDto))
-                .ReturnsAsync(Result<Location>.Success(createdLocation, "Location created successfully"));
+            _mockLocationRepository
+                .Setup(s => s.CreateAsync(locationDto))
+                .ReturnsAsync(
+                    Result<Location>.Success(createdLocation, "Location created successfully")
+                );
 
             // Act
             var result = await _service.CreateAsync(locationDto);
@@ -164,14 +192,14 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Town = "Updatedtown",
                 County = "UpdatedCounty",
                 PostCode = "12345",
-                Country = "USA"
+                Country = "USA",
             };
 
             var existingLocation = new Location
             {
                 LocationId = locationId,
                 Name = "Old Office",
-                Address = "Old Address"
+                Address = "Old Address",
             };
 
             var updatedLocation = new Location
@@ -182,13 +210,17 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Town = locationDto.Town,
                 County = locationDto.County,
                 PostCode = locationDto.PostCode,
-                Country = locationDto.Country
+                Country = locationDto.Country,
             };
 
-            _mockLocationRepository.Setup(s => s.GetByIdAsync(locationId))
+            _mockLocationRepository
+                .Setup(s => s.GetByIdAsync(locationId))
                 .ReturnsAsync(Result<Location>.Success(existingLocation, "Location found"));
-            _mockLocationRepository.Setup(s => s.UpdateAsync(locationId, locationDto))
-                .ReturnsAsync(Result<Location>.Success(updatedLocation, "Location updated successfully"));
+            _mockLocationRepository
+                .Setup(s => s.UpdateAsync(locationId, locationDto))
+                .ReturnsAsync(
+                    Result<Location>.Success(updatedLocation, "Location updated successfully")
+                );
 
             // Act
             var result = await _service.UpdateAsync(locationId, locationDto);
@@ -209,12 +241,14 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
             var existingLocation = new Location
             {
                 LocationId = locationId,
-                Name = "Office to Delete"
+                Name = "Office to Delete",
             };
 
-            _mockLocationRepository.Setup(s => s.GetByIdAsync(locationId))
+            _mockLocationRepository
+                .Setup(s => s.GetByIdAsync(locationId))
                 .ReturnsAsync(Result<Location>.Success(existingLocation, "Location found"));
-            _mockLocationRepository.Setup(s => s.DeleteAsync(locationId))
+            _mockLocationRepository
+                .Setup(s => s.DeleteAsync(locationId))
                 .ReturnsAsync(Result.Success("Location deleted successfully"));
 
             // Act

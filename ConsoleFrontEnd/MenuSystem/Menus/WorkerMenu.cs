@@ -1,8 +1,8 @@
-using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.MenuSystem.Common;
-using ConsoleFrontEnd.Services;
+using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
+using ConsoleFrontEnd.Services;
 using Microsoft.Extensions.Logging;
 
 namespace ConsoleFrontEnd.MenuSystem.Menus;
@@ -22,7 +22,8 @@ public class WorkerMenu : BaseMenu
         INavigationService navigationService,
         ILogger<WorkerMenu> logger,
         IWorkerService workerService,
-        IWorkerUi workerUi)
+        IWorkerUi workerUi
+    )
         : base(displayService, inputService, navigationService, logger)
     {
         _workerService = workerService ?? throw new ArgumentNullException(nameof(workerService));
@@ -202,7 +203,9 @@ public class WorkerMenu : BaseMenu
         var workerResponse = await _workerService.GetWorkerByIdAsync(workerId);
         if (workerResponse.RequestFailed || workerResponse.Data == null)
         {
-            DisplayService.DisplayError(workerResponse.Message ?? "Failed to retrieve worker details.");
+            DisplayService.DisplayError(
+                workerResponse.Message ?? "Failed to retrieve worker details."
+            );
             InputService.WaitForKeyPress();
             return;
         }
@@ -210,13 +213,16 @@ public class WorkerMenu : BaseMenu
         var worker = workerResponse.Data;
         var name = InputService.GetTextInput($"Enter new name (current: {worker.Name}):", false);
         var email = InputService.GetTextInput($"Enter new email (current: {worker.Email}):", false);
-        var phone = InputService.GetTextInput($"Enter new phone (current: {worker.PhoneNumber}):", false);
+        var phone = InputService.GetTextInput(
+            $"Enter new phone (current: {worker.PhoneNumber}):",
+            false
+        );
         var updatedWorker = new Worker
         {
             WorkerId = worker.WorkerId,
             Name = string.IsNullOrWhiteSpace(name) ? worker.Name : name,
             Email = string.IsNullOrWhiteSpace(email) ? worker.Email : email,
-            PhoneNumber = string.IsNullOrWhiteSpace(phone) ? worker.PhoneNumber : phone
+            PhoneNumber = string.IsNullOrWhiteSpace(phone) ? worker.PhoneNumber : phone,
         };
         var response = await _workerService.UpdateWorkerAsync(workerId, updatedWorker);
         if (response.RequestFailed || response.Data == null)
@@ -252,7 +258,9 @@ public class WorkerMenu : BaseMenu
             }
             else
             {
-                DisplayService.DisplaySuccess(response.Message ?? $"Worker {workerId} deleted successfully.");
+                DisplayService.DisplaySuccess(
+                    response.Message ?? $"Worker {workerId} deleted successfully."
+                );
             }
         }
         else
@@ -272,19 +280,31 @@ public class WorkerMenu : BaseMenu
         string? email = null;
         if (allWorkersResponse.Data != null && allWorkersResponse.Data.Any())
         {
-            var names = allWorkersResponse.Data.Select(w => w.Name).Where(n => !string.IsNullOrWhiteSpace(n)).Distinct().OrderBy(n => n).ToList();
-            var emails = allWorkersResponse.Data.Select(w => w.Email).Where(e => !string.IsNullOrWhiteSpace(e)).Distinct().OrderBy(e => e).ToList();
+            var names = allWorkersResponse
+                .Data.Select(w => w.Name)
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct()
+                .OrderBy(n => n)
+                .ToList();
+            var emails = allWorkersResponse
+                .Data.Select(w => w.Email)
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .Distinct()
+                .OrderBy(e => e)
+                .ToList();
             if (names.Any())
             {
-                string[] nameChoices = ["Any", ..names];
+                string[] nameChoices = ["Any", .. names];
                 var selectedName = InputService.GetMenuChoice("Filter by Name:", nameChoices);
-                if (selectedName != "Any") name = selectedName;
+                if (selectedName != "Any")
+                    name = selectedName;
             }
             if (emails.Any())
             {
-                string[] emailChoices = ["Any", ..emails.Select(s => s!)];
+                string[] emailChoices = ["Any", .. emails.Select(s => s!)];
                 var selectedEmail = InputService.GetMenuChoice("Filter by Email:", emailChoices);
-                if (selectedEmail != "Any") email = selectedEmail;
+                if (selectedEmail != "Any")
+                    email = selectedEmail;
             }
         }
 
@@ -292,7 +312,10 @@ public class WorkerMenu : BaseMenu
         {
             Name = name,
             Email = email,
-            PhoneNumber = InputService.GetTextInput("Filter by phone (leave blank for any):", false)
+            PhoneNumber = InputService.GetTextInput(
+                "Filter by phone (leave blank for any):",
+                false
+            ),
             // If you add date/time fields in the future, use dd/MM/yyyy HH:mm format for prompts and parsing
         };
         var response = await _workerService.GetWorkersByFilterAsync(filter);
@@ -319,7 +342,12 @@ public class WorkerMenu : BaseMenu
         }
         else
         {
-            var filtered = response.Data.Where(w => !string.IsNullOrEmpty(w.Email) && w.Email.EndsWith(domain, StringComparison.OrdinalIgnoreCase)).ToList();
+            var filtered = response
+                .Data.Where(w =>
+                    !string.IsNullOrEmpty(w.Email)
+                    && w.Email.EndsWith(domain, StringComparison.OrdinalIgnoreCase)
+                )
+                .ToList();
             if (!filtered.Any())
             {
                 DisplayService.DisplayError($"No workers found with email domain '{domain}'.");
@@ -344,7 +372,11 @@ public class WorkerMenu : BaseMenu
         }
         else
         {
-            var filtered = response.Data.Where(w => !string.IsNullOrEmpty(w.PhoneNumber) && w.PhoneNumber.StartsWith(areaCode)).ToList();
+            var filtered = response
+                .Data.Where(w =>
+                    !string.IsNullOrEmpty(w.PhoneNumber) && w.PhoneNumber.StartsWith(areaCode)
+                )
+                .ToList();
             if (!filtered.Any())
             {
                 DisplayService.DisplayError($"No workers found with area code '{areaCode}'.");

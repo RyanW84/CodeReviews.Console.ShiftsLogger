@@ -11,11 +11,14 @@ namespace ShiftsLoggerV2.RyanW84.Services;
 /// <summary>
 /// Business logic service for Shift operations
 /// </summary>
-public class ShiftBusinessService : BaseService<Shift, ShiftFilterOptions, ShiftApiRequestDto, ShiftApiRequestDto>, IShiftBusinessService
+public class ShiftBusinessService
+    : BaseService<Shift, ShiftFilterOptions, ShiftApiRequestDto, ShiftApiRequestDto>,
+        IShiftBusinessService
 {
     private readonly IShiftRepository _shiftRepository;
 
-    public ShiftBusinessService(IShiftRepository shiftRepository) : base(shiftRepository)
+    public ShiftBusinessService(IShiftRepository shiftRepository)
+        : base(shiftRepository)
     {
         _shiftRepository = shiftRepository;
     }
@@ -34,10 +37,16 @@ public class ShiftBusinessService : BaseService<Shift, ShiftFilterOptions, Shift
             return Result.Failure("Start time must be before end time.");
 
         // Allowed date range: +/- 5 years from now (more forgiving)
-        if (createDto.StartTime < DateTimeOffset.Now.AddYears(-5) || createDto.StartTime > DateTimeOffset.Now.AddYears(5))
-            return Result.Failure("Start time is out of allowed range (5 years past/future)." );
-        if (createDto.EndTime < DateTimeOffset.Now.AddYears(-5) || createDto.EndTime > DateTimeOffset.Now.AddYears(5))
-            return Result.Failure("End time is out of allowed range (5 years past/future)." );
+        if (
+            createDto.StartTime < DateTimeOffset.Now.AddYears(-5)
+            || createDto.StartTime > DateTimeOffset.Now.AddYears(5)
+        )
+            return Result.Failure("Start time is out of allowed range (5 years past/future).");
+        if (
+            createDto.EndTime < DateTimeOffset.Now.AddYears(-5)
+            || createDto.EndTime > DateTimeOffset.Now.AddYears(5)
+        )
+            return Result.Failure("End time is out of allowed range (5 years past/future).");
 
         // More forgiving past-start tolerance: 30 minutes instead of 5
         if (createDto.StartTime < DateTimeOffset.Now.AddMinutes(-30))
@@ -50,14 +59,26 @@ public class ShiftBusinessService : BaseService<Shift, ShiftFilterOptions, Shift
             return Result.Failure("Shift duration cannot exceed 24 hours.");
 
         // Prevent overlapping shifts for same worker or location
-        var hasOverlap = await _shiftRepository.HasOverlappingShiftAsync(createDto.WorkerId, createDto.LocationId, createDto.StartTime, createDto.EndTime).ConfigureAwait(false);
+        var hasOverlap = await _shiftRepository
+            .HasOverlappingShiftAsync(
+                createDto.WorkerId,
+                createDto.LocationId,
+                createDto.StartTime,
+                createDto.EndTime
+            )
+            .ConfigureAwait(false);
         if (hasOverlap)
-            return Result.Failure("The requested shift overlaps an existing shift for the same worker or location.");
+            return Result.Failure(
+                "The requested shift overlaps an existing shift for the same worker or location."
+            );
 
         return Result.Success();
     }
 
-    protected override async ValueTask<Result> ValidateForUpdateAsync(int id, ShiftApiRequestDto updateDto)
+    protected override async ValueTask<Result> ValidateForUpdateAsync(
+        int id,
+        ShiftApiRequestDto updateDto
+    )
     {
         // Business logic validation for shift updates
         var createValidation = await ValidateForCreateAsync(updateDto).ConfigureAwait(false);
@@ -66,9 +87,19 @@ public class ShiftBusinessService : BaseService<Shift, ShiftFilterOptions, Shift
 
         // Additional update-specific validations could go here
         // Prevent overlapping with other shifts (exclude the current shift id)
-        var hasOverlap = await _shiftRepository.HasOverlappingShiftAsync(updateDto.WorkerId, updateDto.LocationId, updateDto.StartTime, updateDto.EndTime, id).ConfigureAwait(false);
+        var hasOverlap = await _shiftRepository
+            .HasOverlappingShiftAsync(
+                updateDto.WorkerId,
+                updateDto.LocationId,
+                updateDto.StartTime,
+                updateDto.EndTime,
+                id
+            )
+            .ConfigureAwait(false);
         if (hasOverlap)
-            return Result.Failure("The requested update would cause an overlap with an existing shift for the same worker or location.");
+            return Result.Failure(
+                "The requested update would cause an overlap with an existing shift for the same worker or location."
+            );
         return Result.Success();
     }
 

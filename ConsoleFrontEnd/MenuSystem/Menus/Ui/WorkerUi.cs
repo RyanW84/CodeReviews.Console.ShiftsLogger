@@ -1,8 +1,8 @@
 using ConsoleFrontEnd.Core.Abstractions;
+using ConsoleFrontEnd.Interfaces;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
-using ConsoleFrontEnd.Interfaces;
 using ConsoleFrontEnd.Services;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
@@ -20,7 +20,11 @@ public class WorkerUi : IWorkerUi
     private const string EntityName = "Worker";
     private const string EntityPluralName = "Workers";
 
-    public WorkerUi(IConsoleDisplayService display, ILogger<WorkerUi> logger, IWorkerService workerService)
+    public WorkerUi(
+        IConsoleDisplayService display,
+        ILogger<WorkerUi> logger,
+        IWorkerService workerService
+    )
     {
         _uiHelper = new UiHelper(display, logger);
         _workerService = workerService;
@@ -30,7 +34,7 @@ public class WorkerUi : IWorkerUi
     public Worker CreateWorkerUi()
     {
         _uiHelper.DisplayCreateHeader(EntityName);
-        
+
         var name = _uiHelper.GetRequiredStringInput("Enter name");
         var email = _uiHelper.GetOptionalStringInput("Enter email");
         var phone = _uiHelper.GetOptionalStringInput("Enter phone number");
@@ -47,17 +51,22 @@ public class WorkerUi : IWorkerUi
             WorkerId = 0, // Will be assigned by service
             Name = name,
             Email = email,
-            PhoneNumber = phone
+            PhoneNumber = phone,
         };
     }
 
     public Worker UpdateWorkerUi(Worker existingWorker)
     {
         _uiHelper.DisplayUpdateHeader(EntityName, existingWorker.Name);
-        
-        var name = _uiHelper.GetOptionalStringInput("Enter name", existingWorker.Name) ?? existingWorker.Name;
+
+        var name =
+            _uiHelper.GetOptionalStringInput("Enter name", existingWorker.Name)
+            ?? existingWorker.Name;
         var email = _uiHelper.GetOptionalStringInput("Enter email", existingWorker.Email);
-        var phone = _uiHelper.GetOptionalStringInput("Enter phone number", existingWorker.PhoneNumber);
+        var phone = _uiHelper.GetOptionalStringInput(
+            "Enter phone number",
+            existingWorker.PhoneNumber
+        );
 
         // Validate email if provided
         if (!string.IsNullOrEmpty(email) && !_uiHelper.IsValidEmail(email))
@@ -71,14 +80,14 @@ public class WorkerUi : IWorkerUi
             WorkerId = existingWorker.Id,
             Name = name,
             Email = email,
-            PhoneNumber = phone
+            PhoneNumber = phone,
         };
     }
 
     public WorkerFilterOptions FilterWorkersUi()
     {
         _uiHelper.DisplayFilterHeader(EntityPluralName);
-        
+
         var name = _uiHelper.GetOptionalStringInput("Filter by name");
         var email = _uiHelper.GetOptionalStringInput("Filter by email");
         var phone = _uiHelper.GetOptionalStringInput("Filter by phone");
@@ -87,7 +96,7 @@ public class WorkerUi : IWorkerUi
         {
             Name = name,
             Email = email,
-            PhoneNumber = phone
+            PhoneNumber = phone,
         };
     }
 
@@ -96,7 +105,10 @@ public class WorkerUi : IWorkerUi
         _display.DisplayTable(workers, EntityPluralName, startingRowNumber);
     }
 
-    public async Task DisplayWorkersWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10)
+    public async Task DisplayWorkersWithPaginationAsync(
+        int initialPageNumber = 1,
+        int pageSize = 10
+    )
     {
         var currentPage = initialPageNumber;
 
@@ -104,7 +116,9 @@ public class WorkerUi : IWorkerUi
         {
             _display.DisplayHeader($"Workers (Page {currentPage})", "blue");
 
-            var response = await _workerService.GetAllWorkersAsync(currentPage, pageSize).ConfigureAwait(false);
+            var response = await _workerService
+                .GetAllWorkersAsync(currentPage, pageSize)
+                .ConfigureAwait(false);
 
             if (response.RequestFailed || response.Data == null || !response.Data.Any())
             {
@@ -115,7 +129,9 @@ public class WorkerUi : IWorkerUi
                 }
                 else
                 {
-                    _display.DisplayError($"No workers found on page {currentPage}. Returning to page 1.");
+                    _display.DisplayError(
+                        $"No workers found on page {currentPage}. Returning to page 1."
+                    );
                     currentPage = 1;
                     continue;
                 }
@@ -127,8 +143,12 @@ public class WorkerUi : IWorkerUi
             DisplayWorkersTable(response.Data, startIndex + 1);
 
             // Display pagination info
-            _display.DisplayInfo($"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} workers");
-            _display.DisplayInfo($"Showing {response.Data.Count()} of {response.TotalCount} workers");
+            _display.DisplayInfo(
+                $"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} workers"
+            );
+            _display.DisplayInfo(
+                $"Showing {response.Data.Count()} of {response.TotalCount} workers"
+            );
 
             // Create pagination options
             var options = new List<string>();
@@ -144,9 +164,7 @@ public class WorkerUi : IWorkerUi
             options.Add("Back to Menu");
 
             var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Choose an action:")
-                    .AddChoices(options)
+                new SelectionPrompt<string>().Title("Choose an action:").AddChoices(options)
             );
 
             switch (choice)
@@ -160,11 +178,15 @@ public class WorkerUi : IWorkerUi
                     break;
 
                 case "Go to Page":
-                    var pageInput = AnsiConsole.Ask<int>($"Enter page number (1-{response.TotalPages}):");
+                    var pageInput = AnsiConsole.Ask<int>(
+                        $"Enter page number (1-{response.TotalPages}):"
+                    );
                     if (pageInput >= 1 && pageInput <= response.TotalPages)
                         currentPage = pageInput;
                     else
-                        _display.DisplayError($"Invalid page number. Please enter a number between 1 and {response.TotalPages}.");
+                        _display.DisplayError(
+                            $"Invalid page number. Please enter a number between 1 and {response.TotalPages}."
+                        );
                     break;
 
                 case "Change Page Size":
@@ -175,7 +197,9 @@ public class WorkerUi : IWorkerUi
                         currentPage = 1; // Reset to first page
                     }
                     else
-                        _display.DisplayError("Invalid page size. Please enter a number between 1 and 100.");
+                        _display.DisplayError(
+                            "Invalid page size. Please enter a number between 1 and 100."
+                        );
                     break;
 
                 case "Back to Menu":
@@ -193,12 +217,16 @@ public class WorkerUi : IWorkerUi
 
         while (true)
         {
-            var response = await _workerService.GetAllWorkersAsync(currentPage, pageSize).ConfigureAwait(false);
+            var response = await _workerService
+                .GetAllWorkersAsync(currentPage, pageSize)
+                .ConfigureAwait(false);
             if (response.RequestFailed || response.Data == null || !response.Data.Any())
             {
                 if (currentPage == 1)
                 {
-                    AnsiConsole.MarkupLine("[red]No workers available or failed to fetch workers.[/]");
+                    AnsiConsole.MarkupLine(
+                        "[red]No workers available or failed to fetch workers.[/]"
+                    );
                     return -1;
                 }
                 else
@@ -211,8 +239,8 @@ public class WorkerUi : IWorkerUi
             // Calculate starting index for continuous numbering across pages
             int startIndex = (currentPage - 1) * pageSize;
 
-            var choices = response.Data
-                .Select((w, index) => $"{startIndex + index + 1}. {w.Name}")
+            var choices = response
+                .Data.Select((w, index) => $"{startIndex + index + 1}. {w.Name}")
                 .ToList();
 
             // Add navigation options if there are more pages

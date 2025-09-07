@@ -9,11 +9,13 @@ namespace ConsoleFrontEnd.MenuSystem.Base;
 /// Base UI service implementing common CRUD operations following SOLID principles
 /// T - Entity type, TFilter - Filter options type
 /// </summary>
-public abstract class BaseEntityUi<T, TFilter>(IConsoleDisplayService display, ILogger logger) : IEntityUi<T, TFilter>
+public abstract class BaseEntityUi<T, TFilter>(IConsoleDisplayService display, ILogger logger)
+    : IEntityUi<T, TFilter>
     where T : class, new()
     where TFilter : class, new()
 {
-    private readonly IConsoleDisplayService _display = display ?? throw new ArgumentNullException(nameof(display));
+    private readonly IConsoleDisplayService _display =
+        display ?? throw new ArgumentNullException(nameof(display));
     protected readonly ILogger Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     // Abstract methods that must be implemented by derived classes
@@ -65,11 +67,17 @@ public abstract class BaseEntityUi<T, TFilter>(IConsoleDisplayService display, I
         return AnsiConsole.Ask<string>($"[yellow]{prompt} (press Enter to skip):[/]", defaultValue);
     }
 
-    protected virtual TResult? GetOptionalInput<TResult>(string prompt, TResult? defaultValue = default)
+    protected virtual TResult? GetOptionalInput<TResult>(
+        string prompt,
+        TResult? defaultValue = default
+    )
     {
         try
         {
-            return AnsiConsole.Ask<TResult?>($"[yellow]{prompt} (press Enter to skip):[/]", defaultValue);
+            return AnsiConsole.Ask<TResult?>(
+                $"[yellow]{prompt} (press Enter to skip):[/]",
+                defaultValue
+            );
         }
         catch
         {
@@ -81,7 +89,10 @@ public abstract class BaseEntityUi<T, TFilter>(IConsoleDisplayService display, I
     {
         try
         {
-            return AnsiConsole.Ask<DateTime?>($"[yellow]{prompt} (yyyy-MM-dd HH:mm, press Enter to skip):[/]", null);
+            return AnsiConsole.Ask<DateTime?>(
+                $"[yellow]{prompt} (yyyy-MM-dd HH:mm, press Enter to skip):[/]",
+                null
+            );
         }
         catch
         {

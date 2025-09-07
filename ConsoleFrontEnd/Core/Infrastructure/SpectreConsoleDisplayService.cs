@@ -137,7 +137,11 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         }
     }
 
-    public void DisplayTable<T>(IEnumerable<T> data, string? title = null, int startingRowNumber = 1)
+    public void DisplayTable<T>(
+        IEnumerable<T> data,
+        string? title = null,
+        int startingRowNumber = 1
+    )
     {
         lock (_consoleLock)
         {
@@ -196,7 +200,11 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         }
     }
 
-    private void DisplayShiftsTable(IEnumerable<dynamic> shifts, string? title = "Shifts", int startingRowNumber = 1)
+    private void DisplayShiftsTable(
+        IEnumerable<dynamic> shifts,
+        string? title = "Shifts",
+        int startingRowNumber = 1
+    )
     {
         var table = new Table();
         if (!string.IsNullOrEmpty(title))
@@ -242,7 +250,11 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         AnsiConsole.WriteLine();
     }
 
-    private void DisplayWorkersTable(IEnumerable<dynamic> workers, string? title = "Workers", int startingRowNumber = 1)
+    private void DisplayWorkersTable(
+        IEnumerable<dynamic> workers,
+        string? title = "Workers",
+        int startingRowNumber = 1
+    )
     {
         var table = new Table();
         if (!string.IsNullOrEmpty(title))
@@ -263,7 +275,8 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         foreach (var worker in workers)
         {
             // Use lightweight ShiftCount when available to avoid loading full collections
-            var shiftCount = (worker.ShiftCount != 0) ? worker.ShiftCount : (worker.Shifts?.Count ?? 0);
+            var shiftCount =
+                (worker.ShiftCount != 0) ? worker.ShiftCount : (worker.Shifts?.Count ?? 0);
             var phoneDisplay = string.IsNullOrWhiteSpace(worker.PhoneNumber)
                 ? "N/A"
                 : worker.PhoneNumber;
@@ -288,7 +301,11 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         AnsiConsole.WriteLine();
     }
 
-    private void DisplayLocationsTable(IEnumerable<dynamic> locations, string? title = "Locations", int startingRowNumber = 1)
+    private void DisplayLocationsTable(
+        IEnumerable<dynamic> locations,
+        string? title = "Locations",
+        int startingRowNumber = 1
+    )
     {
         var table = new Table();
         if (!string.IsNullOrEmpty(title))

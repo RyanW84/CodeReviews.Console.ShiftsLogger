@@ -1,20 +1,26 @@
+using System.Net;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Controllers;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Services.Interfaces;
-using ShiftsLoggerV2.RyanW84.Common;
-using System.Net;
 using Xunit;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Controllers;
 
 public class ShiftsControllerTests
 {
+    static ShiftsControllerTests()
+    {
+        // Suppress Fluent Assertions license warning
+        Environment.SetEnvironmentVariable("FluentAssertions.LicenseKey", "ACCEPT");
+    }
+
     private readonly Mock<IShiftBusinessService> _mockShiftBusinessService;
     private readonly Mock<ILogger<ShiftsController>> _mockLogger;
     private readonly ShiftsController _controller;
@@ -33,13 +39,26 @@ public class ShiftsControllerTests
         var filterOptions = new ShiftFilterOptions();
         var shifts = new List<Shift>
         {
-            new() { ShiftId = 1, WorkerId = 1, LocationId = 1, StartTime = DateTimeOffset.Now, EndTime = DateTimeOffset.Now.AddHours(8) },
-            new() { ShiftId = 2, WorkerId = 2, LocationId = 2, StartTime = DateTimeOffset.Now.AddDays(1), EndTime = DateTimeOffset.Now.AddDays(1).AddHours(8) }
+            new()
+            {
+                ShiftId = 1,
+                WorkerId = 1,
+                LocationId = 1,
+                StartTime = DateTimeOffset.Now,
+                EndTime = DateTimeOffset.Now.AddHours(8),
+            },
+            new()
+            {
+                ShiftId = 2,
+                WorkerId = 2,
+                LocationId = 2,
+                StartTime = DateTimeOffset.Now.AddDays(1),
+                EndTime = DateTimeOffset.Now.AddDays(1).AddHours(8),
+            },
         };
 
         var result = Result<List<Shift>>.Success(shifts, "Shifts retrieved successfully");
-        _mockShiftBusinessService.Setup(v => v.GetAllAsync(filterOptions))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.GetAllAsync(filterOptions)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetAllShifts(filterOptions);
@@ -62,10 +81,12 @@ public class ShiftsControllerTests
     {
         // Arrange
         var filterOptions = new ShiftFilterOptions();
-        var result = Result<List<Shift>>.Failure("Database error", HttpStatusCode.InternalServerError);
+        var result = Result<List<Shift>>.Failure(
+            "Database error",
+            HttpStatusCode.InternalServerError
+        );
 
-        _mockShiftBusinessService.Setup(v => v.GetAllAsync(filterOptions))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.GetAllAsync(filterOptions)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetAllShifts(filterOptions);
@@ -94,12 +115,11 @@ public class ShiftsControllerTests
             WorkerId = 1,
             LocationId = 1,
             StartTime = DateTimeOffset.Now,
-            EndTime = DateTimeOffset.Now.AddHours(8)
+            EndTime = DateTimeOffset.Now.AddHours(8),
         };
         var result = Result<Shift>.Success(shift, "Shift found");
 
-        _mockShiftBusinessService.Setup(v => v.GetByIdAsync(shiftId))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.GetByIdAsync(shiftId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetShiftById(shiftId);
@@ -124,8 +144,7 @@ public class ShiftsControllerTests
         const int shiftId = 999;
         var result = Result<Shift>.Failure("Shift not found", HttpStatusCode.NotFound);
 
-        _mockShiftBusinessService.Setup(v => v.GetByIdAsync(shiftId))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.GetByIdAsync(shiftId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetShiftById(shiftId);
@@ -151,7 +170,7 @@ public class ShiftsControllerTests
             WorkerId = 1,
             LocationId = 1,
             StartTime = DateTimeOffset.Now,
-            EndTime = DateTimeOffset.Now.AddHours(8)
+            EndTime = DateTimeOffset.Now.AddHours(8),
         };
 
         var createdShift = new Shift
@@ -160,12 +179,11 @@ public class ShiftsControllerTests
             WorkerId = shiftDto.WorkerId,
             LocationId = shiftDto.LocationId,
             StartTime = shiftDto.StartTime,
-            EndTime = shiftDto.EndTime
+            EndTime = shiftDto.EndTime,
         };
 
         var result = Result<Shift>.Success(createdShift, "Shift created successfully");
-        _mockShiftBusinessService.Setup(v => v.CreateAsync(shiftDto))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.CreateAsync(shiftDto)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.CreateShift(shiftDto);
@@ -191,7 +209,7 @@ public class ShiftsControllerTests
             WorkerId = 1,
             LocationId = 1,
             StartTime = DateTimeOffset.Now,
-            EndTime = DateTimeOffset.Now.AddHours(-1) // End time before start time
+            EndTime = DateTimeOffset.Now.AddHours(-1), // End time before start time
         };
 
         // Act
@@ -237,7 +255,7 @@ public class ShiftsControllerTests
             WorkerId = 1,
             LocationId = 1,
             StartTime = DateTimeOffset.Now,
-            EndTime = DateTimeOffset.Now.AddHours(8)
+            EndTime = DateTimeOffset.Now.AddHours(8),
         };
 
         var updatedShift = new Shift
@@ -246,12 +264,11 @@ public class ShiftsControllerTests
             WorkerId = shiftDto.WorkerId,
             LocationId = shiftDto.LocationId,
             StartTime = shiftDto.StartTime,
-            EndTime = shiftDto.EndTime
+            EndTime = shiftDto.EndTime,
         };
 
         var result = Result<Shift>.Success(updatedShift, "Shift updated successfully");
-        _mockShiftBusinessService.Setup(v => v.UpdateAsync(shiftId, shiftDto))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.UpdateAsync(shiftId, shiftDto)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.UpdateShift(shiftId, shiftDto);
@@ -275,8 +292,7 @@ public class ShiftsControllerTests
         const int shiftId = 1;
         var result = Result.Success("Shift deleted successfully");
 
-        _mockShiftBusinessService.Setup(v => v.DeleteAsync(shiftId))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.DeleteAsync(shiftId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.DeleteShift(shiftId);
@@ -299,8 +315,7 @@ public class ShiftsControllerTests
         const int shiftId = 999;
         var result = Result.Failure("Shift not found", HttpStatusCode.NotFound);
 
-        _mockShiftBusinessService.Setup(v => v.DeleteAsync(shiftId))
-            .ReturnsAsync(result);
+        _mockShiftBusinessService.Setup(v => v.DeleteAsync(shiftId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.DeleteShift(shiftId);
@@ -324,11 +339,19 @@ public class ShiftsControllerTests
         var endDate = DateTime.Now.AddDays(7);
         var shifts = new List<Shift>
         {
-            new() { ShiftId = 1, WorkerId = 1, LocationId = 1, StartTime = DateTimeOffset.Now, EndTime = DateTimeOffset.Now.AddHours(8) }
+            new()
+            {
+                ShiftId = 1,
+                WorkerId = 1,
+                LocationId = 1,
+                StartTime = DateTimeOffset.Now,
+                EndTime = DateTimeOffset.Now.AddHours(8),
+            },
         };
 
         var result = Result<List<Shift>>.Success(shifts, "Shifts retrieved successfully");
-        _mockShiftBusinessService.Setup(v => v.GetAllAsync(It.IsAny<ShiftFilterOptions>()))
+        _mockShiftBusinessService
+            .Setup(v => v.GetAllAsync(It.IsAny<ShiftFilterOptions>()))
             .ReturnsAsync(result);
 
         // Act
@@ -352,11 +375,19 @@ public class ShiftsControllerTests
         const int workerId = 1;
         var shifts = new List<Shift>
         {
-            new() { ShiftId = 1, WorkerId = workerId, LocationId = 1, StartTime = DateTimeOffset.Now, EndTime = DateTimeOffset.Now.AddHours(8) }
+            new()
+            {
+                ShiftId = 1,
+                WorkerId = workerId,
+                LocationId = 1,
+                StartTime = DateTimeOffset.Now,
+                EndTime = DateTimeOffset.Now.AddHours(8),
+            },
         };
 
         var result = Result<List<Shift>>.Success(shifts, "Shifts retrieved successfully");
-        _mockShiftBusinessService.Setup(v => v.GetAllAsync(It.IsAny<ShiftFilterOptions>()))
+        _mockShiftBusinessService
+            .Setup(v => v.GetAllAsync(It.IsAny<ShiftFilterOptions>()))
             .ReturnsAsync(result);
 
         // Act

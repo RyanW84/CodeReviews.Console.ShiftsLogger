@@ -18,7 +18,8 @@ public static class HttpResponseHelper
         HttpResponseMessage response,
         ILogger logger,
         string operationName,
-        T? fallbackData = default)
+        T? fallbackData = default
+    )
     {
         try
         {
@@ -28,7 +29,9 @@ public static class HttpResponseHelper
                 // Use case-insensitive options to be robust across API casing differences
                 var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-                var successResult = await response.Content.ReadFromJsonAsync<ApiResponseDto<T>>(jsonOptions);
+                var successResult = await response.Content.ReadFromJsonAsync<ApiResponseDto<T>>(
+                    jsonOptions
+                );
                 if (successResult != null)
                 {
                     return successResult;
@@ -40,24 +43,34 @@ public static class HttpResponseHelper
                 {
                     try
                     {
-                        var generic = JsonSerializer.Deserialize<ApiResponseDto<JsonElement>>(raw, jsonOptions);
+                        var generic = JsonSerializer.Deserialize<ApiResponseDto<JsonElement>>(
+                            raw,
+                            jsonOptions
+                        );
                         if (generic != null)
                         {
-                            var dto = new ApiResponseDto<T>(generic.Message ?? $"{operationName} result")
+                            var dto = new ApiResponseDto<T>(
+                                generic.Message ?? $"{operationName} result"
+                            )
                             {
                                 RequestFailed = generic.RequestFailed,
                                 ResponseCode = generic.ResponseCode,
                                 Message = generic.Message,
-                                TotalCount = generic.TotalCount
+                                TotalCount = generic.TotalCount,
                             };
 
                             if (generic.Data.ValueKind != JsonValueKind.Null)
                             {
                                 try
                                 {
-                                    dto.Data = JsonSerializer.Deserialize<T>(generic.Data.GetRawText(), jsonOptions);
+                                    dto.Data = JsonSerializer.Deserialize<T>(
+                                        generic.Data.GetRawText(),
+                                        jsonOptions
+                                    );
                                 }
-                                catch (JsonException) { /* fall through to fallback below */ }
+                                catch (JsonException)
+                                { /* fall through to fallback below */
+                                }
                             }
 
                             dto.Data ??= fallbackData;
@@ -65,7 +78,9 @@ public static class HttpResponseHelper
                             return dto;
                         }
                     }
-                    catch (JsonException) { /* fall through to fallback below */ }
+                    catch (JsonException)
+                    { /* fall through to fallback below */
+                    }
                 }
 
                 // Fallback if no structured response
@@ -73,21 +88,25 @@ public static class HttpResponseHelper
                 {
                     Data = fallbackData,
                     RequestFailed = false,
-                    ResponseCode = response.StatusCode
+                    ResponseCode = response.StatusCode,
                 };
             }
 
             // Error response - try to get detailed error from backend
             var errorDetails = await ExtractErrorDetailsAsync(response, logger);
 
-            logger.LogError("HTTP Error in {Operation}: {StatusCode} - {Message}",
-                operationName, response.StatusCode, errorDetails.Message);
+            logger.LogError(
+                "HTTP Error in {Operation}: {StatusCode} - {Message}",
+                operationName,
+                response.StatusCode,
+                errorDetails.Message
+            );
 
             return new ApiResponseDto<T>(errorDetails.Message)
             {
                 Data = fallbackData,
                 RequestFailed = true,
-                ResponseCode = response.StatusCode
+                ResponseCode = response.StatusCode,
             };
         }
         catch (JsonException jsonEx)
@@ -98,7 +117,7 @@ public static class HttpResponseHelper
             {
                 Data = fallbackData,
                 RequestFailed = true,
-                ResponseCode = response.StatusCode
+                ResponseCode = response.StatusCode,
             };
         }
         catch (Exception ex)
@@ -109,7 +128,7 @@ public static class HttpResponseHelper
             {
                 Data = fallbackData,
                 RequestFailed = true,
-                ResponseCode = HttpStatusCode.InternalServerError
+                ResponseCode = HttpStatusCode.InternalServerError,
             };
         }
     }
@@ -117,7 +136,10 @@ public static class HttpResponseHelper
     /// <summary>
     /// Extracts detailed error information from HTTP response
     /// </summary>
-    private static async Task<ErrorDetail> ExtractErrorDetailsAsync(HttpResponseMessage response, ILogger logger)
+    private static async Task<ErrorDetail> ExtractErrorDetailsAsync(
+        HttpResponseMessage response,
+        ILogger logger
+    )
     {
         try
         {
@@ -128,25 +150,26 @@ public static class HttpResponseHelper
                 return new ErrorDetail
                 {
                     Message = GetDefaultErrorMessage(response.StatusCode),
-                    StatusCode = response.StatusCode
+                    StatusCode = response.StatusCode,
                 };
             }
 
             // Try to parse as structured error response from backend
             try
             {
-                var errorResponse = JsonSerializer.Deserialize<ApiResponseDto<object>>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var errorResponse = JsonSerializer.Deserialize<ApiResponseDto<object>>(
+                    content,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
 
                 if (errorResponse != null && !string.IsNullOrWhiteSpace(errorResponse.Message))
                 {
                     return new ErrorDetail
                     {
-                        Message = $"Server Error ({(int)response.StatusCode}): {errorResponse.Message}",
+                        Message =
+                            $"Server Error ({(int)response.StatusCode}): {errorResponse.Message}",
                         StatusCode = response.StatusCode,
-                        Details = content
+                        Details = content,
                     };
                 }
             }
@@ -158,10 +181,10 @@ public static class HttpResponseHelper
             // Try to parse as generic error object
             try
             {
-                var errorObj = JsonSerializer.Deserialize<Dictionary<string, object>>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                var errorObj = JsonSerializer.Deserialize<Dictionary<string, object>>(
+                    content,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+                );
 
                 if (errorObj != null)
                 {
@@ -172,7 +195,7 @@ public static class HttpResponseHelper
                         {
                             Message = $"Server Error ({(int)response.StatusCode}): {errorMessage}",
                             StatusCode = response.StatusCode,
-                            Details = content
+                            Details = content,
                         };
                     }
                 }
@@ -185,9 +208,10 @@ public static class HttpResponseHelper
             // Fallback: use content as error message
             return new ErrorDetail
             {
-                Message = $"Server Error ({(int)response.StatusCode}): {content.Substring(0, Math.Min(200, content.Length))}",
+                Message =
+                    $"Server Error ({(int)response.StatusCode}): {content.Substring(0, Math.Min(200, content.Length))}",
                 StatusCode = response.StatusCode,
-                Details = content
+                Details = content,
             };
         }
         catch (Exception ex)
@@ -196,7 +220,7 @@ public static class HttpResponseHelper
             return new ErrorDetail
             {
                 Message = GetDefaultErrorMessage(response.StatusCode),
-                StatusCode = response.StatusCode
+                StatusCode = response.StatusCode,
             };
         }
     }
@@ -233,14 +257,21 @@ public static class HttpResponseHelper
             HttpStatusCode.Unauthorized => "Unauthorized (401): Authentication is required.",
             HttpStatusCode.Forbidden => "Forbidden (403): Access is denied.",
             HttpStatusCode.NotFound => "Not Found (404): The requested resource was not found.",
-            HttpStatusCode.MethodNotAllowed => "Method Not Allowed (405): The HTTP method is not supported.",
-            HttpStatusCode.Conflict => "Conflict (409): There was a conflict with the current state.",
-            HttpStatusCode.UnprocessableEntity => "Unprocessable Entity (422): The request was well-formed but contains semantic errors.",
-            HttpStatusCode.InternalServerError => "Internal Server Error (500): An error occurred on the server.",
-            HttpStatusCode.BadGateway => "Bad Gateway (502): Invalid response from upstream server.",
-            HttpStatusCode.ServiceUnavailable => "Service Unavailable (503): The server is currently unavailable.",
-            HttpStatusCode.GatewayTimeout => "Gateway Timeout (504): The server did not receive a timely response.",
-            _ => $"HTTP Error ({(int)statusCode}): {statusCode}"
+            HttpStatusCode.MethodNotAllowed =>
+                "Method Not Allowed (405): The HTTP method is not supported.",
+            HttpStatusCode.Conflict =>
+                "Conflict (409): There was a conflict with the current state.",
+            HttpStatusCode.UnprocessableEntity =>
+                "Unprocessable Entity (422): The request was well-formed but contains semantic errors.",
+            HttpStatusCode.InternalServerError =>
+                "Internal Server Error (500): An error occurred on the server.",
+            HttpStatusCode.BadGateway =>
+                "Bad Gateway (502): Invalid response from upstream server.",
+            HttpStatusCode.ServiceUnavailable =>
+                "Service Unavailable (503): The server is currently unavailable.",
+            HttpStatusCode.GatewayTimeout =>
+                "Gateway Timeout (504): The server did not receive a timely response.",
+            _ => $"HTTP Error ({(int)statusCode}): {statusCode}",
         };
     }
 

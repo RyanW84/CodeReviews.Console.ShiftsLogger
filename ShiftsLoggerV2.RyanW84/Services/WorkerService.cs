@@ -68,7 +68,6 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Back end worker service - {ex}");
             var (status, message) = ErrorMapper.Map(ex);
             return new ApiResponseDto<Worker>
             {

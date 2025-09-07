@@ -1,8 +1,8 @@
+using System.Net;
 using Microsoft.EntityFrameworkCore;
 using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Core.Interfaces;
 using ShiftsLoggerV2.RyanW84.Data;
-using System.Net;
 
 namespace ShiftsLoggerV2.RyanW84.Core.Repositories;
 
@@ -31,20 +31,20 @@ public abstract class BaseRepository<TEntity, TFilter, TCreateDto, TUpdateDto>
         try
         {
             var query = BuildQuery(filterOptions);
-            
+
             // Check if filter options support pagination
             if (filterOptions is Models.FilterOptions.BaseFilterOptions baseFilter)
             {
                 baseFilter.ValidatePagination();
-                
+
                 // Get total count before pagination
                 var totalCount = await query.CountAsync();
-                
+
                 // Apply pagination
                 var paginatedQuery = query
                     .Skip((baseFilter.PageNumber - 1) * baseFilter.PageSize)
                     .Take(baseFilter.PageSize);
-                
+
                 var entities = await paginatedQuery.ToListAsync();
 
                 if (!entities.Any() && totalCount > 0)
@@ -126,24 +126,10 @@ public abstract class BaseRepository<TEntity, TFilter, TCreateDto, TUpdateDto>
             await DbSet.AddAsync(entity);
             await DbContext.SaveChangesAsync();
 
-            try
-            {
-                // Log created entity id for debugging (IEntity.Id is implemented by entities)
-                Console.WriteLine($"Created {typeof(TEntity).Name} with ID {entity.Id}");
-            }
-            catch
-            {
-                // ignore any logging failures
-            }
-
-            return Result<TEntity>.Create(
-                entity,
-                $"{typeof(TEntity).Name} created successfully."
-            );
+            return Result<TEntity>.Create(entity, $"{typeof(TEntity).Name} created successfully.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to create {typeof(TEntity).Name}: {ex.Message}\n{ex}");
             return Result<TEntity>.Failure(
                 $"Error creating {typeof(TEntity).Name.ToLower()}: {ex.Message}",
                 HttpStatusCode.InternalServerError
@@ -170,7 +156,10 @@ public abstract class BaseRepository<TEntity, TFilter, TCreateDto, TUpdateDto>
             var reloaded = await GetEntityByIdAsync(id);
             if (reloaded == null)
             {
-                return Result<TEntity>.Failure($"{typeof(TEntity).Name} updated but failed to reload.", HttpStatusCode.InternalServerError);
+                return Result<TEntity>.Failure(
+                    $"{typeof(TEntity).Name} updated but failed to reload.",
+                    HttpStatusCode.InternalServerError
+                );
             }
 
             return Result<TEntity>.Success(

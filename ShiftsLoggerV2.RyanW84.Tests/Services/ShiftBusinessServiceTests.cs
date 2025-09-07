@@ -1,13 +1,13 @@
+using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
 using ShiftsLoggerV2.RyanW84.Services;
-using ShiftsLoggerV2.RyanW84.Common;
-using System.Net;
 using Xunit;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Services
@@ -30,11 +30,26 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
             var filterOptions = new ShiftFilterOptions();
             var shifts = new List<Shift>
             {
-                new() { ShiftId = 1, WorkerId = 1, LocationId = 1, StartTime = DateTimeOffset.Now, EndTime = DateTimeOffset.Now.AddHours(8) },
-                new() { ShiftId = 2, WorkerId = 2, LocationId = 2, StartTime = DateTimeOffset.Now.AddDays(1), EndTime = DateTimeOffset.Now.AddDays(1).AddHours(8) }
+                new()
+                {
+                    ShiftId = 1,
+                    WorkerId = 1,
+                    LocationId = 1,
+                    StartTime = DateTimeOffset.Now,
+                    EndTime = DateTimeOffset.Now.AddHours(8),
+                },
+                new()
+                {
+                    ShiftId = 2,
+                    WorkerId = 2,
+                    LocationId = 2,
+                    StartTime = DateTimeOffset.Now.AddDays(1),
+                    EndTime = DateTimeOffset.Now.AddDays(1).AddHours(8),
+                },
             };
 
-            _mockShiftRepository.Setup(s => s.GetAllAsync(filterOptions))
+            _mockShiftRepository
+                .Setup(s => s.GetAllAsync(filterOptions))
                 .ReturnsAsync(Result<List<Shift>>.Success(shifts, "Shifts retrieved successfully"));
 
             // Act
@@ -48,23 +63,31 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
             result.Data[1].ShiftId.Should().Be(2);
         }
 
-    [Fact]
-    public async Task GetAllAsync_WhenExceptionThrown_ShouldReturnFailure()
-    {
-        // Arrange
-        var filterOptions = new ShiftFilterOptions();
-        _mockShiftRepository.Setup(s => s.GetAllAsync(filterOptions))
-            .ReturnsAsync(Result<List<Shift>>.Failure("Database error", HttpStatusCode.InternalServerError));
+        [Fact]
+        public async Task GetAllAsync_WhenExceptionThrown_ShouldReturnFailure()
+        {
+            // Arrange
+            var filterOptions = new ShiftFilterOptions();
+            _mockShiftRepository
+                .Setup(s => s.GetAllAsync(filterOptions))
+                .ReturnsAsync(
+                    Result<List<Shift>>.Failure(
+                        "Database error",
+                        HttpStatusCode.InternalServerError
+                    )
+                );
 
-        // Act
-        var result = await _service.GetAllAsync(filterOptions);
+            // Act
+            var result = await _service.GetAllAsync(filterOptions);
 
-        // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeFalse();
-        result.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-        result.Message.Should().Contain("Database error");
-    }        [Fact]
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            result.Message.Should().Contain("Database error");
+        }
+
+        [Fact]
         public async Task GetByIdAsync_WhenShiftExists_ShouldReturnShift()
         {
             // Arrange
@@ -75,10 +98,11 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = 1,
                 LocationId = 1,
                 StartTime = DateTimeOffset.Now,
-                EndTime = DateTimeOffset.Now.AddHours(8)
+                EndTime = DateTimeOffset.Now.AddHours(8),
             };
 
-            _mockShiftRepository.Setup(s => s.GetByIdAsync(shiftId))
+            _mockShiftRepository
+                .Setup(s => s.GetByIdAsync(shiftId))
                 .ReturnsAsync(Result<Shift>.Success(shift, "Shift found"));
 
             // Act
@@ -97,7 +121,8 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
         {
             // Arrange
             const int shiftId = 999;
-            _mockShiftRepository.Setup(s => s.GetByIdAsync(shiftId))
+            _mockShiftRepository
+                .Setup(s => s.GetByIdAsync(shiftId))
                 .ReturnsAsync(Result<Shift>.Failure("Shift not found", HttpStatusCode.NotFound));
 
             // Act
@@ -120,7 +145,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = 1,
                 LocationId = 1,
                 StartTime = DateTimeOffset.Now,
-                EndTime = DateTimeOffset.Now.AddHours(8)
+                EndTime = DateTimeOffset.Now.AddHours(8),
             };
 
             var createdShift = new Shift
@@ -129,10 +154,11 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = shiftDto.WorkerId,
                 LocationId = shiftDto.LocationId,
                 StartTime = shiftDto.StartTime,
-                EndTime = shiftDto.EndTime
+                EndTime = shiftDto.EndTime,
             };
 
-            _mockShiftRepository.Setup(s => s.CreateAsync(shiftDto))
+            _mockShiftRepository
+                .Setup(s => s.CreateAsync(shiftDto))
                 .ReturnsAsync(Result<Shift>.Success(createdShift, "Shift created successfully"));
 
             // Act
@@ -155,7 +181,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = 0, // Invalid
                 LocationId = 1,
                 StartTime = DateTimeOffset.Now,
-                EndTime = DateTimeOffset.Now.AddHours(8)
+                EndTime = DateTimeOffset.Now.AddHours(8),
             };
 
             // Act
@@ -176,7 +202,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = 1,
                 LocationId = 0, // Invalid
                 StartTime = DateTimeOffset.Now,
-                EndTime = DateTimeOffset.Now.AddHours(8)
+                EndTime = DateTimeOffset.Now.AddHours(8),
             };
 
             // Act
@@ -198,7 +224,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = 1,
                 LocationId = 1,
                 StartTime = DateTimeOffset.Now,
-                EndTime = DateTimeOffset.Now.AddHours(8)
+                EndTime = DateTimeOffset.Now.AddHours(8),
             };
 
             var existingShift = new Shift
@@ -207,7 +233,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = 1,
                 LocationId = 1,
                 StartTime = DateTimeOffset.Now.AddDays(-1),
-                EndTime = DateTimeOffset.Now.AddDays(-1).AddHours(8)
+                EndTime = DateTimeOffset.Now.AddDays(-1).AddHours(8),
             };
 
             var updatedShift = new Shift
@@ -216,12 +242,14 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = shiftDto.WorkerId,
                 LocationId = shiftDto.LocationId,
                 StartTime = shiftDto.StartTime,
-                EndTime = shiftDto.EndTime
+                EndTime = shiftDto.EndTime,
             };
 
-            _mockShiftRepository.Setup(s => s.GetByIdAsync(shiftId))
+            _mockShiftRepository
+                .Setup(s => s.GetByIdAsync(shiftId))
                 .ReturnsAsync(Result<Shift>.Success(existingShift, "Shift found"));
-            _mockShiftRepository.Setup(s => s.UpdateAsync(shiftId, shiftDto))
+            _mockShiftRepository
+                .Setup(s => s.UpdateAsync(shiftId, shiftDto))
                 .ReturnsAsync(Result<Shift>.Success(updatedShift, "Shift updated successfully"));
 
             // Act
@@ -246,12 +274,14 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 WorkerId = 1,
                 LocationId = 1,
                 StartTime = DateTimeOffset.Now,
-                EndTime = DateTimeOffset.Now.AddHours(8)
+                EndTime = DateTimeOffset.Now.AddHours(8),
             };
 
-            _mockShiftRepository.Setup(s => s.GetByIdAsync(shiftId))
+            _mockShiftRepository
+                .Setup(s => s.GetByIdAsync(shiftId))
                 .ReturnsAsync(Result<Shift>.Success(existingShift, "Shift found"));
-            _mockShiftRepository.Setup(s => s.DeleteAsync(shiftId))
+            _mockShiftRepository
+                .Setup(s => s.DeleteAsync(shiftId))
                 .ReturnsAsync(Result.Success("Shift deleted successfully"));
 
             // Act

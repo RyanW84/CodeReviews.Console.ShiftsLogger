@@ -33,10 +33,12 @@ public class Program //testing git commit
     private static IHostBuilder CreateHostBuilder(string[] args)
     {
         return Host.CreateDefaultBuilder(args)
-            .ConfigureServices((context, services) =>
-            {
-                // Register all application services following SOLID principles
-                services.RegisterApplicationServices();
-            });
+            .ConfigureServices(
+                (context, services) =>
+                {
+                    // Register all application services following SOLID principles
+                    services.RegisterApplicationServices();
+                }
+            );
     }
 }

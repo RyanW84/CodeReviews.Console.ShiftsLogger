@@ -31,7 +31,9 @@ public class WorkersController : BaseController
     {
         try
         {
-            var result = await _workerBusinessService.GetAllAsync(workerOptions);
+            var result = await _workerBusinessService
+                .GetAllAsync(workerOptions)
+                .ConfigureAwait(false);
             return HandlePaginatedResult(result, workerOptions, "Workers retrieved successfully");
         }
         catch (Exception ex)
@@ -59,7 +61,7 @@ public class WorkersController : BaseController
     {
         try
         {
-            var result = await _workerBusinessService.GetByIdAsync(id);
+            var result = await _workerBusinessService.GetByIdAsync(id).ConfigureAwait(false);
             return HandleResult<Worker>(result, "Worker retrieved successfully");
         }
         catch (Exception ex)
@@ -91,7 +93,7 @@ public class WorkersController : BaseController
                 return BadRequestModelState();
             }
 
-            var result = await _workerBusinessService.CreateAsync(worker);
+            var result = await _workerBusinessService.CreateAsync(worker).ConfigureAwait(false);
             return HandleResult<Worker>(result, "Worker created successfully");
         }
         catch (Exception ex)
@@ -124,7 +126,9 @@ public class WorkersController : BaseController
                 return BadRequestModelState();
             }
 
-            var result = await _workerBusinessService.UpdateAsync(id, updatedWorker);
+            var result = await _workerBusinessService
+                .UpdateAsync(id, updatedWorker)
+                .ConfigureAwait(false);
             return HandleResult<Worker>(result, "Worker updated successfully");
         }
         catch (Exception ex)
@@ -149,7 +153,7 @@ public class WorkersController : BaseController
     {
         try
         {
-            var result = await _workerBusinessService.DeleteAsync(id);
+            var result = await _workerBusinessService.DeleteAsync(id).ConfigureAwait(false);
             return HandleNonGenericResult(result, "Worker deleted successfully");
         }
         catch (Exception ex)

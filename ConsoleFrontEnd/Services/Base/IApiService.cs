@@ -16,7 +16,7 @@ public interface IApiService<T, TFilter, TKey> : IDisposable
     Task<ApiResponseDto<T>> CreateAsync(T entity);
     Task<ApiResponseDto<T>> UpdateAsync(TKey id, T entity);
     Task<ApiResponseDto<bool>> DeleteAsync(TKey id);
-    
+
     // Query operations
     Task<ApiResponseDto<List<T>>> GetByFilterAsync(TFilter filter);
 }

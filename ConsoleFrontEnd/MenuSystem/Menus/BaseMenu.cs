@@ -18,11 +18,13 @@ public abstract class BaseMenu : IMenu
         IConsoleDisplayService displayService,
         IConsoleInputService inputService,
         INavigationService navigationService,
-        ILogger logger)
+        ILogger logger
+    )
     {
         DisplayService = displayService ?? throw new ArgumentNullException(nameof(displayService));
         InputService = inputService ?? throw new ArgumentNullException(nameof(inputService));
-        NavigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        NavigationService =
+            navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -34,10 +36,10 @@ public abstract class BaseMenu : IMenu
         try
         {
             Logger.LogDebug("Displaying menu: {MenuTitle}", Title);
-            
+
             DisplayService.DisplayHeader(Title);
             DisplayBreadcrumb();
-            
+
             await ShowMenuAsync();
         }
         catch (Exception ex)

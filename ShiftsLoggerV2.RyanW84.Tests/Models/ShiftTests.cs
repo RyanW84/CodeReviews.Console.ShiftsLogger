@@ -53,7 +53,7 @@ public class ShiftTests
             StartTime = startTime,
             EndTime = endTime,
             Worker = worker,
-            Location = location
+            Location = location,
         };
 
         // Assert
@@ -92,11 +92,7 @@ public class ShiftTests
     public void Shift_WorkerIdAndLocationId_ShouldSetCorrectly(int workerId, int locationId)
     {
         // Arrange & Act
-        var shift = new Shift
-        {
-            WorkerId = workerId,
-            LocationId = locationId
-        };
+        var shift = new Shift { WorkerId = workerId, LocationId = locationId };
 
         // Assert
         shift.WorkerId.Should().Be(workerId);
@@ -107,11 +103,7 @@ public class ShiftTests
     public void Shift_NavigationProperties_ShouldAllowNullValues()
     {
         // Arrange & Act
-        var shift = new Shift
-        {
-            Worker = null,
-            Location = null
-        };
+        var shift = new Shift { Worker = null, Location = null };
 
         // Assert
         shift.Worker.Should().BeNull();

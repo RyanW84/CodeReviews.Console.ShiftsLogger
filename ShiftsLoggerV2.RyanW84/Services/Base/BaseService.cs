@@ -10,7 +10,7 @@ namespace ShiftsLoggerV2.RyanW84.Services.Base;
 /// <typeparam name="TFilter">Filter options type</typeparam>
 /// <typeparam name="TCreateDto">Creation DTO type</typeparam>
 /// <typeparam name="TUpdateDto">Update DTO type</typeparam>
-public abstract class BaseService<TEntity, TFilter, TCreateDto, TUpdateDto> 
+public abstract class BaseService<TEntity, TFilter, TCreateDto, TUpdateDto>
     : IService<TEntity, TFilter, TCreateDto, TUpdateDto>
     where TEntity : class, IEntity
 {

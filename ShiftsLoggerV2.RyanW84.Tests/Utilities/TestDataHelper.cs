@@ -14,7 +14,7 @@ public static class TestDataHelper
             Name = name,
             Email = $"test{id}@example.com",
             PhoneNumber = "123-456-7890",
-            ShiftCount = 0
+            ShiftCount = 0,
         };
     }
 
@@ -34,7 +34,7 @@ public static class TestDataHelper
         {
             Name = name,
             Email = "test@example.com",
-            PhoneNumber = "123-456-7890"
+            PhoneNumber = "123-456-7890",
         };
     }
 
@@ -47,7 +47,7 @@ public static class TestDataHelper
             WorkerId = workerId,
             LocationId = locationId,
             StartTime = now,
-            EndTime = now.AddHours(8)
+            EndTime = now.AddHours(8),
         };
     }
 
@@ -61,7 +61,7 @@ public static class TestDataHelper
             Town = "Test Town",
             County = "Test County",
             PostCode = "12345",
-            Country = "Test Country"
+            Country = "Test Country",
         };
     }
 
@@ -79,18 +79,20 @@ public static class TestDataHelper
     {
         var shifts = new List<Shift>();
         var baseDate = DateTimeOffset.Now.AddDays(-count);
-        
+
         for (int i = 1; i <= count; i++)
         {
             var startTime = baseDate.AddDays(i);
-            shifts.Add(new Shift
-            {
-                ShiftId = i,
-                WorkerId = workerId,
-                LocationId = locationId,
-                StartTime = startTime,
-                EndTime = startTime.AddHours(8)
-            });
+            shifts.Add(
+                new Shift
+                {
+                    ShiftId = i,
+                    WorkerId = workerId,
+                    LocationId = locationId,
+                    StartTime = startTime,
+                    EndTime = startTime.AddHours(8),
+                }
+            );
         }
         return shifts;
     }
@@ -108,7 +110,7 @@ public static class TestDataHelper
             WorkerId = workerId,
             LocationId = locationId,
             StartTime = now,
-            EndTime = now.AddHours(8)
+            EndTime = now.AddHours(8),
         };
     }
 
@@ -121,7 +123,7 @@ public static class TestDataHelper
             Town = "Test Town",
             County = "Test County",
             PostCode = "12345",
-            Country = "Test Country"
+            Country = "Test Country",
         };
     }
 }

@@ -1,3 +1,4 @@
+using System.Net;
 using FluentAssertions;
 using Moq;
 using ShiftsLoggerV2.RyanW84.Common;
@@ -6,7 +7,6 @@ using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
 using ShiftsLoggerV2.RyanW84.Services;
-using System.Net;
 using Xunit;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Services;
@@ -30,11 +30,12 @@ public class WorkerServiceTests
         var workers = new List<Worker>
         {
             new() { WorkerId = 1, Name = "John Doe" },
-            new() { WorkerId = 2, Name = "Jane Smith" }
+            new() { WorkerId = 2, Name = "Jane Smith" },
         };
 
         var repositoryResult = Result<List<Worker>>.Success(workers, "Success");
-        _mockWorkerRepository.Setup(r => r.GetAllAsync(filterOptions))
+        _mockWorkerRepository
+            .Setup(r => r.GetAllAsync(filterOptions))
             .ReturnsAsync(repositoryResult);
 
         // Act
@@ -54,9 +55,13 @@ public class WorkerServiceTests
     {
         // Arrange
         var filterOptions = new WorkerFilterOptions();
-        var repositoryResult = Result<List<Worker>>.Failure("Database error", HttpStatusCode.InternalServerError);
-        
-        _mockWorkerRepository.Setup(r => r.GetAllAsync(filterOptions))
+        var repositoryResult = Result<List<Worker>>.Failure(
+            "Database error",
+            HttpStatusCode.InternalServerError
+        );
+
+        _mockWorkerRepository
+            .Setup(r => r.GetAllAsync(filterOptions))
             .ReturnsAsync(repositoryResult);
 
         // Act
@@ -77,9 +82,8 @@ public class WorkerServiceTests
         const int workerId = 1;
         var worker = new Worker { WorkerId = workerId, Name = "John Doe" };
         var repositoryResult = Result<Worker>.Success(worker, "Worker found");
-        
-        _mockWorkerRepository.Setup(r => r.GetByIdAsync(workerId))
-            .ReturnsAsync(repositoryResult);
+
+        _mockWorkerRepository.Setup(r => r.GetByIdAsync(workerId)).ReturnsAsync(repositoryResult);
 
         // Act
         var result = await _workerService.GetWorkerById(workerId);
@@ -98,9 +102,8 @@ public class WorkerServiceTests
         // Arrange
         const int workerId = 999;
         var repositoryResult = Result<Worker>.Failure("Worker not found", HttpStatusCode.NotFound);
-        
-        _mockWorkerRepository.Setup(r => r.GetByIdAsync(workerId))
-            .ReturnsAsync(repositoryResult);
+
+        _mockWorkerRepository.Setup(r => r.GetByIdAsync(workerId)).ReturnsAsync(repositoryResult);
 
         // Act
         var result = await _workerService.GetWorkerById(workerId);
@@ -119,9 +122,8 @@ public class WorkerServiceTests
         // Arrange
         const int workerId = 1;
         var repositoryResult = Result<Worker>.Success(null!, "No data");
-        
-        _mockWorkerRepository.Setup(r => r.GetByIdAsync(workerId))
-            .ReturnsAsync(repositoryResult);
+
+        _mockWorkerRepository.Setup(r => r.GetByIdAsync(workerId)).ReturnsAsync(repositoryResult);
 
         // Act
         var result = await _workerService.GetWorkerById(workerId);
@@ -137,8 +139,7 @@ public class WorkerServiceTests
     {
         // Act & Assert
         var action = () => new WorkerService(null!);
-        action.Should().Throw<ArgumentNullException>()
-            .WithParameterName("workerRepository");
+        action.Should().Throw<ArgumentNullException>().WithParameterName("workerRepository");
     }
 
     [Fact]
@@ -149,18 +150,19 @@ public class WorkerServiceTests
         {
             Name = "John Doe",
             Email = "john@example.com",
-            PhoneNumber = "123-456-7890"
+            PhoneNumber = "123-456-7890",
         };
 
-        var createdWorker = new Worker 
-        { 
-            WorkerId = 1, 
+        var createdWorker = new Worker
+        {
+            WorkerId = 1,
             Name = workerDto.Name,
             Email = workerDto.Email,
-            PhoneNumber = workerDto.PhoneNumber
+            PhoneNumber = workerDto.PhoneNumber,
         };
 
-        _mockWorkerRepository.Setup(r => r.CreateAsync(It.IsAny<WorkerApiRequestDto>()))
+        _mockWorkerRepository
+            .Setup(r => r.CreateAsync(It.IsAny<WorkerApiRequestDto>()))
             .ReturnsAsync(Result<Worker>.Success(createdWorker, "Worker created"));
 
         // Act
@@ -172,26 +174,32 @@ public class WorkerServiceTests
         result.ResponseCode.Should().Be(HttpStatusCode.Created);
         result.Data!.Name.Should().Be("John Doe");
         result.Data.Email.Should().Be("john@example.com");
-        
+
         // Verify that CreateAsync was called with correct worker data
-        _mockWorkerRepository.Verify(r => r.CreateAsync(It.Is<WorkerApiRequestDto>(dto => 
-            dto.Name == workerDto.Name &&
-            dto.Email == workerDto.Email &&
-            dto.PhoneNumber == workerDto.PhoneNumber)), Times.Once);
+        _mockWorkerRepository.Verify(
+            r =>
+                r.CreateAsync(
+                    It.Is<WorkerApiRequestDto>(dto =>
+                        dto.Name == workerDto.Name
+                        && dto.Email == workerDto.Email
+                        && dto.PhoneNumber == workerDto.PhoneNumber
+                    )
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
     public async Task CreateWorker_WhenRepositoryFails_ShouldReturnFailureResponse()
     {
         // Arrange
-        var workerDto = new WorkerApiRequestDto
-        {
-            Name = "John Doe",
-            Email = "john@example.com"
-        };
+        var workerDto = new WorkerApiRequestDto { Name = "John Doe", Email = "john@example.com" };
 
-        _mockWorkerRepository.Setup(r => r.CreateAsync(It.IsAny<WorkerApiRequestDto>()))
-            .ReturnsAsync(Result<Worker>.Failure("Database error", HttpStatusCode.InternalServerError));
+        _mockWorkerRepository
+            .Setup(r => r.CreateAsync(It.IsAny<WorkerApiRequestDto>()))
+            .ReturnsAsync(
+                Result<Worker>.Failure("Database error", HttpStatusCode.InternalServerError)
+            );
 
         // Act
         var result = await _workerService.CreateWorker(workerDto);

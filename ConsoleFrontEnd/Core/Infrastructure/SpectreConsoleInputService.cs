@@ -16,13 +16,17 @@ public class SpectreConsoleInputService : IConsoleInputService
         lock (_consoleLock)
         {
             if (options == null || options.Length == 0)
-                throw new ArgumentException("At least one option must be provided", nameof(options));
+                throw new ArgumentException(
+                    "At least one option must be provided",
+                    nameof(options)
+                );
 
             var selection = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title($"[green]{prompt}[/]")
                     .PageSize(10)
-                    .AddChoices(options));
+                    .AddChoices(options)
+            );
 
             return selection;
         }
@@ -33,7 +37,7 @@ public class SpectreConsoleInputService : IConsoleInputService
         lock (_consoleLock)
         {
             var textPrompt = new TextPrompt<string>($"[green]{prompt}[/]");
-            
+
             if (!isRequired)
             {
                 textPrompt.AllowEmpty();
@@ -47,16 +51,23 @@ public class SpectreConsoleInputService : IConsoleInputService
     {
         lock (_consoleLock)
         {
-            var numberPrompt = new TextPrompt<int>($"[green]{prompt}[/]")
-                .ValidationErrorMessage("[red]Please enter a valid integer[/]");
+            var numberPrompt = new TextPrompt<int>($"[green]{prompt}[/]").ValidationErrorMessage(
+                "[red]Please enter a valid integer[/]"
+            );
 
             if (min.HasValue)
-                numberPrompt.Validate(value => value >= min.Value ? ValidationResult.Success() 
-                    : ValidationResult.Error($"Value must be at least {min.Value}"));
+                numberPrompt.Validate(value =>
+                    value >= min.Value
+                        ? ValidationResult.Success()
+                        : ValidationResult.Error($"Value must be at least {min.Value}")
+                );
 
             if (max.HasValue)
-                numberPrompt.Validate(value => value <= max.Value ? ValidationResult.Success() 
-                    : ValidationResult.Error($"Value must be at most {max.Value}"));
+                numberPrompt.Validate(value =>
+                    value <= max.Value
+                        ? ValidationResult.Success()
+                        : ValidationResult.Error($"Value must be at most {max.Value}")
+                );
 
             return AnsiConsole.Prompt(numberPrompt);
         }
@@ -66,16 +77,23 @@ public class SpectreConsoleInputService : IConsoleInputService
     {
         lock (_consoleLock)
         {
-            var decimalPrompt = new TextPrompt<decimal>($"[green]{prompt}[/]")
-                .ValidationErrorMessage("[red]Please enter a valid decimal number[/]");
+            var decimalPrompt = new TextPrompt<decimal>(
+                $"[green]{prompt}[/]"
+            ).ValidationErrorMessage("[red]Please enter a valid decimal number[/]");
 
             if (min.HasValue)
-                decimalPrompt.Validate(value => value >= min.Value ? ValidationResult.Success() 
-                    : ValidationResult.Error($"Value must be at least {min.Value}"));
+                decimalPrompt.Validate(value =>
+                    value >= min.Value
+                        ? ValidationResult.Success()
+                        : ValidationResult.Error($"Value must be at least {min.Value}")
+                );
 
             if (max.HasValue)
-                decimalPrompt.Validate(value => value <= max.Value ? ValidationResult.Success() 
-                    : ValidationResult.Error($"Value must be at most {max.Value}"));
+                decimalPrompt.Validate(value =>
+                    value <= max.Value
+                        ? ValidationResult.Success()
+                        : ValidationResult.Error($"Value must be at most {max.Value}")
+                );
 
             return AnsiConsole.Prompt(decimalPrompt);
         }
@@ -85,8 +103,9 @@ public class SpectreConsoleInputService : IConsoleInputService
     {
         lock (_consoleLock)
         {
-            var datePrompt = new TextPrompt<DateTime>($"[green]{prompt}[/]")
-                .ValidationErrorMessage("[red]Please enter a valid date and time (e.g., 2023-12-31 14:30)[/]");
+            var datePrompt = new TextPrompt<DateTime>($"[green]{prompt}[/]").ValidationErrorMessage(
+                "[red]Please enter a valid date and time (e.g., 2023-12-31 14:30)[/]"
+            );
 
             return AnsiConsole.Prompt(datePrompt);
         }

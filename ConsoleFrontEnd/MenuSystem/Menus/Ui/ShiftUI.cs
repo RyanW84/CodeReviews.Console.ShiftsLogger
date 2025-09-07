@@ -1,10 +1,10 @@
+using System.Threading.Tasks;
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
-using System.Threading.Tasks;
 
 namespace ConsoleFrontEnd.MenuSystem;
 
@@ -15,11 +15,17 @@ public class ShiftUI : IShiftUi
     private readonly ShiftInputHelper _shiftInputHelper;
     private readonly ConsoleFrontEnd.Interfaces.IShiftService _shiftService;
 
-    public ShiftUI(IConsoleDisplayService display, ILogger<ShiftUI> logger, ShiftInputHelper shiftInputHelper, ConsoleFrontEnd.Interfaces.IShiftService shiftService)
+    public ShiftUI(
+        IConsoleDisplayService display,
+        ILogger<ShiftUI> logger,
+        ShiftInputHelper shiftInputHelper,
+        ConsoleFrontEnd.Interfaces.IShiftService shiftService
+    )
     {
         _display = display;
         _uiHelper = new UiHelper(display, logger);
-        _shiftInputHelper = shiftInputHelper ?? throw new ArgumentNullException(nameof(shiftInputHelper));
+        _shiftInputHelper =
+            shiftInputHelper ?? throw new ArgumentNullException(nameof(shiftInputHelper));
         _shiftService = shiftService ?? throw new ArgumentNullException(nameof(shiftService));
     }
 
@@ -29,7 +35,9 @@ public class ShiftUI : IShiftUi
 
         var start = _shiftInputHelper.GetDateTimeInput("Start Time");
         var end = _shiftInputHelper.GetDateTimeInput("End Time");
-        var locationId = await _shiftInputHelper.SelectLocationAsync(null, false).ConfigureAwait(false);
+        var locationId = await _shiftInputHelper
+            .SelectLocationAsync(null, false)
+            .ConfigureAwait(false);
 
         return new Shift
         {
@@ -37,7 +45,7 @@ public class ShiftUI : IShiftUi
             WorkerId = workerId,
             LocationId = locationId,
             StartTime = start,
-            EndTime = end
+            EndTime = end,
         };
     }
 
@@ -47,7 +55,9 @@ public class ShiftUI : IShiftUi
 
         var start = _shiftInputHelper.GetDateTimeInput("Start Time", existingShift.Start, true);
         var end = _shiftInputHelper.GetDateTimeInput("End Time", existingShift.End, true);
-        var locationId = await _shiftInputHelper.SelectLocationAsync(existingShift.LocationId, true).ConfigureAwait(false);
+        var locationId = await _shiftInputHelper
+            .SelectLocationAsync(existingShift.LocationId, true)
+            .ConfigureAwait(false);
 
         return new Shift
         {
@@ -55,7 +65,7 @@ public class ShiftUI : IShiftUi
             WorkerId = existingShift.WorkerId,
             LocationId = locationId,
             StartTime = start,
-            EndTime = end
+            EndTime = end,
         };
     }
 
@@ -79,7 +89,9 @@ public class ShiftUI : IShiftUi
                 .AddChoices(new[] { "No", "Yes" })
         );
         if (filterByLocation == "Yes")
-            locationId = await _shiftInputHelper.SelectLocationAsync(null, false).ConfigureAwait(false);
+            locationId = await _shiftInputHelper
+                .SelectLocationAsync(null, false)
+                .ConfigureAwait(false);
 
         DateTime? startDate = null;
         DateTime? endDate = null;
@@ -103,14 +115,28 @@ public class ShiftUI : IShiftUi
         );
         if (wantDuration == "Yes")
         {
-            var minDurationInput = AnsiConsole.Ask<string>("Minimum duration in minutes (press Enter to skip):", "");
-            if (!string.IsNullOrWhiteSpace(minDurationInput) && int.TryParse(minDurationInput, out var minDuration) && minDuration > 0)
+            var minDurationInput = AnsiConsole.Ask<string>(
+                "Minimum duration in minutes (press Enter to skip):",
+                ""
+            );
+            if (
+                !string.IsNullOrWhiteSpace(minDurationInput)
+                && int.TryParse(minDurationInput, out var minDuration)
+                && minDuration > 0
+            )
             {
                 minDurationMinutes = minDuration;
             }
 
-            var maxDurationInput = AnsiConsole.Ask<string>("Maximum duration in minutes (press Enter to skip):", "");
-            if (!string.IsNullOrWhiteSpace(maxDurationInput) && int.TryParse(maxDurationInput, out var maxDuration) && maxDuration > 0)
+            var maxDurationInput = AnsiConsole.Ask<string>(
+                "Maximum duration in minutes (press Enter to skip):",
+                ""
+            );
+            if (
+                !string.IsNullOrWhiteSpace(maxDurationInput)
+                && int.TryParse(maxDurationInput, out var maxDuration)
+                && maxDuration > 0
+            )
             {
                 maxDurationMinutes = maxDuration;
             }
@@ -123,7 +149,7 @@ public class ShiftUI : IShiftUi
             StartDate = startDate,
             EndDate = endDate,
             MinDurationMinutes = minDurationMinutes,
-            MaxDurationMinutes = maxDurationMinutes
+            MaxDurationMinutes = maxDurationMinutes,
         };
     }
 
@@ -140,7 +166,9 @@ public class ShiftUI : IShiftUi
         {
             _display.DisplayHeader($"Shifts (Page {currentPage})", "blue");
 
-            var response = await _shiftService.GetAllShiftsAsync(currentPage, pageSize).ConfigureAwait(false);
+            var response = await _shiftService
+                .GetAllShiftsAsync(currentPage, pageSize)
+                .ConfigureAwait(false);
 
             if (response.RequestFailed || response.Data == null || !response.Data.Any())
             {
@@ -151,7 +179,9 @@ public class ShiftUI : IShiftUi
                 }
                 else
                 {
-                    _display.DisplayError($"No shifts found on page {currentPage}. Returning to page 1.");
+                    _display.DisplayError(
+                        $"No shifts found on page {currentPage}. Returning to page 1."
+                    );
                     currentPage = 1;
                     continue;
                 }
@@ -163,8 +193,12 @@ public class ShiftUI : IShiftUi
             DisplayShiftsTable(response.Data, startIndex + 1);
 
             // Display pagination info
-            _display.DisplayInfo($"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} shifts");
-            _display.DisplayInfo($"Showing {response.Data.Count()} of {response.TotalCount} shifts");
+            _display.DisplayInfo(
+                $"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} shifts"
+            );
+            _display.DisplayInfo(
+                $"Showing {response.Data.Count()} of {response.TotalCount} shifts"
+            );
 
             // Create pagination options
             var options = new List<string>();
@@ -180,9 +214,7 @@ public class ShiftUI : IShiftUi
             options.Add("Back to Menu");
 
             var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Choose an action:")
-                    .AddChoices(options)
+                new SelectionPrompt<string>().Title("Choose an action:").AddChoices(options)
             );
 
             switch (choice)
@@ -196,11 +228,15 @@ public class ShiftUI : IShiftUi
                     break;
 
                 case "Go to Page":
-                    var pageInput = AnsiConsole.Ask<int>($"Enter page number (1-{response.TotalPages}):");
+                    var pageInput = AnsiConsole.Ask<int>(
+                        $"Enter page number (1-{response.TotalPages}):"
+                    );
                     if (pageInput >= 1 && pageInput <= response.TotalPages)
                         currentPage = pageInput;
                     else
-                        _display.DisplayError($"Invalid page number. Please enter a number between 1 and {response.TotalPages}.");
+                        _display.DisplayError(
+                            $"Invalid page number. Please enter a number between 1 and {response.TotalPages}."
+                        );
                     break;
 
                 case "Change Page Size":
@@ -211,7 +247,9 @@ public class ShiftUI : IShiftUi
                         currentPage = 1; // Reset to first page
                     }
                     else
-                        _display.DisplayError("Invalid page size. Please enter a number between 1 and 100.");
+                        _display.DisplayError(
+                            "Invalid page size. Please enter a number between 1 and 100."
+                        );
                     break;
 
                 case "Back to Menu":
@@ -229,7 +267,9 @@ public class ShiftUI : IShiftUi
 
         while (true)
         {
-            var response = await _shiftService.GetAllShiftsAsync(currentPage, pageSize).ConfigureAwait(false);
+            var response = await _shiftService
+                .GetAllShiftsAsync(currentPage, pageSize)
+                .ConfigureAwait(false);
             if (response.RequestFailed || response.Data == null || !response.Data.Any())
             {
                 if (currentPage == 1)
@@ -248,8 +288,11 @@ public class ShiftUI : IShiftUi
             // Calculate starting index for continuous numbering across pages
             int startIndex = (currentPage - 1) * pageSize;
 
-            var choices = response.Data
-                .Select((s, index) => $"{startIndex + index + 1}. {s.StartTime:dd/MM/yyyy HH:mm} - {s.EndTime:dd/MM/yyyy HH:mm} ({s.Duration.TotalHours:F1}h)")
+            var choices = response
+                .Data.Select(
+                    (s, index) =>
+                        $"{startIndex + index + 1}. {s.StartTime:dd/MM/yyyy HH:mm} - {s.EndTime:dd/MM/yyyy HH:mm} ({s.Duration.TotalHours:F1}h)"
+                )
                 .ToList();
 
             // Add navigation options if there are more pages

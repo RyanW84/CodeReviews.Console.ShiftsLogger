@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using ShiftsLoggerV2.RyanW84.Data;
 using ShiftsLoggerV2.RyanW84.Extensions;
-using ShiftsLoggerV2.RyanW84.Mappings;
 using ShiftsLoggerV2.RyanW84.HealthChecks;
+using ShiftsLoggerV2.RyanW84.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +47,8 @@ builder.Services.AddApplicationServices();
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 // Add health checks
-builder.Services.AddHealthChecks()
+builder
+    .Services.AddHealthChecks()
     .AddDbContextCheck<ShiftsLoggerDbContext>("database", tags: new[] { "database", "sql" })
     .AddCheck<CustomHealthCheck>("custom", tags: new[] { "custom" });
 static string GetConnectionString(IConfiguration configuration)
@@ -67,8 +68,8 @@ static string GetConnectionString(IConfiguration configuration)
 
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new InvalidOperationException(
-                "LinuxSqlServer connection string must be configured in user secrets for non-Windows platforms. " +
-                "Run 'dotnet user-secrets set \"ConnectionStrings:LinuxSqlServer\" \"<your-connection-string>\"' to set it."
+                "LinuxSqlServer connection string must be configured in user secrets for non-Windows platforms. "
+                    + "Run 'dotnet user-secrets set \"ConnectionStrings:LinuxSqlServer\" \"<your-connection-string>\"' to set it."
             );
 
         // Add connection timeout if not present
@@ -116,7 +117,8 @@ if (app.Environment.IsDevelopment())
             }
         }
 
-        var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ShiftsLoggerDbContext>>();
+        var logger =
+            scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ShiftsLoggerDbContext>>();
         dbContext.SeedData(logger);
 
         Console.WriteLine("Database setup completed successfully");
@@ -134,7 +136,8 @@ if (app.Environment.IsDevelopment())
                 dbContext.Database.EnsureDeleted();
                 dbContext.Database.Migrate();
 
-                var logger = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ShiftsLoggerDbContext>>();
+                var logger =
+                    scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ShiftsLoggerDbContext>>();
                 dbContext.SeedData(logger);
 
                 Console.WriteLine("Database recreated successfully");
@@ -142,7 +145,9 @@ if (app.Environment.IsDevelopment())
             catch (Exception recreateEx)
             {
                 Console.WriteLine($"Failed to recreate database: {recreateEx.Message}");
-                Console.WriteLine("Please manually delete the database or check your connection string.");
+                Console.WriteLine(
+                    "Please manually delete the database or check your connection string."
+                );
             }
         }
     }
@@ -161,14 +166,20 @@ app.MapScalarApiReference(options =>
 
 // Map health check endpoints
 app.MapHealthChecks("/health");
-app.MapHealthChecks("/health/database", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains("database")
-});
-app.MapHealthChecks("/health/custom", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains("custom")
-});
+app.MapHealthChecks(
+    "/health/database",
+    new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("database"),
+    }
+);
+app.MapHealthChecks(
+    "/health/custom",
+    new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("custom"),
+    }
+);
 
 app.MapControllers();
 

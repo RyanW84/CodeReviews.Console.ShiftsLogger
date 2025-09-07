@@ -22,20 +22,30 @@ public class LocationService : ILocationService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<ApiResponseDto<List<Location>>> GetLocationsByFilterAsync(ConsoleFrontEnd.Models.FilterOptions.LocationFilterOptions filter, int pageNumber = 1, int pageSize = 10)
+    public async Task<ApiResponseDto<List<Location>>> GetLocationsByFilterAsync(
+        ConsoleFrontEnd.Models.FilterOptions.LocationFilterOptions filter,
+        int pageNumber = 1,
+        int pageSize = 10
+    )
     {
         try
         {
-            var queryString = $"api/locations?" + BuildLocationFilterQuery(filter, pageNumber, pageSize);
-            _logger.LogInformation("Making request to: {RequestUrl}", $"{_httpClient.BaseAddress}{queryString}");
+            var queryString =
+                $"api/locations?" + BuildLocationFilterQuery(filter, pageNumber, pageSize);
+            _logger.LogInformation(
+                "Making request to: {RequestUrl}",
+                $"{_httpClient.BaseAddress}{queryString}"
+            );
 
             var response = await _httpClient.GetAsync(queryString).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<List<Location>>(
-                response,
-                _logger,
-                "Get Locations By Filter",
-                []
-            ).ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<List<Location>>(
+                    response,
+                    _logger,
+                    "Get Locations By Filter",
+                    []
+                )
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -44,22 +54,34 @@ public class LocationService : ILocationService
             {
                 Data = [],
                 RequestFailed = true,
-                ResponseCode = System.Net.HttpStatusCode.InternalServerError
+                ResponseCode = System.Net.HttpStatusCode.InternalServerError,
             };
         }
     }
 
-    private string BuildLocationFilterQuery(ConsoleFrontEnd.Models.FilterOptions.LocationFilterOptions filter, int pageNumber = 1, int pageSize = 10)
+    private string BuildLocationFilterQuery(
+        ConsoleFrontEnd.Models.FilterOptions.LocationFilterOptions filter,
+        int pageNumber = 1,
+        int pageSize = 10
+    )
     {
         List<string> query = [];
-        if (filter.LocationId.HasValue) query.Add($"LocationId={filter.LocationId.Value}");
-        if (!string.IsNullOrWhiteSpace(filter.Name)) query.Add($"Name={Uri.EscapeDataString(filter.Name)}");
-        if (!string.IsNullOrWhiteSpace(filter.Address)) query.Add($"Address={Uri.EscapeDataString(filter.Address)}");
-        if (!string.IsNullOrWhiteSpace(filter.Town)) query.Add($"Town={Uri.EscapeDataString(filter.Town)}");
-        if (!string.IsNullOrWhiteSpace(filter.County)) query.Add($"County={Uri.EscapeDataString(filter.County)}");
-        if (!string.IsNullOrWhiteSpace(filter.PostCode)) query.Add($"PostCode={Uri.EscapeDataString(filter.PostCode)}");
-        if (!string.IsNullOrWhiteSpace(filter.Country)) query.Add($"Country={Uri.EscapeDataString(filter.Country)}");
-        if (!string.IsNullOrWhiteSpace(filter.Search)) query.Add($"Search={Uri.EscapeDataString(filter.Search)}");
+        if (filter.LocationId.HasValue)
+            query.Add($"LocationId={filter.LocationId.Value}");
+        if (!string.IsNullOrWhiteSpace(filter.Name))
+            query.Add($"Name={Uri.EscapeDataString(filter.Name)}");
+        if (!string.IsNullOrWhiteSpace(filter.Address))
+            query.Add($"Address={Uri.EscapeDataString(filter.Address)}");
+        if (!string.IsNullOrWhiteSpace(filter.Town))
+            query.Add($"Town={Uri.EscapeDataString(filter.Town)}");
+        if (!string.IsNullOrWhiteSpace(filter.County))
+            query.Add($"County={Uri.EscapeDataString(filter.County)}");
+        if (!string.IsNullOrWhiteSpace(filter.PostCode))
+            query.Add($"PostCode={Uri.EscapeDataString(filter.PostCode)}");
+        if (!string.IsNullOrWhiteSpace(filter.Country))
+            query.Add($"Country={Uri.EscapeDataString(filter.Country)}");
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+            query.Add($"Search={Uri.EscapeDataString(filter.Search)}");
 
         // Add pagination parameters
         query.Add($"pageNumber={pageNumber}");
@@ -68,20 +90,23 @@ public class LocationService : ILocationService
         return string.Join("&", query);
     }
 
-    public async Task<ApiResponseDto<List<Location>>> GetAllLocationsAsync(int pageNumber = 1, int pageSize = 10)
+    public async Task<ApiResponseDto<List<Location>>> GetAllLocationsAsync(
+        int pageNumber = 1,
+        int pageSize = 10
+    )
     {
         try
         {
             var queryString = $"api/locations?pageNumber={pageNumber}&pageSize={pageSize}";
-            _logger.LogInformation("Making request to: {RequestUrl}", $"{_httpClient.BaseAddress}{queryString}");
+            _logger.LogInformation(
+                "Making request to: {RequestUrl}",
+                $"{_httpClient.BaseAddress}{queryString}"
+            );
 
             var response = await _httpClient.GetAsync(queryString).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<List<Location>>(
-                response,
-                _logger,
-                "Get All Locations",
-                []
-            ).ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<List<Location>>(response, _logger, "Get All Locations", [])
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -90,7 +115,7 @@ public class LocationService : ILocationService
             {
                 ResponseCode = HttpStatusCode.InternalServerError,
                 Data = [],
-                RequestFailed = true
+                RequestFailed = true,
             };
         }
     }
@@ -100,12 +125,9 @@ public class LocationService : ILocationService
         try
         {
             var response = await _httpClient.GetAsync($"api/locations/{id}").ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<Location?>(
-                response,
-                _logger,
-                $"Get Location {id}",
-                null
-            ).ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<Location?>(response, _logger, $"Get Location {id}", null)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -114,7 +136,7 @@ public class LocationService : ILocationService
             {
                 ResponseCode = HttpStatusCode.InternalServerError,
                 RequestFailed = true,
-                Data = null
+                Data = null,
             };
         }
     }
@@ -124,7 +146,10 @@ public class LocationService : ILocationService
         try
         {
             // Use filter to find location by name efficiently
-            var filter = new ConsoleFrontEnd.Models.FilterOptions.LocationFilterOptions { Name = name };
+            var filter = new ConsoleFrontEnd.Models.FilterOptions.LocationFilterOptions
+            {
+                Name = name,
+            };
             var response = await GetLocationsByFilterAsync(filter);
 
             if (response.RequestFailed || response.Data == null)
@@ -132,25 +157,31 @@ public class LocationService : ILocationService
                 {
                     RequestFailed = true,
                     ResponseCode = response.ResponseCode,
-                    Data = null
+                    Data = null,
                 };
 
             var location = response.Data.FirstOrDefault();
-            return new ApiResponseDto<Location?>(location != null ? "Location found" : "Location not found")
+            return new ApiResponseDto<Location?>(
+                location != null ? "Location found" : "Location not found"
+            )
             {
                 Data = location,
                 RequestFailed = location == null,
-                ResponseCode = location != null ? HttpStatusCode.OK : HttpStatusCode.NotFound
+                ResponseCode = location != null ? HttpStatusCode.OK : HttpStatusCode.NotFound,
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while fetching location by name {LocationName}", name);
+            _logger.LogError(
+                ex,
+                "Error occurred while fetching location by name {LocationName}",
+                name
+            );
             return new ApiResponseDto<Location?>($"Connection Error: {ex.Message}")
             {
                 ResponseCode = HttpStatusCode.InternalServerError,
                 RequestFailed = true,
-                Data = null
+                Data = null,
             };
         }
     }
@@ -164,7 +195,7 @@ public class LocationService : ILocationService
             Town = location.Town,
             County = location.County,
             PostCode = location.PostCode,
-            Country = location.Country
+            Country = location.Country,
         };
         var errors = Services.Validation.LocationValidation.Validate(dto);
         if (errors.Count > 0)
@@ -174,18 +205,17 @@ public class LocationService : ILocationService
                 RequestFailed = true,
                 ResponseCode = HttpStatusCode.BadRequest,
                 Data = null,
-                Message = string.Join("; ", errors)
+                Message = string.Join("; ", errors),
             };
         }
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("api/locations", dto).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<Location>(
-                response,
-                _logger,
-                "Create Location",
-                location
-            ).ConfigureAwait(false);
+            var response = await _httpClient
+                .PostAsJsonAsync("api/locations", dto)
+                .ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<Location>(response, _logger, "Create Location", location)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -194,12 +224,15 @@ public class LocationService : ILocationService
             {
                 ResponseCode = HttpStatusCode.InternalServerError,
                 RequestFailed = true,
-                Data = null
+                Data = null,
             };
         }
     }
 
-    public async Task<ApiResponseDto<Location?>> UpdateLocationAsync(int id, Location updatedLocation)
+    public async Task<ApiResponseDto<Location?>> UpdateLocationAsync(
+        int id,
+        Location updatedLocation
+    )
     {
         var dto = new ConsoleFrontEnd.Models.Dtos.LocationApiRequestDto
         {
@@ -208,7 +241,7 @@ public class LocationService : ILocationService
             Town = updatedLocation.Town,
             County = updatedLocation.County,
             PostCode = updatedLocation.PostCode,
-            Country = updatedLocation.Country
+            Country = updatedLocation.Country,
         };
         var errors = Services.Validation.LocationValidation.Validate(dto);
         if (errors.Count > 0)
@@ -218,18 +251,22 @@ public class LocationService : ILocationService
                 RequestFailed = true,
                 ResponseCode = HttpStatusCode.BadRequest,
                 Data = null,
-                Message = string.Join("; ", errors)
+                Message = string.Join("; ", errors),
             };
         }
         try
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/locations/{id}", dto).ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<Location?>(
-                response,
-                _logger,
-                $"Update Location {id}",
-                updatedLocation
-            ).ConfigureAwait(false);
+            var response = await _httpClient
+                .PutAsJsonAsync($"api/locations/{id}", dto)
+                .ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<Location?>(
+                    response,
+                    _logger,
+                    $"Update Location {id}",
+                    updatedLocation
+                )
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -238,7 +275,7 @@ public class LocationService : ILocationService
             {
                 ResponseCode = HttpStatusCode.InternalServerError,
                 RequestFailed = true,
-                Data = null
+                Data = null,
             };
         }
     }
@@ -247,13 +284,12 @@ public class LocationService : ILocationService
     {
         try
         {
-            var response = await _httpClient.DeleteAsync($"api/locations/{id}").ConfigureAwait(false);
-            return await HttpResponseHelper.HandleHttpResponseAsync<bool>(
-                response,
-                _logger,
-                $"Delete Location {id}",
-                false
-            ).ConfigureAwait(false);
+            var response = await _httpClient
+                .DeleteAsync($"api/locations/{id}")
+                .ConfigureAwait(false);
+            return await HttpResponseHelper
+                .HandleHttpResponseAsync<bool>(response, _logger, $"Delete Location {id}", false)
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -262,7 +298,7 @@ public class LocationService : ILocationService
             {
                 ResponseCode = HttpStatusCode.InternalServerError,
                 RequestFailed = true,
-                Data = false
+                Data = false,
             };
         }
     }

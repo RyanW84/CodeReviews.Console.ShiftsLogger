@@ -79,7 +79,10 @@ public class UiHelper
     {
         try
         {
-            return AnsiConsole.Ask<TResult?>($"[yellow]{prompt} (press Enter to skip):[/]", defaultValue);
+            return AnsiConsole.Ask<TResult?>(
+                $"[yellow]{prompt} (press Enter to skip):[/]",
+                defaultValue
+            );
         }
         catch (Exception ex)
         {
@@ -96,17 +99,24 @@ public class UiHelper
         try
         {
             // Use a more explicit prompt to make it clear that Enter skips
-            var fullPrompt = $"[yellow]{prompt} (format: dd/MM/yyyy HH:mm, or press Enter to skip):[/]";
+            var fullPrompt =
+                $"[yellow]{prompt} (format: dd/MM/yyyy HH:mm, or press Enter to skip):[/]";
             var input = AnsiConsole.Prompt(
-                new TextPrompt<string>(fullPrompt)
-                    .AllowEmpty()
-                    .DefaultValue(string.Empty)
+                new TextPrompt<string>(fullPrompt).AllowEmpty().DefaultValue(string.Empty)
             );
-            
+
             if (string.IsNullOrWhiteSpace(input))
                 return null;
 
-            if (DateTime.TryParseExact(input, "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out var result))
+            if (
+                DateTime.TryParseExact(
+                    input,
+                    "dd/MM/yyyy HH:mm",
+                    null,
+                    System.Globalization.DateTimeStyles.None,
+                    out var result
+                )
+            )
                 return result;
 
             DisplayValidationError("Invalid date format. Please use dd/MM/yyyy HH:mm");
@@ -128,11 +138,9 @@ public class UiHelper
         {
             var fullPrompt = $"[yellow]{prompt} (or press Enter to skip):[/]";
             var input = AnsiConsole.Prompt(
-                new TextPrompt<string>(fullPrompt)
-                    .AllowEmpty()
-                    .DefaultValue(string.Empty)
+                new TextPrompt<string>(fullPrompt).AllowEmpty().DefaultValue(string.Empty)
             );
-            
+
             if (string.IsNullOrWhiteSpace(input))
                 return null;
 
@@ -159,7 +167,15 @@ public class UiHelper
             try
             {
                 var input = AnsiConsole.Ask<string>($"[green]{prompt} (dd/MM/yyyy HH:mm):[/]");
-                if (DateTime.TryParseExact(input, "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out var result))
+                if (
+                    DateTime.TryParseExact(
+                        input,
+                        "dd/MM/yyyy HH:mm",
+                        null,
+                        System.Globalization.DateTimeStyles.None,
+                        out var result
+                    )
+                )
                     return result;
                 DisplayValidationError("Invalid date format. Please use dd/MM/yyyy HH:mm");
             }
@@ -237,7 +253,7 @@ public class UiHelper
         var dotIndex = span.IndexOf('.');
         if (dotIndex == -1)
             throw new ArgumentException("Invalid choice format. Expected 'count. Name' format.");
-        
+
         return int.Parse(span[..dotIndex]);
     }
 }

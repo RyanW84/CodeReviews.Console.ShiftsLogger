@@ -4,7 +4,8 @@ namespace ConsoleFrontEnd.Models;
 
 public class Shift
 {
-    [Key] public int ShiftId { get; set; }
+    [Key]
+    public int ShiftId { get; set; }
 
     public int WorkerId { get; set; }
     public int LocationId { get; set; }

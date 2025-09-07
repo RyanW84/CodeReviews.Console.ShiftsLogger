@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,13 +8,12 @@ using Microsoft.Extensions.DependencyInjection;
 using ShiftsLoggerV2.RyanW84.Data;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
-using System.Net;
-using System.Net.Http.Json;
 using Xunit;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Integration;
 
-public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
+public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram>
+    where TProgram : class
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -22,8 +23,9 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
         builder.ConfigureServices(services =>
         {
             // Remove the existing DbContext registration
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<ShiftsLoggerDbContext>));
+            var descriptor = services.SingleOrDefault(d =>
+                d.ServiceType == typeof(DbContextOptions<ShiftsLoggerDbContext>)
+            );
 
             if (descriptor != null)
             {
@@ -59,7 +61,12 @@ public class WorkersControllerIntegrationTests : IClassFixture<CustomWebApplicat
         // Assert
         response.Should().NotBeNull();
         // Just testing that we can make the request without errors
-        (response.StatusCode == HttpStatusCode.OK || response.StatusCode == HttpStatusCode.NotFound).Should().BeTrue();
+        (
+            response.StatusCode == HttpStatusCode.OK
+            || response.StatusCode == HttpStatusCode.NotFound
+        )
+            .Should()
+            .BeTrue();
     }
 
     [Fact]
@@ -70,13 +77,15 @@ public class WorkersControllerIntegrationTests : IClassFixture<CustomWebApplicat
         var newWorker = new WorkerApiRequestDto
         {
             Name = $"Test Worker {uniqueId}",
-            Email = $"test.{uniqueId}@example.com"
+            Email = $"test.{uniqueId}@example.com",
         };
 
         // Act
         var response = await _client.PostAsJsonAsync("/api/workers", newWorker);
 
         // Assert
-        (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK).Should().BeTrue();
+        (response.StatusCode == HttpStatusCode.Created || response.StatusCode == HttpStatusCode.OK)
+            .Should()
+            .BeTrue();
     }
 }

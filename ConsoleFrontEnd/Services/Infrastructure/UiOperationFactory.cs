@@ -17,14 +17,15 @@ public static class UiOperationFactory
         IConsoleDisplayService display,
         string operationName,
         string successMessage,
-        Action<T>? onSuccess = null)
+        Action<T>? onSuccess = null
+    )
     {
         try
         {
             display.DisplayInfo($"Performing {operationName}...");
-            
+
             var response = await operation();
-            
+
             if (response.RequestFailed || response.Data == null)
             {
                 display.DisplayError(response.Message ?? $"Failed to {operationName.ToLower()}.");
@@ -54,21 +55,26 @@ public static class UiOperationFactory
         IConsoleDisplayService display,
         string operationName,
         string entityPluralName,
-        Action<List<T>>? onSuccess = null)
+        Action<List<T>>? onSuccess = null
+    )
     {
         try
         {
             display.DisplayInfo($"Loading {entityPluralName.ToLower()}...");
-            
+
             var response = await operation();
-            
+
             if (response.RequestFailed || response.Data == null || !response.Data.Any())
             {
-                display.DisplayWarning(response.Message ?? $"No {entityPluralName.ToLower()} found.");
+                display.DisplayWarning(
+                    response.Message ?? $"No {entityPluralName.ToLower()} found."
+                );
             }
             else
             {
-                display.DisplaySuccess($"Found {response.Data.Count} {entityPluralName.ToLower()}.");
+                display.DisplaySuccess(
+                    $"Found {response.Data.Count} {entityPluralName.ToLower()}."
+                );
                 onSuccess?.Invoke(response.Data);
             }
         }
@@ -91,17 +97,19 @@ public static class UiOperationFactory
         Func<Task<ApiResponseDto<bool>>> deleteOperation,
         IConsoleDisplayService display,
         string entityName,
-        Func<T, string> getEntityDisplayName)
+        Func<T, string> getEntityDisplayName
+    )
     {
         try
         {
             var entityDisplayName = getEntityDisplayName(entity);
-            
+
             // Confirm deletion
             var confirmed = AnsiConsole.Confirm(
                 $"Are you sure you want to delete {entityName.ToLower()} '{entityDisplayName}'?",
-                false);
-            
+                false
+            );
+
             if (!confirmed)
             {
                 display.DisplayInfo("Delete operation cancelled.");
@@ -109,12 +117,14 @@ public static class UiOperationFactory
             }
 
             display.DisplayInfo($"Deleting {entityName.ToLower()}...");
-            
+
             var response = await deleteOperation();
-            
+
             if (response.RequestFailed || !response.Data)
             {
-                display.DisplayError(response.Message ?? $"Failed to delete {entityName.ToLower()}.");
+                display.DisplayError(
+                    response.Message ?? $"Failed to delete {entityName.ToLower()}."
+                );
             }
             else
             {

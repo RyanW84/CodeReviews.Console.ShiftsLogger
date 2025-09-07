@@ -1,20 +1,26 @@
+using System.Net;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Controllers;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Services.Interfaces;
-using ShiftsLoggerV2.RyanW84.Common;
-using System.Net;
 using Xunit;
 
 namespace ShiftsLoggerV2.RyanW84.Tests.Controllers;
 
 public class WorkersControllerTests
 {
+    static WorkersControllerTests()
+    {
+        // Suppress Fluent Assertions license warning
+        Environment.SetEnvironmentVariable("FluentAssertions.LicenseKey", "ACCEPT");
+    }
+
     private readonly Mock<IWorkerBusinessService> _mockWorkerBusinessService;
     private readonly Mock<ILogger<WorkersController>> _mockLogger;
     private readonly WorkersController _controller;
@@ -34,12 +40,11 @@ public class WorkersControllerTests
         var workers = new List<Worker>
         {
             new() { WorkerId = 1, Name = "John Doe" },
-            new() { WorkerId = 2, Name = "Jane Smith" }
+            new() { WorkerId = 2, Name = "Jane Smith" },
         };
 
         var result = Result<List<Worker>>.Success(workers, "Workers retrieved successfully");
-        _mockWorkerBusinessService.Setup(v => v.GetAllAsync(filterOptions))
-            .ReturnsAsync(result);
+        _mockWorkerBusinessService.Setup(v => v.GetAllAsync(filterOptions)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetAllWorkers(filterOptions);
@@ -48,7 +53,7 @@ public class WorkersControllerTests
         response.Result.Should().BeOfType<OkObjectResult>();
         var okResult = response.Result as OkObjectResult;
         okResult!.Value.Should().BeOfType<PaginatedApiResponseDto<List<Worker>>>();
-        
+
         var apiResponse = okResult.Value as PaginatedApiResponseDto<List<Worker>>;
         apiResponse!.RequestFailed.Should().BeFalse();
         apiResponse.ResponseCode.Should().Be(HttpStatusCode.OK);
@@ -62,10 +67,12 @@ public class WorkersControllerTests
     {
         // Arrange
         var filterOptions = new WorkerFilterOptions();
-        var result = Result<List<Worker>>.Failure("Database error", HttpStatusCode.InternalServerError);
-        
-        _mockWorkerBusinessService.Setup(v => v.GetAllAsync(filterOptions))
-            .ReturnsAsync(result);
+        var result = Result<List<Worker>>.Failure(
+            "Database error",
+            HttpStatusCode.InternalServerError
+        );
+
+        _mockWorkerBusinessService.Setup(v => v.GetAllAsync(filterOptions)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetAllWorkers(filterOptions);
@@ -74,7 +81,7 @@ public class WorkersControllerTests
         response.Result.Should().BeOfType<ObjectResult>();
         var objectResult = response.Result as ObjectResult;
         objectResult!.StatusCode.Should().Be(500);
-        
+
         var apiResponse = objectResult.Value as PaginatedApiResponseDto<List<Worker>>;
         apiResponse.Should().NotBeNull();
         apiResponse!.RequestFailed.Should().BeTrue();
@@ -90,9 +97,8 @@ public class WorkersControllerTests
         const int workerId = 1;
         var worker = new Worker { WorkerId = workerId, Name = "John Doe" };
         var result = Result<Worker>.Success(worker, "Worker found");
-        
-        _mockWorkerBusinessService.Setup(v => v.GetByIdAsync(workerId))
-            .ReturnsAsync(result);
+
+        _mockWorkerBusinessService.Setup(v => v.GetByIdAsync(workerId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetWorkerById(workerId);
@@ -100,7 +106,7 @@ public class WorkersControllerTests
         // Assert
         response.Result.Should().BeOfType<OkObjectResult>();
         var okResult = response.Result as OkObjectResult;
-        
+
         var apiResponse = okResult!.Value as ApiResponseDto<Worker>;
         apiResponse!.RequestFailed.Should().BeFalse();
         apiResponse.Data!.WorkerId.Should().Be(workerId);
@@ -113,9 +119,8 @@ public class WorkersControllerTests
         // Arrange
         const int workerId = 999;
         var result = Result<Worker>.Failure("Worker not found", HttpStatusCode.NotFound);
-        
-        _mockWorkerBusinessService.Setup(v => v.GetByIdAsync(workerId))
-            .ReturnsAsync(result);
+
+        _mockWorkerBusinessService.Setup(v => v.GetByIdAsync(workerId)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.GetWorkerById(workerId);
@@ -139,21 +144,20 @@ public class WorkersControllerTests
         {
             Name = "John Doe",
             Email = "john@example.com",
-            PhoneNumber = "123-456-7890"
+            PhoneNumber = "123-456-7890",
         };
 
-        var createdWorker = new Worker 
-        { 
-            WorkerId = 1, 
+        var createdWorker = new Worker
+        {
+            WorkerId = 1,
             Name = workerDto.Name,
             Email = workerDto.Email,
-            PhoneNumber = workerDto.PhoneNumber
+            PhoneNumber = workerDto.PhoneNumber,
         };
 
         var result = Result<Worker>.Success(createdWorker, "Worker created successfully");
-        
-        _mockWorkerBusinessService.Setup(v => v.CreateAsync(workerDto))
-            .ReturnsAsync(result);
+
+        _mockWorkerBusinessService.Setup(v => v.CreateAsync(workerDto)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.CreateWorker(workerDto);
@@ -175,9 +179,8 @@ public class WorkersControllerTests
         // Arrange
         var workerDto = new WorkerApiRequestDto { Name = "" }; // Invalid name
         var result = Result<Worker>.Failure("Worker name is required.", HttpStatusCode.BadRequest);
-        
-        _mockWorkerBusinessService.Setup(v => v.CreateAsync(workerDto))
-            .ReturnsAsync(result);
+
+        _mockWorkerBusinessService.Setup(v => v.CreateAsync(workerDto)).ReturnsAsync(result);
 
         // Act
         var response = await _controller.CreateWorker(workerDto);
@@ -186,7 +189,7 @@ public class WorkersControllerTests
         response.Result.Should().BeOfType<ObjectResult>();
         var objectResult = response.Result as ObjectResult;
         objectResult!.StatusCode.Should().Be(400);
-        
+
         var apiResponse = objectResult.Value as ApiResponseDto<Worker>;
         apiResponse!.RequestFailed.Should().BeTrue();
         apiResponse.ResponseCode.Should().Be(HttpStatusCode.BadRequest);
@@ -199,8 +202,11 @@ public class WorkersControllerTests
     public async Task GetWorkerById_WithInvalidId_ShouldReturnBadRequest(int invalidId)
     {
         // Arrange
-        _mockWorkerBusinessService.Setup(v => v.GetByIdAsync(invalidId))
-            .ReturnsAsync(Result<Worker>.Failure("ID must be greater than 0", HttpStatusCode.BadRequest));
+        _mockWorkerBusinessService
+            .Setup(v => v.GetByIdAsync(invalidId))
+            .ReturnsAsync(
+                Result<Worker>.Failure("ID must be greater than 0", HttpStatusCode.BadRequest)
+            );
 
         // Act
         var response = await _controller.GetWorkerById(invalidId);
@@ -208,7 +214,7 @@ public class WorkersControllerTests
         // Assert
         response.Result.Should().BeOfType<ObjectResult>();
         var objectResult = response.Result as ObjectResult;
-        
+
         var apiResponse = objectResult!.Value as ApiResponseDto<Worker>;
         apiResponse!.RequestFailed.Should().BeTrue();
         apiResponse.ResponseCode.Should().Be(HttpStatusCode.BadRequest);

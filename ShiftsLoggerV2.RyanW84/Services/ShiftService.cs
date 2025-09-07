@@ -7,7 +7,8 @@ namespace ShiftsLoggerV2.RyanW84.Services;
 
 public class ShiftService(IShiftRepository shiftRepository) : IShiftService
 {
-    private readonly IShiftRepository _shiftRepository = shiftRepository ?? throw new ArgumentNullException(nameof(shiftRepository));
+    private readonly IShiftRepository _shiftRepository =
+        shiftRepository ?? throw new ArgumentNullException(nameof(shiftRepository));
 
     public async Task<ApiResponseDto<List<Shift?>>> GetAllShifts(ShiftFilterOptions shiftOptions)
     {
@@ -17,7 +18,7 @@ public class ShiftService(IShiftRepository shiftRepository) : IShiftService
             RequestFailed = result.IsFailure,
             ResponseCode = result.StatusCode,
             Message = result.Message,
-            Data = result.Data?.Cast<Shift?>().ToList() ?? []
+            Data = result.Data?.Cast<Shift?>().ToList() ?? [],
         };
     }
 
@@ -29,7 +30,7 @@ public class ShiftService(IShiftRepository shiftRepository) : IShiftService
             RequestFailed = result.IsFailure,
             ResponseCode = result.StatusCode,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -41,7 +42,7 @@ public class ShiftService(IShiftRepository shiftRepository) : IShiftService
             RequestFailed = result.IsFailure,
             ResponseCode = result.StatusCode,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -53,7 +54,7 @@ public class ShiftService(IShiftRepository shiftRepository) : IShiftService
             RequestFailed = result.IsFailure,
             ResponseCode = result.StatusCode,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -65,7 +66,7 @@ public class ShiftService(IShiftRepository shiftRepository) : IShiftService
             RequestFailed = result.IsFailure,
             ResponseCode = result.StatusCode,
             Message = result.Message,
-            Data = string.Empty
+            Data = string.Empty,
         };
     }
 }
