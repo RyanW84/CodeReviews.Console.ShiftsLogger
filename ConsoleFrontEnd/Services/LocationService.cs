@@ -126,13 +126,13 @@ public class LocationService : ILocationService
             // Use filter to find location by name efficiently
             var filter = new ConsoleFrontEnd.Models.FilterOptions.LocationFilterOptions { Name = name };
             var response = await GetLocationsByFilterAsync(filter);
-            
+
             if (response.RequestFailed || response.Data == null)
-                return new ApiResponseDto<Location?>(response.Message ?? "Location not found") 
-                { 
-                    RequestFailed = true, 
+                return new ApiResponseDto<Location?>(response.Message ?? "Location not found")
+                {
+                    RequestFailed = true,
                     ResponseCode = response.ResponseCode,
-                    Data = null 
+                    Data = null
                 };
 
             var location = response.Data.FirstOrDefault();

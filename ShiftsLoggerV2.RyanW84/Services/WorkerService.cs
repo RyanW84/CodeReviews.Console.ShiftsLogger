@@ -1,20 +1,17 @@
-﻿using System.Net;
-using ShiftsLoggerV2.RyanW84.Common;
-using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
+﻿using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
-using Spectre.Console;
+using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
 
 namespace ShiftsLoggerV2.RyanW84.Services;
 
 public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
 {
-    private readonly IWorkerRepository _workerRepository = workerRepository ?? throw new ArgumentNullException(nameof(workerRepository));
+    private readonly IWorkerRepository _workerRepository =
+        workerRepository ?? throw new ArgumentNullException(nameof(workerRepository));
 
-    public async Task<ApiResponseDto<List<Worker>>> GetAllWorkers(
-        WorkerFilterOptions workerOptions
-    )
+    public async Task<ApiResponseDto<List<Worker>>> GetAllWorkers(WorkerFilterOptions workerOptions)
     {
         var result = await _workerRepository.GetAllAsync(workerOptions).ConfigureAwait(false);
         return new ApiResponseDto<List<Worker>>
@@ -22,7 +19,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
             RequestFailed = result.IsFailure,
             ResponseCode = result.IsFailure ? result.StatusCode : System.Net.HttpStatusCode.OK,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -35,7 +32,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
                 RequestFailed = true,
                 ResponseCode = result.StatusCode,
                 Message = result.Message,
-                Data = null
+                Data = null,
             };
 
         return new ApiResponseDto<Worker>
@@ -43,7 +40,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
             RequestFailed = false,
             ResponseCode = System.Net.HttpStatusCode.OK,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -58,7 +55,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
                     RequestFailed = true,
                     ResponseCode = result.StatusCode,
                     Message = result.Message,
-                    Data = null
+                    Data = null,
                 };
 
             return new ApiResponseDto<Worker>
@@ -66,7 +63,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
                 RequestFailed = false,
                 ResponseCode = System.Net.HttpStatusCode.Created,
                 Message = result.Message,
-                Data = result.Data
+                Data = result.Data,
             };
         }
         catch (Exception ex)
@@ -78,7 +75,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
                 RequestFailed = true,
                 ResponseCode = status,
                 Message = message,
-                Data = null
+                Data = null,
             };
         }
     }
@@ -95,7 +92,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
                 RequestFailed = true,
                 ResponseCode = result.StatusCode,
                 Message = result.Message,
-                Data = null
+                Data = null,
             };
 
         return new ApiResponseDto<Worker?>
@@ -103,7 +100,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
             RequestFailed = false,
             ResponseCode = System.Net.HttpStatusCode.OK,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -115,7 +112,7 @@ public class WorkerService(IWorkerRepository workerRepository) : IWorkerService
             RequestFailed = result.IsFailure,
             ResponseCode = result.StatusCode,
             Message = result.Message,
-            Data = null
+            Data = null,
         };
     }
 }

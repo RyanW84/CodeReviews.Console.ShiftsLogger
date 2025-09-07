@@ -1,8 +1,4 @@
-﻿using System.Net;
-using Microsoft.EntityFrameworkCore;
-using ShiftsLoggerV2.RyanW84.Data;
-using ShiftsLoggerV2.RyanW84.Dtos;
-using ShiftsLoggerV2.RyanW84.Common;
+﻿using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;

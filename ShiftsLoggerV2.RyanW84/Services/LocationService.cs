@@ -1,16 +1,15 @@
-﻿using System.Net;
-using ShiftsLoggerV2.RyanW84.Common;
-using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
+﻿using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
-using Spectre.Console;
+using ShiftsLoggerV2.RyanW84.Repositories.Interfaces;
 
 namespace ShiftsLoggerV2.RyanW84.Services;
 
 public class LocationService(ILocationRepository locationRepository) : ILocationService
 {
-    private readonly ILocationRepository _locationRepository = locationRepository ?? throw new ArgumentNullException(nameof(locationRepository));
+    private readonly ILocationRepository _locationRepository =
+        locationRepository ?? throw new ArgumentNullException(nameof(locationRepository));
 
     public async Task<ApiResponseDto<List<Location>>> GetAllLocations(
         LocationFilterOptions locationOptions
@@ -22,20 +21,20 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
             RequestFailed = result.IsFailure,
             ResponseCode = result.IsFailure ? result.StatusCode : System.Net.HttpStatusCode.OK,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
     public async Task<ApiResponseDto<Location>> GetLocationById(int id)
     {
         var result = await _locationRepository.GetByIdAsync(id).ConfigureAwait(false);
-    if (result.IsFailure || result.Data is null)
+        if (result.IsFailure || result.Data is null)
             return new ApiResponseDto<Location>
             {
                 RequestFailed = true,
                 ResponseCode = result.StatusCode,
                 Message = result.Message,
-                Data = null
+                Data = null,
             };
 
         return new ApiResponseDto<Location>
@@ -43,7 +42,7 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
             RequestFailed = false,
             ResponseCode = System.Net.HttpStatusCode.OK,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -58,7 +57,7 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
                     RequestFailed = true,
                     ResponseCode = result.StatusCode,
                     Message = result.Message,
-                    Data = null
+                    Data = null,
                 };
 
             return new ApiResponseDto<Location>
@@ -66,7 +65,7 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
                 RequestFailed = false,
                 ResponseCode = System.Net.HttpStatusCode.Created,
                 Message = result.Message,
-                Data = result.Data
+                Data = result.Data,
             };
         }
         catch (Exception ex)
@@ -78,7 +77,7 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
                 RequestFailed = true,
                 ResponseCode = status,
                 Message = message,
-                Data = null
+                Data = null,
             };
         }
     }
@@ -88,14 +87,16 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
         LocationApiRequestDto updatedLocation
     )
     {
-        var result = await _locationRepository.UpdateAsync(id, updatedLocation).ConfigureAwait(false);
+        var result = await _locationRepository
+            .UpdateAsync(id, updatedLocation)
+            .ConfigureAwait(false);
         if (result.IsFailure)
             return new ApiResponseDto<Location>
             {
                 RequestFailed = true,
                 ResponseCode = result.StatusCode,
                 Message = result.Message,
-                Data = null
+                Data = null,
             };
 
         return new ApiResponseDto<Location>
@@ -103,7 +104,7 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
             RequestFailed = false,
             ResponseCode = System.Net.HttpStatusCode.OK,
             Message = result.Message,
-            Data = result.Data
+            Data = result.Data,
         };
     }
 
@@ -115,7 +116,7 @@ public class LocationService(ILocationRepository locationRepository) : ILocation
             RequestFailed = result.IsFailure,
             ResponseCode = result.StatusCode,
             Message = result.Message,
-            Data = null
+            Data = null,
         };
     }
 }

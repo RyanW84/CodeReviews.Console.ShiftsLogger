@@ -1,4 +1,3 @@
-using System;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -11,10 +10,10 @@ namespace ShiftsLoggerV2.RyanW84.Common;
 /// </summary>
 public class DdMmYyyyHHmmDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
 {
-	private static readonly string[] SupportedFormats = 
+	private static readonly string[] SupportedFormats =
 	{
 		"dd/MM/yyyy HH:mm",
-		"dd/MM/yyyy H:mm", 
+		"dd/MM/yyyy H:mm",
 		"dd-MM-yyyy HH:mm",
 		"dd-MM-yyyy H:mm",
 		"yyyy-MM-ddTHH:mm:ss.fffZ",

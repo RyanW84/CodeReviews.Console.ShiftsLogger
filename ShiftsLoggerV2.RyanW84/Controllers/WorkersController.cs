@@ -1,11 +1,10 @@
-using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using ShiftsLoggerV2.RyanW84.Common;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
 using ShiftsLoggerV2.RyanW84.Services.Interfaces;
-using ShiftsLoggerV2.RyanW84.Common;
 
 namespace ShiftsLoggerV2.RyanW84.Controllers;
 
@@ -16,14 +15,19 @@ public class WorkersController : BaseController
     private readonly IWorkerBusinessService _workerBusinessService;
     private readonly ILogger<WorkersController> _logger;
 
-    public WorkersController(IWorkerBusinessService workerBusinessService, ILogger<WorkersController> logger)
+    public WorkersController(
+        IWorkerBusinessService workerBusinessService,
+        ILogger<WorkersController> logger
+    )
     {
         _workerBusinessService = workerBusinessService;
         _logger = logger;
     }
 
     [HttpGet]
-    public async Task<ActionResult<PaginatedApiResponseDto<List<Worker>>>> GetAllWorkers([FromQuery] WorkerFilterOptions workerOptions)
+    public async Task<ActionResult<PaginatedApiResponseDto<List<Worker>>>> GetAllWorkers(
+        [FromQuery] WorkerFilterOptions workerOptions
+    )
     {
         try
         {
@@ -34,16 +38,19 @@ public class WorkersController : BaseController
         {
             _logger.LogError(ex, "Failed to retrieve all workers");
             var (status, message) = ErrorMapper.Map(ex);
-            return StatusCode((int)status, new PaginatedApiResponseDto<List<Worker>>
-            {
-                RequestFailed = true,
-                ResponseCode = status,
-                Message = message,
-                Data = null,
-                TotalCount = 0,
-                PageNumber = workerOptions.PageNumber,
-                PageSize = workerOptions.PageSize
-            });
+            return StatusCode(
+                (int)status,
+                new PaginatedApiResponseDto<List<Worker>>
+                {
+                    RequestFailed = true,
+                    ResponseCode = status,
+                    Message = message,
+                    Data = null,
+                    TotalCount = 0,
+                    PageNumber = workerOptions.PageNumber,
+                    PageSize = workerOptions.PageSize,
+                }
+            );
         }
     }
 
@@ -59,18 +66,23 @@ public class WorkersController : BaseController
         {
             _logger.LogError(ex, "Failed to retrieve worker by ID {WorkerId}", id);
             var (status, message) = ErrorMapper.Map(ex);
-            return StatusCode((int)status, new ApiResponseDto<Worker>
-            {
-                RequestFailed = true,
-                ResponseCode = status,
-                Message = message,
-                Data = null
-            });
+            return StatusCode(
+                (int)status,
+                new ApiResponseDto<Worker>
+                {
+                    RequestFailed = true,
+                    ResponseCode = status,
+                    Message = message,
+                    Data = null,
+                }
+            );
         }
     }
 
     [HttpPost]
-    public async Task<ActionResult<ApiResponseDto<Worker>>> CreateWorker([FromBody] WorkerApiRequestDto worker)
+    public async Task<ActionResult<ApiResponseDto<Worker>>> CreateWorker(
+        [FromBody] WorkerApiRequestDto worker
+    )
     {
         try
         {
@@ -86,18 +98,24 @@ public class WorkersController : BaseController
         {
             _logger.LogError(ex, "CreateWorker failed with exception");
             var (status, message) = ErrorMapper.Map(ex);
-            return StatusCode((int)status, new ApiResponseDto<Worker>
-            {
-                RequestFailed = true,
-                ResponseCode = status,
-                Message = message + $" Exception: {ex.Message}",
-                Data = null
-            });
+            return StatusCode(
+                (int)status,
+                new ApiResponseDto<Worker>
+                {
+                    RequestFailed = true,
+                    ResponseCode = status,
+                    Message = message + $" Exception: {ex.Message}",
+                    Data = null,
+                }
+            );
         }
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponseDto<Worker>>> UpdateWorker([FromRoute] int id, [FromBody] WorkerApiRequestDto updatedWorker)
+    public async Task<ActionResult<ApiResponseDto<Worker>>> UpdateWorker(
+        [FromRoute] int id,
+        [FromBody] WorkerApiRequestDto updatedWorker
+    )
     {
         try
         {
@@ -113,13 +131,16 @@ public class WorkersController : BaseController
         {
             _logger.LogError(ex, "UpdateWorker failed for ID {WorkerId}", id);
             var (status, message) = ErrorMapper.Map(ex);
-            return StatusCode((int)status, new ApiResponseDto<Worker>
-            {
-                RequestFailed = true,
-                ResponseCode = status,
-                Message = message + $" Exception: {ex.Message}",
-                Data = null
-            });
+            return StatusCode(
+                (int)status,
+                new ApiResponseDto<Worker>
+                {
+                    RequestFailed = true,
+                    ResponseCode = status,
+                    Message = message + $" Exception: {ex.Message}",
+                    Data = null,
+                }
+            );
         }
     }
 
@@ -135,13 +156,16 @@ public class WorkersController : BaseController
         {
             _logger.LogError(ex, "DeleteWorker failed for ID {WorkerId}", id);
             var (status, message) = ErrorMapper.Map(ex);
-            return StatusCode((int)status, new ApiResponseDto<string>
-            {
-                RequestFailed = true,
-                ResponseCode = status,
-                Message = message + $" Exception: {ex.Message}",
-                Data = string.Empty
-            });
+            return StatusCode(
+                (int)status,
+                new ApiResponseDto<string>
+                {
+                    RequestFailed = true,
+                    ResponseCode = status,
+                    Message = message + $" Exception: {ex.Message}",
+                    Data = string.Empty,
+                }
+            );
         }
     }
 }

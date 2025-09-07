@@ -120,13 +120,13 @@ public class WorkerService : IWorkerService
             // Use filter to find worker by name efficiently
             var filter = new ConsoleFrontEnd.Models.FilterOptions.WorkerFilterOptions { Name = name };
             var response = await GetWorkersByFilterAsync(filter);
-            
+
             if (response.RequestFailed || response.Data == null)
-                return new ApiResponseDto<Worker?>(response.Message ?? "Worker not found") 
-                { 
-                    RequestFailed = true, 
+                return new ApiResponseDto<Worker?>(response.Message ?? "Worker not found")
+                {
+                    RequestFailed = true,
                     ResponseCode = response.ResponseCode,
-                    Data = null 
+                    Data = null
                 };
 
             var worker = response.Data.FirstOrDefault();

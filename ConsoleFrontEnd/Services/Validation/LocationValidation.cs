@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using ConsoleFrontEnd.Models.Dtos;
 
 namespace ConsoleFrontEnd.Services.Validation;
