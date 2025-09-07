@@ -67,19 +67,21 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
             ("David Brown", "david.brown@company.com", "+44 7555 123456"),
             ("Lisa Anderson", "lisa.anderson@company.com", "+44 7666 789012"),
             ("James Taylor", "james.taylor@company.com", "+44 7777 234567"),
-            ("Anna Thompson", "anna.thompson@company.com", "+44 7888 345678")
+            ("Anna Thompson", "anna.thompson@company.com", "+44 7888 345678"),
         };
 
         foreach (var (name, email, phone) in workerData)
         {
             if (!Workers.Any(w => w.Email != null && w.Email.ToLower() == email.ToLower()))
             {
-                Workers.Add(new Worker
-                {
-                    Name = name,
-                    Email = email,
-                    PhoneNumber = phone
-                });
+                Workers.Add(
+                    new Worker
+                    {
+                        Name = name,
+                        Email = email,
+                        PhoneNumber = phone,
+                    }
+                );
             }
         }
         SaveChanges();
@@ -91,27 +93,43 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
         var locationData = new[]
         {
             ("London Office", "1 Canary Wharf", "London", "Greater London", "E14 5AB", "UK"),
-            ("Manchester Warehouse", "22 Trafford Park", "Manchester", "Greater Manchester", "M17 1AB", "UK"),
+            (
+                "Manchester Warehouse",
+                "22 Trafford Park",
+                "Manchester",
+                "Greater Manchester",
+                "M17 1AB",
+                "UK"
+            ),
             ("Birmingham Plant", "15 Aston Road", "Birmingham", "West Midlands", "B6 4DA", "UK"),
-            ("Leeds Service Centre", "8 Wellington Place", "Leeds", "West Yorkshire", "LS1 4AP", "UK"),
+            (
+                "Leeds Service Centre",
+                "8 Wellington Place",
+                "Leeds",
+                "West Yorkshire",
+                "LS1 4AP",
+                "UK"
+            ),
             ("Bristol Research Lab", "3 Temple Quay", "Bristol", "Bristol", "BS1 6DZ", "UK"),
             ("Glasgow Branch", "45 George Square", "Glasgow", "Scotland", "G2 1DY", "UK"),
-            ("Cardiff Hub", "12 Cardiff Bay", "Cardiff", "Wales", "CF10 4PA", "UK")
+            ("Cardiff Hub", "12 Cardiff Bay", "Cardiff", "Wales", "CF10 4PA", "UK"),
         };
 
         foreach (var (name, address, town, county, postCode, country) in locationData)
         {
             if (!Locations.Any(l => l.Name.ToLower() == name.ToLower()))
             {
-                Locations.Add(new Location
-                {
-                    Name = name,
-                    Address = address,
-                    Town = town,
-                    County = county,
-                    PostCode = postCode,
-                    Country = country
-                });
+                Locations.Add(
+                    new Location
+                    {
+                        Name = name,
+                        Address = address,
+                        Town = town,
+                        County = county,
+                        PostCode = postCode,
+                        Country = country,
+                    }
+                );
             }
         }
         SaveChanges();
@@ -127,8 +145,6 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
             logger?.LogWarning("Cannot seed shifts: No workers or locations available.");
             return;
         }
-
-        var currentShiftCount = Shifts.Count();
 
         var shiftsToGenerate = 200;
         var randomShifts = GenerateRandomShifts(savedWorkers, savedLocations, shiftsToGenerate);
@@ -157,8 +173,11 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
             if (addedCount > 0)
             {
                 SaveChanges();
-                logger?.LogInformation("Added {AddedCount} random shifts. Total shifts in database: {ShiftCount}",
-                    addedCount, Shifts.Count());
+                logger?.LogInformation(
+                    "Added {AddedCount} random shifts. Total shifts in database: {ShiftCount}",
+                    addedCount,
+                    Shifts.Count()
+                );
             }
         }
         catch (Exception ex)
@@ -167,12 +186,16 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
         }
     }
 
-    private List<Shift> GenerateRandomShifts(List<Worker> workers, List<Location> locations, int count)
+    private List<Shift> GenerateRandomShifts(
+        List<Worker> workers,
+        List<Location> locations,
+        int count
+    )
     {
         var shifts = new List<Shift>();
         var random = new Random();
         var baseDate = DateTimeOffset.Now.Date; // Start from today at midnight
-        
+
         var shiftDurations = new[] { 4, 6, 8, 10, 12 }; // More varied shift lengths
         var startHours = new[] { 6, 7, 8, 9, 14, 15, 16, 18, 22 }; // Various start times
 
@@ -180,22 +203,24 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
         {
             var worker = workers[random.Next(workers.Count)];
             var location = locations[random.Next(locations.Count)];
-            
+
             // Generate shifts within a 30-day window (past and future)
             var daysOffset = random.Next(-15, 16);
             var startHour = startHours[random.Next(startHours.Length)];
             var startTime = baseDate.AddDays(daysOffset).AddHours(startHour);
-            
+
             var durationHours = shiftDurations[random.Next(shiftDurations.Length)];
             var endTime = startTime.AddHours(durationHours);
 
-            shifts.Add(new Shift
-            {
-                WorkerId = worker.WorkerId,
-                LocationId = location.LocationId,
-                StartTime = startTime,
-                EndTime = endTime
-            });
+            shifts.Add(
+                new Shift
+                {
+                    WorkerId = worker.WorkerId,
+                    LocationId = location.LocationId,
+                    StartTime = startTime,
+                    EndTime = endTime,
+                }
+            );
         }
 
         return shifts;
@@ -210,7 +235,10 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
             {
                 Shifts.RemoveRange(Shifts);
                 SaveChanges();
-                logger?.LogInformation("Cleared {ShiftCount} shifts from database for testing purposes.", shiftCount);
+                logger?.LogInformation(
+                    "Cleared {ShiftCount} shifts from database for testing purposes.",
+                    shiftCount
+                );
             }
         }
         catch (Exception ex)

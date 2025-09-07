@@ -16,7 +16,7 @@ A comprehensive shift management system built with .NET 9.0, featuring a Web API
 - [Testing](#testing)
 - [Contributing](#contributing)
 
-## 🎯 Overview
+## Overview
 
 ShiftsLogger is a WebAPI-based application designed for recording and managing work shifts. It provides:
 
@@ -27,6 +27,7 @@ ShiftsLogger is a WebAPI-based application designed for recording and managing w
 - **In-memory database** for testing environments
 
 ## Requirements
+
 - This is an application where you should record a worker's shifts.
 - You need to create two applications: the Web API and the UI that will call it.
 - All validation and user input should happen in the UI app.
@@ -35,7 +36,7 @@ ShiftsLogger is a WebAPI-based application designed for recording and managing w
 - You should use the "code first" approach to create your database, using Entity Framework's migrations tool.
 - Your front-end project needs to have try-catch blocks around the API calls so it handles unexpected errors (i.e. the API isn't running or returns a 500 error.)
 
-## 🏗️ Architecture
+## Architecture
 
 The solution follows a clean architecture approach with clear separation of concerns:
 
@@ -54,9 +55,10 @@ The solution follows a clean architecture approach with clear separation of conc
 - **Validation Layer** for data integrity
 - **Dependency Injection** throughout
 
-## ✨ Features
+## Features
 
 ### API Features
+
 - Full CRUD operations for Shifts, Workers, and Locations
 - Advanced filtering and querying capabilities
 - **Pagination support** with configurable page size and navigation
@@ -66,6 +68,7 @@ The solution follows a clean architecture approach with clear separation of conc
 - Comprehensive error handling and logging
 
 ### Console Frontend Features
+
 - Interactive menu system
 - Real-time API communication
 - Data validation and error handling
@@ -73,25 +76,29 @@ The solution follows a clean architecture approach with clear separation of conc
 - SOLID-compliant service architecture
 
 ### Testing Features
+
 - Unit tests for all major components
 - Integration tests for API endpoints
 - Model validation tests
 - Service layer tests
 - Mock-based testing with Moq
 
-## � Recent Improvements
+## Recent Improvements
 
 ### Security & Configuration
+
 - ✅ **Database Credentials Secured**: Moved sensitive database passwords to user secrets
 - ✅ **Cross-Platform Compatibility**: Fixed VS Code configuration files for Windows/Linux compatibility
 - ✅ **Setup Scripts**: Created automated setup scripts for user secrets configuration
 
 ### Logging & Monitoring
+
 - ✅ **Structured Logging**: Replaced Console.WriteLine with proper ILogger implementation
 - ✅ **Health Checks**: Added comprehensive health check endpoints for monitoring
 - ✅ **Error Standardization**: Consistent error handling across all controllers
 
 ### Performance & Database
+
 - ✅ **Database Indexes**: Added performance indexes for frequently queried fields
 - ✅ **Query Optimization**: Composite indexes for common query patterns
 - ✅ **Connection Management**: Improved database connection handling
@@ -99,18 +106,21 @@ The solution follows a clean architecture approach with clear separation of conc
 - ✅ **HTTP Response Optimization**: Resolved size limitations with paginated responses
 
 ### Code Quality
+
 - ✅ **Dependency Alignment**: Synchronized package versions across projects
 - ✅ **Response Standardization**: Consistent API response formatting
 - ✅ **Integration Tests**: Enabled and fixed integration test suite
 
-## �🛠️ Technologies & NuGet Packages
+## Technologies & NuGet Packages
 
 ### Core Framework
+
 - **.NET 9.0** - Latest .NET framework
 
 ### Web API Project (ShiftsLoggerV2.RyanW84)
 
 #### Entity Framework & Database
+
 - `Microsoft.EntityFrameworkCore` (9.0.8) - ORM framework
 - `Microsoft.EntityFrameworkCore.Abstractions` (9.0.8) - EF Core abstractions
 - `Microsoft.EntityFrameworkCore.Design` (9.0.8) - Design-time tools
@@ -119,53 +129,63 @@ The solution follows a clean architecture approach with clear separation of conc
 - `Microsoft.EntityFrameworkCore.Tools` (9.0.8) - Migration tools
 
 #### API & Documentation
+
 - `Microsoft.AspNetCore.OpenApi` (9.0.8) - OpenAPI support
 - `Microsoft.OpenApi` (1.6.24) - OpenAPI specifications
 - `Scalar.AspNetCore` (2.7.2) - Modern API documentation
 
 #### Mapping & DI
+
 - `AutoMapper` (15.0.1) - Object-to-object mapping
 - `Microsoft.Extensions.DependencyInjection` (9.0.8) - Dependency injection
 - `Microsoft.Extensions.Logging` (9.0.8) - Logging framework
 
-#### UI & Console
+#### UI & Console Packages
+
 - `Spectre.Console` (0.50.0) - Rich console applications
 
 ### Console Frontend Project (ConsoleFrontEnd)
 
 #### Core Dependencies
+
 - `AutoMapper` (15.0.1) - Object mapping
 
 #### Hosting & Configuration
+
 - `Microsoft.Extensions.DependencyInjection` (9.0.8) - DI container
 - `Microsoft.Extensions.Hosting` (9.0.8) - Host builder
 - `Microsoft.Extensions.Http` (9.0.8) - HTTP client factory
 - `Microsoft.Extensions.Logging` (9.0.8) - Logging
 
 #### UI & Console
+
 - `Spectre.Console` (0.50.0) - Console UI
 
 ### Test Project (ShiftsLoggerV2.RyanW84.Tests)
 
 #### Testing Framework
+
 - `Microsoft.NET.Test.Sdk` (17.14.1) - Test SDK
 - `xunit` (2.9.3) - Testing framework
 - `xunit.runner.visualstudio` (3.1.4) - Visual Studio test runner
 
 #### Mocking & Assertions
+
 - `Moq` (4.20.72) - Mocking framework
 - `FluentAssertions` (8.6.0) - Fluent assertion library
 
 #### Integration Testing
+
 - `Microsoft.AspNetCore.Mvc.Testing` (9.0.8) - ASP.NET Core testing
 - `Microsoft.EntityFrameworkCore.InMemory` (9.0.8) - In-memory database for tests
 
 #### Code Coverage
+
 - `coverlet.collector` (6.0.4) - Code coverage collection
 
-## 📁 Project Structure
+## Project Structure
 
-```
+```bash
 ShiftsLogger/
 ├── README.md
 ├── ShiftsLoggerV2.RyanW84.sln          # Main solution file
@@ -201,9 +221,10 @@ ShiftsLogger/
     └── Utilities/                     # Test utilities
 ```
 
-## 🚀 API Endpoints
+## API Endpoints
 
 ### Shifts Controller (`/api/shifts`)
+
 - `GET /api/shifts` - Get all shifts with filtering and pagination
   - Query parameters: `pageNumber`, `pageSize`, `workerId`, `locationId`, `startDate`, `endDate`
 - `GET /api/shifts/{id}` - Get shift by ID
@@ -214,6 +235,7 @@ ShiftsLogger/
 - `GET /api/shifts/worker/{workerId}` - Get shifts by worker
 
 ### Workers Controller (`/api/workers`)
+
 - `GET /api/workers` - Get all workers with filtering and pagination
   - Query parameters: `pageNumber`, `pageSize`, `name`, `email`, `phone`
 - `GET /api/workers/{id}` - Get worker by ID
@@ -224,6 +246,7 @@ ShiftsLogger/
 - `GET /api/workers/by-phone-area-code` - Get workers by phone area code
 
 ### Locations Controller (`/api/locations`)
+
 - `GET /api/locations` - Get all locations with filtering and pagination
   - Query parameters: `pageNumber`, `pageSize`, `name`, `country`, `county`
 - `GET /api/locations/{id}` - Get location by ID
@@ -234,19 +257,22 @@ ShiftsLogger/
 - `GET /api/locations/by-county/{county}` - Get locations by county
 
 ### Health Checks
+
 - `GET /health` - Overall application health status
 - `GET /health/database` - Database connectivity health check
 - `GET /health/custom` - Custom application health checks
 
-## � Pagination
+## Pagination
 
 The API implements efficient pagination for all list endpoints to handle large datasets effectively:
 
 ### Pagination Parameters
+
 - `pageNumber` (int, default: 1) - The page number to retrieve
 - `pageSize` (int, default: 10, max: 1000) - Number of items per page
 
 ### Response Format
+
 ```json
 {
   "items": [...],
@@ -260,6 +286,7 @@ The API implements efficient pagination for all list endpoints to handle large d
 ```
 
 ### Usage Examples
+
 ```bash
 # Get first page with 20 items
 GET /api/shifts?pageNumber=1&pageSize=20
@@ -271,9 +298,10 @@ GET /api/workers?pageNumber=2&pageSize=10
 GET /api/locations?pageNumber=1&pageSize=5&country=USA
 ```
 
-## �🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
+
 - .NET 9.0 SDK
 - SQL Server (Windows) or SQL Server for Linux
 - Visual Studio 2022 or VS Code
@@ -281,17 +309,20 @@ GET /api/locations?pageNumber=1&pageSize=5&country=USA
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/RyanW84/ShiftsLogger.git
-   cd ShiftsLogger
+   git clone https://github.com/RyanW84/CodeReviews.Console.ShiftsLogger.git
+   cd CodeReviews.Console.ShiftsLogger
    ```
 
 2. **Restore dependencies**
+
    ```bash
    dotnet restore
    ```
 
 3. **Set up user secrets** (for Linux SQL Server)
+
    ```bash
    # Run the setup script
    ./setup-user-secrets.sh  # Linux/macOS
@@ -304,16 +335,19 @@ GET /api/locations?pageNumber=1&pageSize=5&country=USA
    ```
 
 4. **Set up the database**
+
    ```bash
    dotnet ef database update --project ShiftsLoggerV2.RyanW84
    ```
 
 5. **Run the API**
+
    ```bash
    dotnet run --project ShiftsLoggerV2.RyanW84
    ```
 
 6. **Run the console frontend** (in a separate terminal)
+
    ```bash
    dotnet run --project ConsoleFrontEnd
    ```
@@ -326,18 +360,20 @@ The project includes pre-configured VS Code tasks:
 - **Run ConsoleFrontEnd** - Starts the console application
 - **wait-for-backend** - Utility to wait for API availability
 
-## 🗃️ Database Configuration
+## Database Configuration
 
 ### Connection Strings
 
 The application automatically selects the appropriate connection string based on the operating system:
 
 #### Windows (LocalDB)
+
 ```json
 "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ShiftsLoggerDb;Trusted_Connection=yes;TrustServerCertificate=yes;"
 ```
 
 #### Linux (SQL Server)
+
 For Linux environments, configure the connection string using user secrets:
 
 ```bash
@@ -351,23 +387,27 @@ dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" "Server=127.0.0.1,143
 **Security Note**: Never commit database passwords to source control. Always use user secrets or environment variables for sensitive configuration.
 
 #### Testing (In-Memory)
+
 For testing environments, the application uses Entity Framework's in-memory database provider.
 
 ### Migrations
 
 Entity Framework migrations are located in the `Migrations/` folder:
+
 - `20250826125258_InitialCreate.cs` - Initial database schema
 
 To add a new migration:
+
 ```bash
 dotnet ef migrations add <MigrationName> --project ShiftsLoggerV2.RyanW84
 ```
 
-## 🧪 Testing
+## Testing
 
 The project includes a comprehensive test suite with **55+ tests** covering:
 
 ### Test Categories
+
 - **Model Tests** (24 tests) - Entity validation and behavior
 - **Service Tests** (29+ tests) - Business logic and data operations
 - **Controller Tests** - API endpoint behavior
@@ -376,11 +416,13 @@ The project includes a comprehensive test suite with **55+ tests** covering:
 ### Running Tests
 
 Execute all tests:
+
 ```bash
 ./run-tests.sh
 ```
 
 Or run specific test categories:
+
 ```bash
 # Run only unit tests
 dotnet test --filter "Category!=Integration"
@@ -390,6 +432,7 @@ dotnet test --collect:"XPlat Code Coverage"
 ```
 
 ### Test Technologies
+
 - **xUnit** - Primary testing framework
 - **Moq** - Mocking framework for dependencies
 - **FluentAssertions** - Expressive assertions
@@ -398,7 +441,7 @@ dotnet test --collect:"XPlat Code Coverage"
 
 For detailed testing information, see [TEST_DOCUMENTATION.md](./TEST_DOCUMENTATION.md).
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -407,21 +450,22 @@ For detailed testing information, see [TEST_DOCUMENTATION.md](./TEST_DOCUMENTATI
 5. Open a Pull Request
 
 ### Development Guidelines
+
 - Follow SOLID principles
 - Maintain test coverage above 80%
 - Use meaningful commit messages
 - Update documentation for new features
 - Ensure all tests pass before submitting PRs
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Author
+## Author
 
 **RyanW84** - [GitHub Profile](https://github.com/RyanW84)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - The CSharp Academy
 - The CSharp School (premium membership of C# Academy)

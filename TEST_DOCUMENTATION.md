@@ -4,7 +4,6 @@ This document provides an overview of the comprehensive xUnit test suite for the
 
 ## Test Project Structure
 
-```
 ShiftsLoggerV2.RyanW84.Tests/
 ├── Controllers/
 │   ├── LocationsControllerTests.cs ✅
@@ -30,11 +29,11 @@ ShiftsLoggerV2.RyanW84.Tests/
 │   └── CustomWebApplicationFactory.cs ✅
 ├── debug_test.cs (🔧 Debug/Test Development)
 └── ShiftsLoggerV2.RyanW84.Tests.csproj
-```
 
 ## Test Coverage
 
 ### 1. Model Tests (24 tests - ✅ All Passing)
+
 - **WorkerTests.cs**: Tests for the Worker entity
   - Default constructor initialization
   - Property validation
@@ -52,6 +51,7 @@ ShiftsLoggerV2.RyanW84.Tests/
   - String property handling
 
 ### 2. Service Tests (29 tests - ✅ All Passing)
+
 - **WorkerServiceTests.cs**: Tests for the core WorkerService
   - Repository interaction
   - Error handling
@@ -75,6 +75,7 @@ ShiftsLoggerV2.RyanW84.Tests/
   - Date/time handling
 
 ### 3. Controller Tests (28 tests - ✅ All Passing)
+
 - **WorkersControllerTests.cs**: Tests for the Workers API controller
   - HTTP response codes
   - Error handling
@@ -94,6 +95,7 @@ ShiftsLoggerV2.RyanW84.Tests/
   - Business logic validation
 
 ### 4. Business Service Tests (37 tests - ✅ All Passing)
+
 - **WorkerBusinessServiceTests.cs**: Comprehensive business logic testing
   - Email and phone validation
   - Name format validation
@@ -124,11 +126,13 @@ ShiftsLoggerV2.RyanW84.Tests/
 ## Running Tests
 
 ### All Tests
+
 ```bash
 ./run-tests.sh
 ```
 
 ### Specific Test Categories
+
 ```bash
 # Model tests only
 dotnet test --filter "FullyQualifiedName~Models"
@@ -144,6 +148,7 @@ dotnet test --filter "FullyQualifiedName~Integration"
 ```
 
 ### Using Test Configuration
+
 ```bash
 # Run with custom configuration
 dotnet test --settings test-config.json
@@ -226,6 +231,7 @@ The `test-config.json` file provides centralized test configuration:
 ## Continuous Integration
 
 The test suite is designed to work with CI/CD pipelines:
+
 - Fast execution (~2.8s for full suite)
 - No external dependencies required
 - In-memory database for isolation
