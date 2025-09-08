@@ -7,6 +7,8 @@ using ConsoleFrontEnd.MenuSystem.Menus;
 using ConsoleFrontEnd.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System.Net.Http;
 
 namespace ConsoleFrontEnd.Extensions;
 
@@ -27,29 +29,62 @@ public static class ServiceCollectionExtensions
             (sp, client) =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
-                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009";
+                var hostEnvironment = sp.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
+
+                // Use HTTP in development, HTTPS in production
+                var protocol = hostEnvironment.IsDevelopment() ? "http" : "https";
+                var port = hostEnvironment.IsDevelopment() ? "5009" : "7009";
+                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? $"{protocol}://localhost:{port}";
                 client.BaseAddress = new Uri(baseUrl);
             }
-        );
+        ).ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            return new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+        });
 
         // Typed clients for other API services
         services.AddHttpClient<IWorkerService, WorkerService>(
             (sp, client) =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
-                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009";
+                var hostEnvironment = sp.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
+
+                // Use HTTP in development, HTTPS in production
+                var protocol = hostEnvironment.IsDevelopment() ? "http" : "https";
+                var port = hostEnvironment.IsDevelopment() ? "5009" : "7009";
+                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? $"{protocol}://localhost:{port}";
                 client.BaseAddress = new Uri(baseUrl);
             }
-        );
+        ).ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            return new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+        });
 
         services.AddHttpClient<ILocationService, LocationService>(
             (sp, client) =>
             {
                 var config = sp.GetRequiredService<IConfiguration>();
-                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009";
+                var hostEnvironment = sp.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
+
+                // Use HTTP in development, HTTPS in production
+                var protocol = hostEnvironment.IsDevelopment() ? "http" : "https";
+                var port = hostEnvironment.IsDevelopment() ? "5009" : "7009";
+                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? $"{protocol}://localhost:{port}";
                 client.BaseAddress = new Uri(baseUrl);
             }
-        );
+        ).ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            return new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+        });
 
         // Console services (Spectre.Console-based)
         services.AddSingleton<IConsoleDisplayService, SpectreConsoleDisplayService>();
