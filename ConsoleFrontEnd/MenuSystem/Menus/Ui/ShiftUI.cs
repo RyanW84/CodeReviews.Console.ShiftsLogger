@@ -56,6 +56,9 @@ public class ShiftUI : IShiftUi
     {
         _display.DisplayHeader($"Update Shift ID: {existingShift.Id}");
 
+        var workerId = await _shiftInputHelper
+            .SelectWorkerAsync(existingShift.WorkerId, true)
+            .ConfigureAwait(false);
         var start = await _shiftInputHelper.GetDateTimeInputAsync("Start Time", existingShift.Start, true);
         var end = await _shiftInputHelper.GetDateTimeInputAsync("End Time", existingShift.End, true);
         var locationId = await _shiftInputHelper
@@ -65,7 +68,7 @@ public class ShiftUI : IShiftUi
         return new Shift
         {
             ShiftId = existingShift.Id,
-            WorkerId = existingShift.WorkerId,
+            WorkerId = workerId,
             LocationId = locationId,
             StartTime = start,
             EndTime = end,
