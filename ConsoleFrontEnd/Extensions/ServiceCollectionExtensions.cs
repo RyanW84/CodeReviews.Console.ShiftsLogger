@@ -74,6 +74,10 @@ public static class ServiceCollectionExtensions
         // Helper Services
         services.AddScoped<ShiftInputHelper>();
 
+        // Business Services (SOLID refactoring)
+        services.AddScoped<ConsoleFrontEnd.Services.Common.IErrorHandlingService, ConsoleFrontEnd.Services.Infrastructure.ErrorHandlingService>();
+        services.AddScoped<ConsoleFrontEnd.Services.Business.IShiftOrchestrationService, ConsoleFrontEnd.Services.Infrastructure.ShiftOrchestrationService>();
+
         // Register concrete menu types for MenuFactory
         services.AddScoped<MainMenu>();
         services.AddScoped<ShiftMenu>();

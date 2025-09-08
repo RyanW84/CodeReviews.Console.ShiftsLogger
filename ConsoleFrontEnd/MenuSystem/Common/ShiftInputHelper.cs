@@ -165,4 +165,13 @@ public class ShiftInputHelper
             );
         }
     }
+
+    /// <summary>
+    /// Get confirmation from user
+    /// </summary>
+    public async Task<bool> GetConfirmationAsync(string prompt)
+    {
+        var choice = await _inputService.GetMenuChoiceAsync(prompt, "No", "Yes");
+        return choice == "Yes";
+    }
 }
