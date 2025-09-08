@@ -98,28 +98,41 @@ public class WorkerMenu : BaseMenu
 
     private async Task ViewWorkerByIdAsync()
     {
-        DisplayService.DisplayHeader("Select Worker", "blue");
-
-        var workerId = await _workerUi.GetEntityByIdUiAsync();
-        if (workerId <= 0)
+        try
         {
-            DisplayService.DisplayError("No worker selected.");
+            DisplayService.DisplayHeader("View Worker by ID", "blue");
+
+            var workerId = await _workerUi.GetWorkerByIdUi();
+            if (workerId <= 0)
+            {
+                DisplayService.DisplayInfo("Operation cancelled.");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            var response = await _workerService.GetWorkerByIdAsync(workerId);
+
+            if (response.RequestFailed)
+            {
+                DisplayService.DisplayError($"Failed to retrieve worker: {response.Message}");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            if (response.Data == null)
+            {
+                DisplayService.DisplayError("Worker not found.");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            await DisplayWorkerDetails(response.Data);
+        }
+        catch (Exception ex)
+        {
+            DisplayService.DisplayError($"An error occurred: {ex.Message}");
             await InputService.WaitForKeyPressAsync();
-            return;
         }
-
-        var response = await _workerService.GetWorkerByIdAsync(workerId);
-        DisplayService.DisplayHeader($"Worker Details (ID: {workerId})", "blue");
-        if (response.RequestFailed || response.Data == null)
-        {
-            DisplayService.DisplayError(response.Message ?? "Worker not found.");
-        }
-        else
-        {
-            DisplayService.DisplayTable([response.Data], "Worker Details");
-            DisplayService.DisplaySuccess("Worker details loaded successfully.");
-        }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task CreateWorkerAsync()
@@ -153,7 +166,7 @@ public class WorkerMenu : BaseMenu
     {
         DisplayService.DisplayHeader("Update Worker", "yellow");
 
-        var workerId = await _workerUi.GetEntityByIdUiAsync();
+        var workerId = await _workerUi.GetWorkerByIdUi();
         if (workerId <= 0)
         {
             DisplayService.DisplayError("No worker selected.");
@@ -337,6 +350,13 @@ public class WorkerMenu : BaseMenu
                 DisplayService.DisplaySuccess($"Total: {filtered.Count}");
             }
         }
+        await InputService.WaitForKeyPressAsync();
+    }
+
+    private async Task DisplayWorkerDetails(Worker worker)
+    {
+        DisplayService.DisplayHeader("Worker Details", "green");
+        DisplayService.DisplayTable([worker], "Worker Details");
         await InputService.WaitForKeyPressAsync();
     }
 }

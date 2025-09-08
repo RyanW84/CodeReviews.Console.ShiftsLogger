@@ -327,7 +327,9 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         var rowCount = startingRowNumber;
         foreach (var location in locations)
         {
-            var shiftCount = location.Shifts?.Count ?? 0;
+            // Use lightweight ShiftCount when available to avoid loading full collections
+            var shiftCount =
+                (location.ShiftCount != 0) ? location.ShiftCount : (location.Shifts?.Count ?? 0);
             var locationName = location.Name ?? "N/A";
             var town = location.Town ?? "N/A";
             var county = location.County ?? "N/A";

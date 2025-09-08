@@ -137,7 +137,13 @@ public class WorkerRepository
 
     protected override async Task<Worker?> GetEntityByIdAsync(int id)
     {
-        return await DbSet.FirstOrDefaultAsync(w => w.WorkerId == id);
+        var worker = await DbSet.FirstOrDefaultAsync(w => w.WorkerId == id);
+        if (worker != null)
+        {
+            // Populate shift count without loading the full collection
+            worker.ShiftCount = await DbContext.Shifts.CountAsync(s => s.WorkerId == id);
+        }
+        return worker;
     }
 
     protected override async Task<Worker> CreateEntityFromDtoAsync(WorkerApiRequestDto createDto)

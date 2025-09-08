@@ -100,7 +100,13 @@ public class LocationRepository
 
     protected override async Task<Location?> GetEntityByIdAsync(int id)
     {
-        return await DbSet.FirstOrDefaultAsync(l => l.LocationId == id);
+        var location = await DbSet.FirstOrDefaultAsync(l => l.LocationId == id);
+        if (location != null)
+        {
+            // Populate shift count without loading the full collection
+            location.ShiftCount = await DbContext.Shifts.CountAsync(s => s.LocationId == id);
+        }
+        return location;
     }
 
     protected override async Task<Location> CreateEntityFromDtoAsync(

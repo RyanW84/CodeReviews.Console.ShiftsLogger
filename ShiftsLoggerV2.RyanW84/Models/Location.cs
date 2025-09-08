@@ -18,6 +18,9 @@ public class Location : IEntity
     // Navigation property for related shifts
     public virtual ICollection<Shift> Shifts { get; set; } = [];
 
+    // Lightweight shift count for API responses (computed, not stored)
+    public int ShiftCount { get; set; }
+
     // IEntity implementation
     public int Id => LocationId;
 }

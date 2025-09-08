@@ -19,4 +19,7 @@ public class Location
 
     public virtual ICollection<Shift>? Shifts { get; set; } // Navigation property to the Shifts entity
     public virtual ICollection<Worker>? Workers { get; set; } // Navigation property to the Workers entity
+
+    // Lightweight shift count populated by API to avoid loading full collections
+    public int ShiftCount { get; set; }
 }

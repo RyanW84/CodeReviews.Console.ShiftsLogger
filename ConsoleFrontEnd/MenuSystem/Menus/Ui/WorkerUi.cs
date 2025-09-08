@@ -312,10 +312,12 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
             else
             {
                 // Extract the count from the selected choice and get the corresponding worker
-                var count = UiHelper.ExtractCountFromChoice(selected);
-                if (count > 0 && count <= response.Data.Count)
+                var displayNumber = UiHelper.ExtractCountFromChoice(selected);
+                // Convert global display number to local page index
+                var localIndex = displayNumber - startIndex - 1;
+                if (localIndex >= 0 && localIndex < response.Data.Count)
                 {
-                    return response.Data[count - 1].WorkerId;
+                    return response.Data[localIndex].WorkerId;
                 }
                 else
                 {

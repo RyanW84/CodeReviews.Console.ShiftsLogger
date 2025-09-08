@@ -99,28 +99,41 @@ public class LocationMenu : BaseMenu
 
     private async Task ViewLocationByIdAsync()
     {
-        DisplayService.DisplayHeader("Select Location", "blue");
-
-        var locationId = await _locationUi.GetEntityByIdUiAsync();
-        if (locationId <= 0)
+        try
         {
-            DisplayService.DisplayError("No location selected.");
+            DisplayService.DisplayHeader("View Location by ID", "blue");
+
+            var locationId = await _locationUi.GetLocationByIdUi();
+            if (locationId <= 0)
+            {
+                DisplayService.DisplayInfo("Operation cancelled.");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            var response = await _locationService.GetLocationByIdAsync(locationId);
+
+            if (response.RequestFailed)
+            {
+                DisplayService.DisplayError($"Failed to retrieve location: {response.Message}");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            if (response.Data == null)
+            {
+                DisplayService.DisplayError("Location not found.");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            await DisplayLocationDetails(response.Data);
+        }
+        catch (Exception ex)
+        {
+            DisplayService.DisplayError($"An error occurred: {ex.Message}");
             await InputService.WaitForKeyPressAsync();
-            return;
         }
-
-        var response = await _locationService.GetLocationByIdAsync(locationId);
-        DisplayService.DisplayHeader($"Location Details (ID: {locationId})", "blue");
-        if (response.RequestFailed || response.Data == null)
-        {
-            DisplayService.DisplayError(response.Message ?? "Location not found.");
-        }
-        else
-        {
-            DisplayService.DisplayTable([response.Data], "Location Details");
-            DisplayService.DisplaySuccess("Location details loaded successfully.");
-        }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task CreateLocationAsync()
@@ -154,7 +167,7 @@ public class LocationMenu : BaseMenu
     {
         DisplayService.DisplayHeader("Update Location");
 
-        var locationId = await _locationUi.GetEntityByIdUiAsync();
+        var locationId = await _locationUi.GetLocationByIdUi();
         if (locationId <= 0)
         {
             DisplayService.DisplayError("No location selected.");
@@ -325,6 +338,13 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, $"Locations in '{county}'");
             DisplayService.DisplaySuccess($"Total: {response.TotalCount}");
         }
+        await InputService.WaitForKeyPressAsync();
+    }
+
+    private async Task DisplayLocationDetails(Location location)
+    {
+        DisplayService.DisplayHeader("Location Details", "green");
+        DisplayService.DisplayTable([location], "Location Details");
         await InputService.WaitForKeyPressAsync();
     }
 }
