@@ -113,25 +113,6 @@ public class LocationRepository
         LocationApiRequestDto createDto
     )
     {
-        // Business validation
-        if (string.IsNullOrWhiteSpace(createDto.Name))
-            throw new ArgumentException("Location name is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.Address))
-            throw new ArgumentException("Location address is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.Town))
-            throw new ArgumentException("Location town is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.County))
-            throw new ArgumentException("Location county is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.Postcode))
-            throw new ArgumentException("Location post code is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.Country))
-            throw new ArgumentException("Location country is required.");
-
         // Check for duplicate location name
         var nameExists = await DbContext.Locations.AnyAsync(l => l.Name == createDto.Name.Trim());
         if (nameExists)
@@ -153,25 +134,6 @@ public class LocationRepository
         LocationApiRequestDto updateDto
     )
     {
-        // Business validation
-        if (string.IsNullOrWhiteSpace(updateDto.Name))
-            throw new ArgumentException("Location name is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.Address))
-            throw new ArgumentException("Location address is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.Town))
-            throw new ArgumentException("Location town is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.County))
-            throw new ArgumentException("Location county is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.Postcode))
-            throw new ArgumentException("Location post code is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.Country))
-            throw new ArgumentException("Location country is required.");
-
         // Check for duplicate location name if different from current
         if (updateDto.Name.Trim() != entity.Name)
         {
