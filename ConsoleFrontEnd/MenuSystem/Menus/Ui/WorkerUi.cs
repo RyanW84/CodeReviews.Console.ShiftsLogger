@@ -138,7 +138,7 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
         _display.DisplayTable(workers, EntityPluralName, startingRowNumber);
     }
 
-    public async Task DisplayWorkersWithPaginationAsync(
+    public async Task<(bool Selected, int WorkerId)> DisplayWorkersWithPaginationAsync(
         int initialPageNumber = 1,
         int pageSize = 10
     )
@@ -158,7 +158,7 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
                 if (currentPage == 1)
                 {
                     _display.DisplayError("No workers found.");
-                    return;
+                    return (false, -1);
                 }
                 else
                 {
@@ -194,6 +194,7 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
 
             options.Add("Go to Page");
             options.Add("Change Page Size");
+            options.Add("Select Worker");
             options.Add("Back to Menu");
 
             var choice = AnsiConsole.Prompt(
@@ -235,8 +236,13 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
                         );
                     break;
 
+                case "Select Worker":
+                    // Return the current page data for selection
+                    var selectedWorkerId = await GetWorkerByIdUi();
+                    return (true, selectedWorkerId);
+
                 case "Back to Menu":
-                    return;
+                    return (false, -1);
             }
         }
     }

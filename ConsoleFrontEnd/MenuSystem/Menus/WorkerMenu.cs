@@ -92,7 +92,26 @@ public class WorkerMenu : BaseMenu
     private async Task ViewAllWorkersAsync()
     {
         DisplayService.DisplayHeader("All Workers", "blue");
-        await _workerUi.DisplayWorkersWithPaginationAsync();
+        var (selected, workerId) = await _workerUi.DisplayWorkersWithPaginationAsync();
+
+        if (selected && workerId > 0)
+        {
+            // User selected a worker, display its details
+            var response = await _workerService.GetWorkerByIdAsync(workerId);
+            if (response.RequestFailed)
+            {
+                DisplayService.DisplayError($"Failed to retrieve worker: {response.Message}");
+            }
+            else if (response.Data == null)
+            {
+                DisplayService.DisplayError("Worker not found.");
+            }
+            else
+            {
+                await DisplayWorkerDetails(response.Data);
+            }
+        }
+
         await InputService.WaitForKeyPressAsync();
     }
 
@@ -212,17 +231,37 @@ public class WorkerMenu : BaseMenu
             return;
         }
 
-        if (await InputService.GetConfirmationAsync($"Are you sure you want to delete worker {workerId}?"))
+        // Get worker details for confirmation
+        var response = await _workerService.GetWorkerByIdAsync(workerId);
+        if (response.RequestFailed)
         {
-            var response = await _workerService.DeleteWorkerAsync(workerId);
-            if (response.RequestFailed)
+            DisplayService.DisplayError($"Failed to retrieve worker: {response.Message}");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        if (response.Data == null)
+        {
+            DisplayService.DisplayError("Worker not found.");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        // Display worker details before confirmation
+        DisplayService.DisplayHeader("Worker to Delete", "yellow");
+        DisplayService.DisplayTable([response.Data], "Worker Details");
+
+        if (await InputService.GetConfirmationAsync($"Are you sure you want to delete this worker?"))
+        {
+            var deleteResponse = await _workerService.DeleteWorkerAsync(workerId);
+            if (deleteResponse.RequestFailed)
             {
-                DisplayService.DisplayError(response.Message ?? "Failed to delete worker.");
+                DisplayService.DisplayError(deleteResponse.Message ?? "Failed to delete worker.");
             }
             else
             {
                 DisplayService.DisplaySuccess(
-                    response.Message ?? $"Worker {workerId} deleted successfully."
+                    deleteResponse.Message ?? $"Worker deleted successfully."
                 );
             }
         }

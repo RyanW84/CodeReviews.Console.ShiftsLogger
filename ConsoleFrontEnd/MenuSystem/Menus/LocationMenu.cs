@@ -93,7 +93,26 @@ public class LocationMenu : BaseMenu
     private async Task ViewAllLocationsAsync()
     {
         DisplayService.DisplayHeader("All Locations", "blue");
-        await _locationUi.DisplayLocationsWithPaginationAsync();
+        var (selected, locationId) = await _locationUi.DisplayLocationsWithPaginationAsync();
+
+        if (selected && locationId > 0)
+        {
+            // User selected a location, display its details
+            var response = await _locationService.GetLocationByIdAsync(locationId);
+            if (response.RequestFailed)
+            {
+                DisplayService.DisplayError($"Failed to retrieve location: {response.Message}");
+            }
+            else if (response.Data == null)
+            {
+                DisplayService.DisplayError("Location not found.");
+            }
+            else
+            {
+                await DisplayLocationDetails(response.Data);
+            }
+        }
+
         await InputService.WaitForKeyPressAsync();
     }
 
@@ -213,17 +232,37 @@ public class LocationMenu : BaseMenu
             return;
         }
 
-        if (await InputService.GetConfirmationAsync($"Are you sure you want to delete location {locationId}?"))
+        // Get location details for confirmation
+        var response = await _locationService.GetLocationByIdAsync(locationId);
+        if (response.RequestFailed)
         {
-            var response = await _locationService.DeleteLocationAsync(locationId);
-            if (response.RequestFailed)
+            DisplayService.DisplayError($"Failed to retrieve location: {response.Message}");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        if (response.Data == null)
+        {
+            DisplayService.DisplayError("Location not found.");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        // Display location details before confirmation
+        DisplayService.DisplayHeader("Location to Delete", "yellow");
+        DisplayService.DisplayTable([response.Data], "Location Details");
+
+        if (await InputService.GetConfirmationAsync($"Are you sure you want to delete this location?"))
+        {
+            var deleteResponse = await _locationService.DeleteLocationAsync(locationId);
+            if (deleteResponse.RequestFailed)
             {
-                DisplayService.DisplayError(response.Message ?? "Failed to delete location.");
+                DisplayService.DisplayError(deleteResponse.Message ?? "Failed to delete location.");
             }
             else
             {
                 DisplayService.DisplaySuccess(
-                    response.Message ?? $"Location {locationId} deleted successfully."
+                    deleteResponse.Message ?? $"Location deleted successfully."
                 );
             }
         }

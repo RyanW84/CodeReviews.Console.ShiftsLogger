@@ -132,7 +132,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
         _display.DisplayTable(locations, "Locations", startingRowNumber);
     }
 
-    public async Task DisplayLocationsWithPaginationAsync(
+    public async Task<(bool Selected, int LocationId)> DisplayLocationsWithPaginationAsync(
         int initialPageNumber = 1,
         int pageSize = 10
     )
@@ -152,7 +152,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
                 if (currentPage == 1)
                 {
                     _display.DisplayError("No locations found.");
-                    return;
+                    return (false, -1);
                 }
                 else
                 {
@@ -188,6 +188,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
 
             options.Add("Go to Page");
             options.Add("Change Page Size");
+            options.Add("Select Location");
             options.Add("Back to Menu");
 
             var choice = AnsiConsole.Prompt(
@@ -229,8 +230,13 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
                         );
                     break;
 
+                case "Select Location":
+                    // Return the current page data for selection
+                    var selectedLocationId = await GetLocationByIdUi();
+                    return (true, selectedLocationId);
+
                 case "Back to Menu":
-                    return;
+                    return (false, -1);
             }
         }
     }
