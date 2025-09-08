@@ -76,7 +76,8 @@ public static class ServiceCollectionExtensions
 
         // Business Services (SOLID refactoring)
         services.AddScoped<ConsoleFrontEnd.Services.Common.IErrorHandlingService, ConsoleFrontEnd.Services.Infrastructure.ErrorHandlingService>();
-        services.AddScoped<ConsoleFrontEnd.Services.Business.IShiftOrchestrationService, ConsoleFrontEnd.Services.Infrastructure.ShiftOrchestrationService>();
+        services.AddScoped<ConsoleFrontEnd.Services.Display.IShiftDisplayService, ConsoleFrontEnd.Services.Display.ShiftDisplayService>();
+        services.AddScoped<ConsoleFrontEnd.Services.Controllers.IShiftControllerService, ConsoleFrontEnd.Services.Controllers.ShiftControllerService>();
 
         // Register concrete menu types for MenuFactory
         services.AddScoped<MainMenu>();

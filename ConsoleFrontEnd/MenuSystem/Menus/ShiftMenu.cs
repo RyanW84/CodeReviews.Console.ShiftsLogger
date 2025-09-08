@@ -1,11 +1,12 @@
-using System.Net;
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.Interfaces;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.Dtos;
-using ConsoleFrontEnd.Models.FilterOptions;
-using ConsoleFrontEnd.Services;
+using ConsoleFrontEnd.Services.Business;
+using ConsoleFrontEnd.Services.Common;
+using ConsoleFrontEnd.Services.Controllers;
+using ConsoleFrontEnd.Services.Display;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 
@@ -17,11 +18,15 @@ namespace ConsoleFrontEnd.MenuSystem.Menus;
 /// </summary>
 public class ShiftMenu : BaseMenu
 {
+    // Configuration constants
+    private const int DefaultPageSize = 10;
+
     // Use inherited DisplayService, InputService, NavigationService and Logger from BaseMenu
     // Private fields for services specific to this menu (use underscore names because methods reference them)
-    private readonly IShiftService _shiftService;
     private readonly IShiftUi _shiftUi;
-    private readonly ConsoleFrontEnd.Services.Business.IShiftOrchestrationService _orchestrationService;
+    private readonly IWorkerUi _workerUi;
+    private readonly IShiftControllerService _controllerService;
+    private readonly IShiftDisplayService _shiftDisplayService;
     private readonly Dictionary<string, Func<Task<bool>>> MenuActions;
 
     public ShiftMenu(
@@ -29,16 +34,18 @@ public class ShiftMenu : BaseMenu
         IConsoleInputService inputService,
         INavigationService navigationService,
         ILogger<ShiftMenu> logger,
-        IShiftService shiftService,
         IShiftUi shiftUi,
-        ConsoleFrontEnd.Services.Business.IShiftOrchestrationService orchestrationService
+        IWorkerUi workerUi,
+        IShiftControllerService controllerService,
+        IShiftDisplayService shiftDisplayService
     )
         : base(displayService, inputService, navigationService, logger)
     {
         // base constructor sets DisplayService, InputService, NavigationService and Logger
-        _shiftService = shiftService ?? throw new ArgumentNullException(nameof(shiftService));
         _shiftUi = shiftUi ?? throw new ArgumentNullException(nameof(shiftUi));
-        _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
+        _workerUi = workerUi ?? throw new ArgumentNullException(nameof(workerUi));
+        _controllerService = controllerService ?? throw new ArgumentNullException(nameof(controllerService));
+        _shiftDisplayService = shiftDisplayService ?? throw new ArgumentNullException(nameof(shiftDisplayService));
 
         MenuActions = new Dictionary<string, Func<Task<bool>>>
         {
@@ -100,101 +107,180 @@ public class ShiftMenu : BaseMenu
         try
         {
             int pageNumber = 1;
-            int pageSize = 10;
             bool continuePaging = true;
 
             while (continuePaging)
             {
-                DisplayService.DisplayHeader($"All Shifts - Page {pageNumber}", "blue");
+                var (success, response) = await LoadShiftsPageAsync(pageNumber);
+                if (!success) return;
 
-                var response = await _shiftService.GetAllShiftsAsync(pageNumber, pageSize);
+                await DisplayShiftsPageAsync(response!, pageNumber);
 
-                if (response.RequestFailed)
+                var choice = await GetUserPaginationChoiceAsync(pageNumber, DefaultPageSize, response!.TotalCount);
+
+                var (paginationSuccess, workflowResult) = await ProcessPaginationChoiceAsync(pageNumber, DefaultPageSize, choice);
+                if (!paginationSuccess) return;
+
+                continuePaging = workflowResult!.ShouldContinue;
+                pageNumber = workflowResult.NextPageNumber;
+
+                if (workflowResult.ShouldSelectShift && workflowResult.ShiftData != null && workflowResult.ShiftData.Data != null)
                 {
-                    DisplayService.DisplayError($"Failed to retrieve shifts: {response.Message}");
-                    return;
-                }
-
-                if (response.Data == null || response.Data.Count == 0)
-                {
-                    DisplayService.DisplayError("No shifts found.");
-                    return;
-                }
-
-                // Calculate starting index for this page
-                int startIndex = (pageNumber - 1) * pageSize + 1;
-
-                // Display shifts with proper pagination numbering
-                DisplayShiftsTableWithPagination(response.Data, pageNumber, pageSize, response.TotalCount);
-
-                // Ask user what they want to do
-                var options = new List<string> { "Select Shift", "Back to Menu" };
-                if (pageNumber > 1) options.Insert(0, "Previous Page");
-                if (pageNumber * pageSize < response.TotalCount) options.Insert(options.Count - 1, "Next Page");
-
-                var choice = await InputService.GetMenuChoiceAsync("What would you like to do?", options.ToArray());
-
-                switch (choice)
-                {
-                    case "Next Page":
-                        pageNumber++;
-                        break;
-                    case "Previous Page":
-                        pageNumber = Math.Max(1, pageNumber - 1);
-                        break;
-                    case "Select Shift":
-                        await HandleShiftSelection(response.Data, pageNumber, pageSize);
-                        break;
-                    case "Back to Menu":
-                        continuePaging = false;
-                        break;
+                    await HandleShiftSelection(workflowResult.ShiftData.Data, pageNumber, DefaultPageSize);
                 }
             }
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Error viewing all shifts");
             DisplayService.DisplayError($"An error occurred: {ex.Message}");
+        }
+    }
+
+    private async Task<(bool Success, PaginatedApiResponseDto<List<Shift>>? Response)> LoadShiftsPageAsync(int pageNumber)
+    {
+        DisplayService.DisplayHeader($"All Shifts - Page {pageNumber}", "blue");
+
+        var result = await _controllerService.GetAllShiftsAsync(pageNumber, DefaultPageSize);
+
+        if (!result.IsSuccess)
+        {
+            DisplayService.DisplayError(result.Message);
+            await InputService.WaitForKeyPressAsync();
+            return (false, null);
+        }
+
+        var response = result.Data!;
+        if (response.Data == null)
+        {
+            DisplayService.DisplayError("No shift data available.");
+            await InputService.WaitForKeyPressAsync();
+            return (false, null);
+        }
+
+        return (true, response);
+    }
+
+    private async Task DisplayShiftsPageAsync(PaginatedApiResponseDto<List<Shift>> response, int pageNumber)
+    {
+        await _shiftDisplayService.DisplayShiftsTableWithPaginationAsync(
+            response.Data!, pageNumber, DefaultPageSize, response.TotalCount);
+    }
+
+    private async Task<string> GetUserPaginationChoiceAsync(int pageNumber, int pageSize, int totalCount)
+    {
+        var options = new List<string> { "Select Shift", "Back to Menu" };
+        if (pageNumber > 1) options.Insert(0, "Previous Page");
+        if (pageNumber * pageSize < totalCount) options.Insert(options.Count - 1, "Next Page");
+
+        return await InputService.GetMenuChoiceAsync("What would you like to do?", options.ToArray());
+    }
+
+    private async Task<(bool Success, PaginationWorkflowResult? Result)> ProcessPaginationChoiceAsync(int pageNumber, int pageSize, string choice)
+    {
+        try
+        {
+            switch (choice)
+            {
+                case "Next Page":
+                    var nextPage = pageNumber + 1;
+                    var nextPageResult = await _controllerService.GetAllShiftsAsync(nextPage, pageSize);
+
+                    if (!nextPageResult.IsSuccess)
+                    {
+                        DisplayService.DisplayError(nextPageResult.Message);
+                        await InputService.WaitForKeyPressAsync();
+                        return (false, null);
+                    }
+
+                    return (true, new PaginationWorkflowResult
+                    {
+                        ShouldContinue = true,
+                        NextPageNumber = nextPage,
+                        ShouldSelectShift = false,
+                        ShiftData = nextPageResult.Data
+                    });
+
+                case "Previous Page":
+                    var prevPage = Math.Max(1, pageNumber - 1);
+                    var prevPageResult = await _controllerService.GetAllShiftsAsync(prevPage, pageSize);
+
+                    if (!prevPageResult.IsSuccess)
+                    {
+                        DisplayService.DisplayError(prevPageResult.Message);
+                        await InputService.WaitForKeyPressAsync();
+                        return (false, null);
+                    }
+
+                    return (true, new PaginationWorkflowResult
+                    {
+                        ShouldContinue = true,
+                        NextPageNumber = prevPage,
+                        ShouldSelectShift = false,
+                        ShiftData = prevPageResult.Data
+                    });
+
+                case "Select Shift":
+                    var currentPageResult = await _controllerService.GetAllShiftsAsync(pageNumber, pageSize);
+
+                    if (!currentPageResult.IsSuccess)
+                    {
+                        DisplayService.DisplayError(currentPageResult.Message);
+                        await InputService.WaitForKeyPressAsync();
+                        return (false, null);
+                    }
+
+                    return (true, new PaginationWorkflowResult
+                    {
+                        ShouldContinue = true,
+                        NextPageNumber = pageNumber,
+                        ShouldSelectShift = true,
+                        ShiftData = currentPageResult.Data
+                    });
+
+                case "Back to Menu":
+                    return (true, new PaginationWorkflowResult
+                    {
+                        ShouldContinue = false,
+                        NextPageNumber = pageNumber,
+                        ShouldSelectShift = false,
+                        ShiftData = null
+                    });
+
+                default:
+                    DisplayService.DisplayError("Invalid pagination choice");
+                    await InputService.WaitForKeyPressAsync();
+                    return (false, null);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error processing pagination choice: {Choice}", choice);
+            DisplayService.DisplayError("An error occurred during pagination");
+            await InputService.WaitForKeyPressAsync();
+            return (false, null);
         }
     }
 
     private async Task ViewShiftByIdAsync()
     {
-        try
+        DisplayService.DisplayHeader("View Shift by ID", "blue");
+
+        var shiftId = await _shiftUi.GetShiftByIdUi();
+
+        if (shiftId <= 0)
         {
-            DisplayService.DisplayHeader("View Shift by ID", "blue");
-
-            var shiftId = await _shiftUi.GetShiftByIdUi();
-
-            if (shiftId <= 0)
-            {
-                DisplayService.DisplayInfo("Operation cancelled.");
-                await InputService.WaitForKeyPressAsync();
-                return;
-            }
-
-            var response = await _shiftService.GetShiftByIdAsync(shiftId);
-
-            if (response.RequestFailed)
-            {
-                DisplayService.DisplayError($"Failed to retrieve shift: {response.Message}");
-                await InputService.WaitForKeyPressAsync();
-                return;
-            }
-
-            if (response.Data == null)
-            {
-                DisplayService.DisplayError("Shift not found.");
-                await InputService.WaitForKeyPressAsync();
-                return;
-            }
-
-            await DisplayShiftDetails(response.Data);
-        }
-        catch (Exception ex)
-        {
-            DisplayService.DisplayError($"An error occurred: {ex.Message}");
+            DisplayService.DisplayInfo("Operation cancelled.");
             await InputService.WaitForKeyPressAsync();
+            return;
         }
+
+        await HandleOperationAsync(
+            "View Shift by ID",
+            () => _controllerService.GetShiftByIdAsync(shiftId),
+            shift => _shiftDisplayService.DisplayShiftDetailsAsync(shift).Wait(),
+            "blue"
+        );
     }
 
     private async Task CreateShiftAsync()
@@ -203,14 +289,35 @@ public class ShiftMenu : BaseMenu
 
         try
         {
-            var result = await _orchestrationService.CreateShiftWorkflowAsync();
+            // Get worker selection
+            var workerId = await _workerUi.GetWorkerByIdUi();
+            if (workerId <= 0)
+            {
+                DisplayService.DisplayInfo("Operation cancelled.");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            // Create shift using UI
+            var shift = await _shiftUi.CreateShiftUi(workerId);
+
+            // Convert to DTO
+            var shiftDto = new Models.Dtos.ShiftApiRequestDto
+            {
+                WorkerId = shift.WorkerId,
+                LocationId = shift.LocationId,
+                StartTime = shift.StartTime,
+                EndTime = shift.EndTime
+            };
+
+            // Create via controller service
+            var result = await _controllerService.CreateShiftAsync(shiftDto);
 
             if (result.IsSuccess)
             {
                 DisplayService.DisplaySuccess(result.Message);
                 if (result.Data != null)
                 {
-                    // Display the created shift details
                     DisplayService.DisplayInfo($"Shift ID: {result.Data.ShiftId}");
                 }
             }
@@ -232,35 +339,58 @@ public class ShiftMenu : BaseMenu
     {
         DisplayService.DisplayHeader("Update Shift");
 
-        try
+        var shiftId = await _shiftUi.GetShiftByIdUi();
+        if (shiftId <= 0)
         {
-            var shiftId = await _shiftUi.GetShiftByIdUi();
-            if (shiftId <= 0)
-            {
-                DisplayService.DisplayError("No shift selected.");
-                await InputService.WaitForKeyPressAsync();
-                return;
-            }
-
-            var result = await _orchestrationService.UpdateShiftWorkflowAsync(shiftId);
-
-            if (result.IsSuccess)
-            {
-                DisplayService.DisplaySuccess(result.Message);
-                if (result.Data != null)
-                {
-                    _shiftUi.DisplayShiftsTable([result.Data]);
-                }
-            }
-            else
-            {
-                DisplayService.DisplayError(result.Message);
-            }
+            DisplayService.DisplayError("No shift selected.");
+            await InputService.WaitForKeyPressAsync();
+            return;
         }
-        catch (Exception ex)
+
+        // Get the current shift data
+        var getResult = await _controllerService.GetShiftByIdAsync(shiftId);
+        if (!getResult.IsSuccess)
         {
-            Logger.LogError(ex, "Error updating shift");
-            DisplayService.DisplayError($"Failed to update shift: {ex.Message}");
+            DisplayService.DisplayError($"Failed to retrieve shift: {getResult.Message}");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        if (getResult.Data == null)
+        {
+            DisplayService.DisplayError("Shift not found.");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        // Get updated data from user
+        var updatedShift = await _shiftUi.UpdateShiftUi(getResult.Data);
+        if (updatedShift == null)
+        {
+            DisplayService.DisplayInfo("Update cancelled.");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        // Map to DTO
+        var shiftDto = new ShiftApiRequestDto
+        {
+            WorkerId = updatedShift.WorkerId,
+            StartTime = updatedShift.StartTime,
+            EndTime = updatedShift.EndTime,
+            LocationId = updatedShift.LocationId
+        };
+
+        // Update the shift
+        var updateResult = await _controllerService.UpdateShiftAsync(shiftId, shiftDto);
+        if (updateResult.IsSuccess && updateResult.Data != null)
+        {
+            DisplayService.DisplaySuccess("Shift updated successfully!");
+            _shiftUi.DisplayShiftsTable([updateResult.Data]);
+        }
+        else
+        {
+            DisplayService.DisplayError($"Failed to update shift: {updateResult.Message}");
         }
 
         await InputService.WaitForKeyPressAsync();
@@ -270,31 +400,32 @@ public class ShiftMenu : BaseMenu
     {
         DisplayService.DisplayHeader("Delete Shift", "red");
 
-        try
+        var shiftId = await _shiftUi.GetShiftByIdUi();
+        if (shiftId <= 0)
         {
-            var shiftId = await _shiftUi.GetShiftByIdUi();
-            if (shiftId <= 0)
-            {
-                DisplayService.DisplayError("No shift selected.");
-                await InputService.WaitForKeyPressAsync();
-                return;
-            }
-
-            var result = await _orchestrationService.DeleteShiftWorkflowAsync(shiftId);
-
-            if (result.IsSuccess)
-            {
-                DisplayService.DisplaySuccess(result.Message);
-            }
-            else
-            {
-                DisplayService.DisplayError(result.Message);
-            }
+            DisplayService.DisplayError("No shift selected.");
+            await InputService.WaitForKeyPressAsync();
+            return;
         }
-        catch (Exception ex)
+
+        // Confirm deletion
+        var confirm = await InputService.GetConfirmationAsync($"Are you sure you want to delete shift {shiftId}?");
+        if (!confirm)
         {
-            Logger.LogError(ex, "Error deleting shift");
-            DisplayService.DisplayError($"Failed to delete shift: {ex.Message}");
+            DisplayService.DisplayInfo("Deletion cancelled.");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        // Delete the shift
+        var deleteResult = await _controllerService.DeleteShiftAsync(shiftId);
+        if (deleteResult.IsSuccess)
+        {
+            DisplayService.DisplaySuccess("Shift deleted successfully!");
+        }
+        else
+        {
+            DisplayService.DisplayError($"Failed to delete shift: {deleteResult.Message}");
         }
 
         await InputService.WaitForKeyPressAsync();
@@ -304,78 +435,31 @@ public class ShiftMenu : BaseMenu
     {
         DisplayService.DisplayHeader("Filter Shifts", "blue");
 
-        try
+        // Get filter options from user
+        var filterOptions = await _shiftUi.FilterShiftsUi();
+        if (filterOptions == null)
         {
-            var result = await _orchestrationService.FilterShiftsWorkflowAsync();
-
-            if (result.IsSuccess)
-            {
-                DisplayService.DisplaySuccess(result.Message);
-                if (result.Data != null && result.Data.Any())
-                {
-                    _shiftUi.DisplayShiftsTable(result.Data.ToList());
-                }
-            }
-            else
-            {
-                DisplayService.DisplayError(result.Message);
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error filtering shifts");
-            DisplayService.DisplayError($"Failed to filter shifts: {ex.Message}");
-        }
-
-        await InputService.WaitForKeyPressAsync();
-    }
-
-    private void DisplayShiftsTableWithPagination(List<Shift> shifts, int pageNumber, int pageSize, int totalCount)
-    {
-        if (shifts == null || shifts.Count == 0)
-        {
-            DisplayService.DisplayError("No shifts found.");
+            DisplayService.DisplayInfo("Filtering cancelled.");
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
-        var table = new Table();
-        table.AddColumn("[bold]Index[/]");
-        table.AddColumn("[bold]Worker[/]");
-        table.AddColumn("[bold]Location[/]");
-        table.AddColumn("[bold]Start Time[/]");
-        table.AddColumn("[bold]End Time[/]");
-        table.AddColumn("[bold]Duration[/]");
-
-        // Calculate the starting index for this page
-        int startIndex = (pageNumber - 1) * pageSize + 1;
-
-        for (int i = 0; i < shifts.Count; i++)
+        // Filter shifts
+        var filterResult = await _controllerService.FilterShiftsAsync(filterOptions);
+        if (filterResult.IsSuccess && filterResult.Data != null && filterResult.Data.Any())
         {
-            var shift = shifts[i];
-            // Use the Duration property which is already computed
-            var duration = shift.Duration.ToString(@"hh\:mm");
-
-            // Use the actual index that accounts for pagination
-            int displayIndex = startIndex + i;
-
-            table.AddRow(
-                displayIndex.ToString(),
-                shift.Worker?.Name ?? "Unknown",
-                shift.Location?.Name ?? "Unknown",
-                shift.StartTime.ToString("yyyy-MM-dd HH:mm"),
-                shift.EndTime.ToString("yyyy-MM-dd HH:mm"),
-                duration
-            );
+            _shiftUi.DisplayShiftsTable(filterResult.Data);
+        }
+        else if (filterResult.IsSuccess && (!filterResult.Data?.Any() ?? true))
+        {
+            DisplayService.DisplayInfo("No shifts found matching the filter criteria.");
+        }
+        else
+        {
+            DisplayService.DisplayError($"Failed to filter shifts: {filterResult.Message}");
         }
 
-        AnsiConsole.Write(table);
-
-        // Show pagination info
-        if (totalCount > pageSize)
-        {
-            int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            DisplayService.DisplayInfo($"Page {pageNumber} of {totalPages} (Total: {totalCount} shifts)");
-        }
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task HandleShiftSelection(List<Shift> currentPageShifts, int pageNumber, int pageSize)
@@ -385,29 +469,16 @@ public class ShiftMenu : BaseMenu
             DisplayService.DisplayInfo("Enter the Index number of the shift you want to view:");
             var indexInput = await InputService.GetTextInputAsync("Index");
 
-            if (!int.TryParse(indexInput, out int selectedIndex) || selectedIndex < 1)
+            if (!int.TryParse(indexInput, out int selectedIndex) || selectedIndex < 1 || selectedIndex > currentPageShifts.Count)
             {
-                DisplayService.DisplayError("Invalid index. Please enter a valid number.");
+                DisplayService.DisplayError("Invalid index. Please enter a number between 1 and " + currentPageShifts.Count);
                 return;
             }
 
-            // Calculate the actual position in the current page
-            int startIndex = (pageNumber - 1) * pageSize + 1;
-            int endIndex = startIndex + currentPageShifts.Count - 1;
-
-            // Check if the selected index is within the current page range
-            if (selectedIndex < startIndex || selectedIndex > endIndex)
-            {
-                DisplayService.DisplayError($"Index must be between {startIndex} and {endIndex} for this page.");
-                return;
-            }
-
-            // Convert the global index to local page index
-            int localIndex = selectedIndex - startIndex;
-            var selectedShift = currentPageShifts[localIndex];
+            var selectedShift = currentPageShifts[selectedIndex - 1];
 
             // Display the selected shift details
-            await DisplayShiftDetails(selectedShift);
+            await _shiftDisplayService.DisplayShiftDetailsAsync(selectedShift);
         }
         catch (Exception ex)
         {
@@ -415,21 +486,34 @@ public class ShiftMenu : BaseMenu
         }
     }
 
-    private async Task DisplayShiftDetails(Shift shift)
+    private async Task HandleOperationAsync<T>(
+        string operationName,
+        Func<Task<OperationResult<T>>> operation,
+        Action<T>? onSuccess = null,
+        string headerColor = "green")
     {
-        DisplayService.DisplayHeader("Shift Details", "green");
+        DisplayService.DisplayHeader(operationName, headerColor);
 
-        var table = new Table();
-        table.AddColumn("[bold]Property[/]");
-        table.AddColumn("[bold]Value[/]");
+        try
+        {
+            var result = await operation();
 
-        table.AddRow("Worker", shift.Worker?.Name ?? "Unknown");
-        table.AddRow("Location", shift.Location?.Name ?? "Unknown");
-        table.AddRow("Start Time", shift.StartTime.ToString("yyyy-MM-dd HH:mm:ss"));
-        table.AddRow("End Time", shift.EndTime.ToString("yyyy-MM-dd HH:mm:ss"));
-        table.AddRow("Duration", shift.Duration.ToString(@"hh\:mm\:ss"));
+            if (result.IsSuccess)
+            {
+                DisplayService.DisplaySuccess(result.Message);
+                onSuccess?.Invoke(result.Data!);
+            }
+            else
+            {
+                DisplayService.DisplayError(result.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error in {OperationName}", operationName);
+            DisplayService.DisplayError($"Failed to {operationName.ToLower()}: {ex.Message}");
+        }
 
-        AnsiConsole.Write(table);
         await InputService.WaitForKeyPressAsync();
     }
 }
