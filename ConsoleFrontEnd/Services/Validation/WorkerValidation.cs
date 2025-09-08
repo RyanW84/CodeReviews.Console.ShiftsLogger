@@ -14,7 +14,7 @@ public static class WorkerValidation
         if (dto.Name.Length > 100)
             errors.Add("Worker name must be less than 100 characters.");
 
-        // Email validation - more forgiving
+        // Email validation - very forgiving
         if (string.IsNullOrWhiteSpace(dto.Email))
             errors.Add("Email is required.");
         else
@@ -33,7 +33,7 @@ public static class WorkerValidation
                 errors.Add("Email must be in format: user@domain.extension");
         }
 
-        // Phone validation - more forgiving
+        // Phone validation - very forgiving
         if (string.IsNullOrWhiteSpace(dto.PhoneNumber))
             errors.Add("Phone number is required.");
         else

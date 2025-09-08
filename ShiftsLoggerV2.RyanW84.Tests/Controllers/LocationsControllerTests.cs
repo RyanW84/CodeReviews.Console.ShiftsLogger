@@ -116,7 +116,7 @@ public class LocationsControllerTests
             Address = "123 Main St",
             Town = "Anytown",
             County = "AnyCounty",
-            PostCode = "12345",
+            Postcode = "12345",
             Country = "USA",
         };
         var result = Result<Location>.Success(location, "Location found");
@@ -174,7 +174,7 @@ public class LocationsControllerTests
             Town = "Newtown",
             County = "NewCounty",
             State = "NY",
-            PostCode = "67890",
+            Postcode = "67890",
             Country = "USA",
         };
 
@@ -185,7 +185,7 @@ public class LocationsControllerTests
             Address = locationDto.Address,
             Town = locationDto.Town,
             County = locationDto.County,
-            PostCode = locationDto.PostCode,
+            Postcode = locationDto.Postcode,
             Country = locationDto.Country,
         };
 
@@ -239,7 +239,7 @@ public class LocationsControllerTests
             Town = "Updatedtown",
             County = "UpdatedCounty",
             State = "CA",
-            PostCode = "12345",
+            Postcode = "12345",
             Country = "USA",
         };
 
@@ -250,7 +250,7 @@ public class LocationsControllerTests
             Address = locationDto.Address,
             Town = locationDto.Town,
             County = locationDto.County,
-            PostCode = locationDto.PostCode,
+            Postcode = locationDto.Postcode,
             Country = locationDto.Country,
         };
 

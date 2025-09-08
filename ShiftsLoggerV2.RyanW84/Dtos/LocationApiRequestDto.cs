@@ -7,6 +7,6 @@ public class LocationApiRequestDto
     public string Town { get; set; } = string.Empty;
     public string County { get; set; } = string.Empty;
     public string State { get; set; } = string.Empty;
-    public string PostCode { get; set; } = string.Empty;
+    public string Postcode { get; set; } = string.Empty;
     public string Country { get; set; } = string.Empty;
 }

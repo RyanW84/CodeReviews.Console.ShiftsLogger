@@ -49,7 +49,7 @@ namespace ShiftsLoggerV2.RyanW84.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("PostCode")
+                    b.Property<string>("Postcode")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -64,7 +64,7 @@ namespace ShiftsLoggerV2.RyanW84.Migrations
 
                     b.HasIndex("Name");
 
-                    b.HasIndex("PostCode");
+                    b.HasIndex("Postcode");
 
                     b.HasIndex("Town");
 

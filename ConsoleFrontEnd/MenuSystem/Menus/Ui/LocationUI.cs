@@ -38,7 +38,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
         var address = AnsiConsole.Ask<string>("[green]Enter address:[/]");
         var town = AnsiConsole.Ask<string>("[green]Enter town:[/]");
         var county = AnsiConsole.Ask<string>("[green]Enter county:[/]");
-        var postCode = AnsiConsole.Ask<string>("[green]Enter post code:[/]");
+        var postcode = AnsiConsole.Ask<string>("[green]Enter postcode:[/]");
         var country = AnsiConsole.Ask<string>("[green]Enter country:[/]");
 
         return new Location
@@ -48,8 +48,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
             Address = address,
             Town = town,
             County = county,
-            PostCode = postCode,
-            Country = country,
+            Postcode = postcode,
         };
     }
 
@@ -72,7 +71,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
         var address = AnsiConsole.Ask("[green]Enter address:[/]", existingLocation.Address);
         var town = AnsiConsole.Ask("[green]Enter town:[/]", existingLocation.Town);
         var county = AnsiConsole.Ask("[green]Enter county:[/]", existingLocation.County);
-        var postCode = AnsiConsole.Ask("[green]Enter post code:[/]", existingLocation.PostCode);
+        var postcode = AnsiConsole.Ask("[green]Enter post code:[/]", existingLocation.Postcode);
         var country = AnsiConsole.Ask("[green]Enter country:[/]", existingLocation.Country);
 
         return new Location
@@ -82,7 +81,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
             Address = address,
             Town = town,
             County = county,
-            PostCode = postCode,
+            Postcode = postcode,
             Country = country,
         };
     }

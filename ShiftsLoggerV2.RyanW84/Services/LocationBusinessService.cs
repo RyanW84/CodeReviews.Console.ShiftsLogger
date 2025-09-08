@@ -120,15 +120,15 @@ public class LocationBusinessService
             return Result.Failure("Location county cannot exceed 100 characters.");
 
         // Post code validation - more forgiving
-        if (string.IsNullOrWhiteSpace(dto.PostCode))
+        if (string.IsNullOrWhiteSpace(dto.Postcode))
             return Result.Failure("Location post code is required.");
 
-        if (!IsValidPostCode(dto.PostCode))
+        if (!IsValidPostcode(dto.Postcode))
             return Result.Failure(
                 "Post code must be at least 3 characters with letters or digits."
             );
 
-        if (dto.PostCode.Length > 20)
+        if (dto.Postcode.Length > 20)
             return Result.Failure("Location post code cannot exceed 20 characters.");
 
         // Country validation
@@ -144,7 +144,7 @@ public class LocationBusinessService
         return Result.Success();
     }
 
-    private static bool IsValidPostCode(string postCode)
+    private static bool IsValidPostcode(string postCode)
     {
         if (string.IsNullOrWhiteSpace(postCode))
             return false;

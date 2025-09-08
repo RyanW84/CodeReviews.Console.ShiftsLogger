@@ -76,8 +76,8 @@ public class LocationService : ILocationService
             query.Add($"Town={Uri.EscapeDataString(filter.Town)}");
         if (!string.IsNullOrWhiteSpace(filter.County))
             query.Add($"County={Uri.EscapeDataString(filter.County)}");
-        if (!string.IsNullOrWhiteSpace(filter.PostCode))
-            query.Add($"PostCode={Uri.EscapeDataString(filter.PostCode)}");
+        if (!string.IsNullOrWhiteSpace(filter.Postcode))
+            query.Add($"Postcode={Uri.EscapeDataString(filter.Postcode)}");
         if (!string.IsNullOrWhiteSpace(filter.Country))
             query.Add($"Country={Uri.EscapeDataString(filter.Country)}");
         if (!string.IsNullOrWhiteSpace(filter.Search))
@@ -194,7 +194,7 @@ public class LocationService : ILocationService
             Address = location.Address,
             Town = location.Town,
             County = location.County,
-            PostCode = location.PostCode,
+            Postcode = location.Postcode,
             Country = location.Country,
         };
         var errors = Services.Validation.LocationValidation.Validate(dto);
@@ -240,7 +240,7 @@ public class LocationService : ILocationService
             Address = updatedLocation.Address,
             Town = updatedLocation.Town,
             County = updatedLocation.County,
-            PostCode = updatedLocation.PostCode,
+            Postcode = updatedLocation.Postcode,
             Country = updatedLocation.Country,
         };
         var errors = Services.Validation.LocationValidation.Validate(dto);

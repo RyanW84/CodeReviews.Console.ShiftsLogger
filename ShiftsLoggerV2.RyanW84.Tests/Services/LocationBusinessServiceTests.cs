@@ -97,7 +97,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Address = "123 Main St",
                 Town = "Anytown",
                 County = "AnyCounty",
-                PostCode = "12345",
+                Postcode = "12345",
                 Country = "USA",
             };
 
@@ -148,7 +148,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Address = "789 Pine St",
                 Town = "Newtown",
                 County = "NewCounty",
-                PostCode = "67890",
+                Postcode = "67890",
                 Country = "USA",
             };
 
@@ -159,7 +159,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Address = locationDto.Address,
                 Town = locationDto.Town,
                 County = locationDto.County,
-                PostCode = locationDto.PostCode,
+                Postcode = locationDto.Postcode,
                 Country = locationDto.Country,
             };
 
@@ -191,7 +191,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Address = "123 Updated St",
                 Town = "Updatedtown",
                 County = "UpdatedCounty",
-                PostCode = "12345",
+                Postcode = "12345",
                 Country = "USA",
             };
 
@@ -209,7 +209,7 @@ namespace ShiftsLoggerV2.RyanW84.Tests.Services
                 Address = locationDto.Address,
                 Town = locationDto.Town,
                 County = locationDto.County,
-                PostCode = locationDto.PostCode,
+                Postcode = locationDto.Postcode,
                 Country = locationDto.Country,
             };
 

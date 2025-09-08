@@ -9,7 +9,7 @@ public class LocationFilterOptions
     public string? Address { get; set; } = string.Empty; // Optional filter by location address
     public string? Town { get; set; } = string.Empty; // Optional filter by Town
     public string? County { get; set; } = string.Empty; // Optional filter by County
-    public string? PostCode { get; set; } = string.Empty; // Optional filter by Postcode
+    public string? Postcode { get; set; } = string.Empty; // Optional filter by Postcode
     public string? Country { get; set; } = string.Empty; // Optional filter by Country
     public string? Search { get; set; } = string.Empty; // Optional search text for filtering locations
     public string? SortBy { get; set; } = "Name"; // Default sorting by name

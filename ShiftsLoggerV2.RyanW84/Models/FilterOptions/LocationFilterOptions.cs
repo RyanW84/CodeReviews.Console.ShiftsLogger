@@ -23,8 +23,8 @@ public class LocationFilterOptions : BaseFilterOptions
     [FromQuery(Name = "State")]
     public string State { get; set; } = string.Empty;
 
-    [FromQuery(Name = "PostCode")]
-    public string PostCode { get; set; } = string.Empty;
+    [FromQuery(Name = "Postcode")]
+    public string Postcode { get; set; } = string.Empty;
 
     [FromQuery(Name = "Country")]
     public string Country { get; set; } = string.Empty;
