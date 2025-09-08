@@ -46,7 +46,7 @@ public abstract class BaseMenu : IMenu
         {
             Logger.LogError(ex, "Error displaying menu: {MenuTitle}", Title);
             DisplayService.DisplayError($"An error occurred: {ex.Message}");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             throw;
         }
     }

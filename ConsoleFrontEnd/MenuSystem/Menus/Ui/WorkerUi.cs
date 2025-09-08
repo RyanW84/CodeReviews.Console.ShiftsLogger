@@ -26,7 +26,6 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
     {
         _uiHelper = new UiHelper(display, logger);
         _workerService = workerService;
-        _display = display;
     }
 
     protected override string EntityName => "Worker";

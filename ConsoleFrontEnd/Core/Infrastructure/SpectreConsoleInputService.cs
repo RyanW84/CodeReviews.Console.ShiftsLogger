@@ -119,12 +119,45 @@ public class SpectreConsoleInputService : IConsoleInputService
         }
     }
 
-    public void WaitForKeyPress(string message = "Press any key to continue...")
+    public Task<string> GetMenuChoiceAsync(string prompt, params string[] options)
     {
-        lock (_consoleLock)
+        return Task.Run(() => GetMenuChoice(prompt, options));
+    }
+
+    public Task<string> GetTextInputAsync(string prompt, bool isRequired = true)
+    {
+        return Task.Run(() => GetTextInput(prompt, isRequired));
+    }
+
+    public Task<int> GetIntegerInputAsync(string prompt, int? min = null, int? max = null)
+    {
+        return Task.Run(() => GetIntegerInput(prompt, min, max));
+    }
+
+    public Task<decimal> GetDecimalInputAsync(string prompt, decimal? min = null, decimal? max = null)
+    {
+        return Task.Run(() => GetDecimalInput(prompt, min, max));
+    }
+
+    public Task<DateTime> GetDateTimeInputAsync(string prompt)
+    {
+        return Task.Run(() => GetDateTimeInput(prompt));
+    }
+
+    public Task<bool> GetConfirmationAsync(string prompt)
+    {
+        return Task.Run(() => GetConfirmation(prompt));
+    }
+
+    public Task WaitForKeyPressAsync(string message = "Press any key to continue...")
+    {
+        return Task.Run(() =>
         {
-            AnsiConsole.MarkupLine($"[dim]{Markup.Escape(message)}[/]");
-            Console.ReadKey(true);
-        }
+            lock (_consoleLock)
+            {
+                AnsiConsole.MarkupLine($"[dim]{Markup.Escape(message)}[/]");
+                Console.ReadKey(true);
+            }
+        });
     }
 }

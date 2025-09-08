@@ -11,18 +11,21 @@ namespace ConsoleFrontEnd.MenuSystem;
 public class ShiftUI : IShiftUi
 {
     private readonly IConsoleDisplayService _display;
+    private readonly IConsoleInputService _input;
     private readonly UiHelper _uiHelper;
     private readonly ShiftInputHelper _shiftInputHelper;
     private readonly ConsoleFrontEnd.Interfaces.IShiftService _shiftService;
 
     public ShiftUI(
         IConsoleDisplayService display,
+        IConsoleInputService input,
         ILogger<ShiftUI> logger,
         ShiftInputHelper shiftInputHelper,
         ConsoleFrontEnd.Interfaces.IShiftService shiftService
     )
     {
         _display = display;
+        _input = input ?? throw new ArgumentNullException(nameof(input));
         _uiHelper = new UiHelper(display, logger);
         _shiftInputHelper =
             shiftInputHelper ?? throw new ArgumentNullException(nameof(shiftInputHelper));
@@ -33,8 +36,8 @@ public class ShiftUI : IShiftUi
     {
         _display.DisplayHeader("Create New Shift");
 
-        var start = _shiftInputHelper.GetDateTimeInput("Start Time");
-        var end = _shiftInputHelper.GetDateTimeInput("End Time");
+        var start = await _shiftInputHelper.GetDateTimeInputAsync("Start Time");
+        var end = await _shiftInputHelper.GetDateTimeInputAsync("End Time");
         var locationId = await _shiftInputHelper
             .SelectLocationAsync(null, false)
             .ConfigureAwait(false);
@@ -53,8 +56,8 @@ public class ShiftUI : IShiftUi
     {
         _display.DisplayHeader($"Update Shift ID: {existingShift.Id}");
 
-        var start = _shiftInputHelper.GetDateTimeInput("Start Time", existingShift.Start, true);
-        var end = _shiftInputHelper.GetDateTimeInput("End Time", existingShift.End, true);
+        var start = await _shiftInputHelper.GetDateTimeInputAsync("Start Time", existingShift.Start, true);
+        var end = await _shiftInputHelper.GetDateTimeInputAsync("End Time", existingShift.End, true);
         var locationId = await _shiftInputHelper
             .SelectLocationAsync(existingShift.LocationId, true)
             .ConfigureAwait(false);
@@ -74,20 +77,12 @@ public class ShiftUI : IShiftUi
         _display.DisplayHeader("Filter Shifts");
 
         int? workerId = null;
-        var filterByWorker = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Filter by worker?")
-                .AddChoices(new[] { "No", "Yes" })
-        );
+        var filterByWorker = await _input.GetMenuChoiceAsync("Filter by worker?", "No", "Yes");
         if (filterByWorker == "Yes")
             workerId = await _shiftInputHelper.SelectWorkerAsync(null, false).ConfigureAwait(false);
 
         int? locationId = null;
-        var filterByLocation = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Filter by location?")
-                .AddChoices(new[] { "No", "Yes" })
-        );
+        var filterByLocation = await _input.GetMenuChoiceAsync("Filter by location?", "No", "Yes");
         if (filterByLocation == "Yes")
             locationId = await _shiftInputHelper
                 .SelectLocationAsync(null, false)
@@ -95,29 +90,21 @@ public class ShiftUI : IShiftUi
 
         DateTime? startDate = null;
         DateTime? endDate = null;
-        var wantDates = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Filter by date range?")
-                .AddChoices(new[] { "No", "Yes" })
-        );
+        var wantDates = await _input.GetMenuChoiceAsync("Filter by date range?", "No", "Yes");
         if (wantDates == "Yes")
         {
-            startDate = _shiftInputHelper.GetDateTimeInput("Start Date").DateTime;
-            endDate = _shiftInputHelper.GetDateTimeInput("End Date").DateTime;
+            startDate = (await _shiftInputHelper.GetDateTimeInputAsync("Start Date")).DateTime;
+            endDate = (await _shiftInputHelper.GetDateTimeInputAsync("End Date")).DateTime;
         }
 
         int? minDurationMinutes = null;
         int? maxDurationMinutes = null;
-        var wantDuration = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Filter by duration?")
-                .AddChoices(new[] { "No", "Yes" })
-        );
+        var wantDuration = await _input.GetMenuChoiceAsync("Filter by duration?", "No", "Yes");
         if (wantDuration == "Yes")
         {
-            var minDurationInput = AnsiConsole.Ask<string>(
+            var minDurationInput = await _input.GetTextInputAsync(
                 "Minimum duration in minutes (press Enter to skip):",
-                ""
+                false
             );
             if (
                 !string.IsNullOrWhiteSpace(minDurationInput)
@@ -128,9 +115,9 @@ public class ShiftUI : IShiftUi
                 minDurationMinutes = minDuration;
             }
 
-            var maxDurationInput = AnsiConsole.Ask<string>(
+            var maxDurationInput = await _input.GetTextInputAsync(
                 "Maximum duration in minutes (press Enter to skip):",
-                ""
+                false
             );
             if (
                 !string.IsNullOrWhiteSpace(maxDurationInput)
@@ -228,8 +215,10 @@ public class ShiftUI : IShiftUi
                     break;
 
                 case "Go to Page":
-                    var pageInput = AnsiConsole.Ask<int>(
-                        $"Enter page number (1-{response.TotalPages}):"
+                    var pageInput = await _input.GetIntegerInputAsync(
+                        $"Enter page number (1-{response.TotalPages}):",
+                        1,
+                        response.TotalPages
                     );
                     if (pageInput >= 1 && pageInput <= response.TotalPages)
                         currentPage = pageInput;
@@ -240,7 +229,7 @@ public class ShiftUI : IShiftUi
                     break;
 
                 case "Change Page Size":
-                    var sizeInput = AnsiConsole.Ask<int>("Enter new page size (1-100):");
+                    var sizeInput = await _input.GetIntegerInputAsync("Enter new page size (1-100):", 1, 100);
                     if (sizeInput >= 1 && sizeInput <= 100)
                     {
                         pageSize = sizeInput;
@@ -276,7 +265,7 @@ public class ShiftUI : IShiftUi
                 {
                     _uiHelper.DisplayValidationError(response.Message ?? "No shifts available.");
                     // Fallback to manual entry
-                    return AnsiConsole.Ask<int>("[green]Enter shift ID:[/]");
+                    return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
                 }
                 else
                 {
@@ -322,7 +311,7 @@ public class ShiftUI : IShiftUi
             }
             else if (selected == "Enter ID Manually")
             {
-                return AnsiConsole.Ask<int>("[green]Enter shift ID:[/]");
+                return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
             }
             else if (selected == "Cancel/Return to Menu")
             {

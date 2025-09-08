@@ -1,9 +1,10 @@
+using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
 
 namespace ConsoleFrontEnd.MenuSystem;
 
-public interface IWorkerUi
+public interface IWorkerUi : IEntityUi<Worker, WorkerFilterOptions>
 {
     Worker CreateWorkerUi();
     Worker UpdateWorkerUi(Worker existingWorker);

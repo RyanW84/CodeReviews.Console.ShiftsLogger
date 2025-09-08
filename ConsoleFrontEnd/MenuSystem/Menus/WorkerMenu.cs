@@ -53,7 +53,7 @@ public class WorkerMenu : BaseMenu
 
         while (!shouldExit)
         {
-            var choice = InputService.GetMenuChoice(
+            var choice = await InputService.GetMenuChoiceAsync(
                 "Select a worker operation:",
                 "View All Workers",
                 "View Worker by ID",
@@ -84,7 +84,7 @@ public class WorkerMenu : BaseMenu
         else
         {
             DisplayService.DisplayError("Invalid choice");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return false;
         }
     }
@@ -93,7 +93,7 @@ public class WorkerMenu : BaseMenu
     {
         DisplayService.DisplayHeader("All Workers", "blue");
         await _workerUi.DisplayWorkersWithPaginationAsync();
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewWorkerByIdAsync()
@@ -104,7 +104,7 @@ public class WorkerMenu : BaseMenu
         if (workerId <= 0)
         {
             DisplayService.DisplayError("No worker selected.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -119,7 +119,7 @@ public class WorkerMenu : BaseMenu
             DisplayService.DisplayTable([response.Data], "Worker Details");
             DisplayService.DisplaySuccess("Worker details loaded successfully.");
         }
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task CreateWorkerAsync()
@@ -146,7 +146,7 @@ public class WorkerMenu : BaseMenu
             DisplayService.DisplayError($"Failed to create worker: {ex.Message}");
         }
 
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task UpdateWorkerAsync()
@@ -157,7 +157,7 @@ public class WorkerMenu : BaseMenu
         if (workerId <= 0)
         {
             DisplayService.DisplayError("No worker selected.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -168,7 +168,7 @@ public class WorkerMenu : BaseMenu
             DisplayService.DisplayError(
                 workerResponse.Message ?? "Failed to retrieve worker details."
             );
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -184,7 +184,7 @@ public class WorkerMenu : BaseMenu
             DisplayService.DisplaySuccess("Worker updated successfully.");
             DisplayService.DisplayTable([response.Data], "Updated Worker");
         }
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task DeleteWorkerAsync()
@@ -195,11 +195,11 @@ public class WorkerMenu : BaseMenu
         if (workerId <= 0)
         {
             DisplayService.DisplayError("No worker selected.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
-        if (InputService.GetConfirmation($"Are you sure you want to delete worker {workerId}?"))
+        if (await InputService.GetConfirmationAsync($"Are you sure you want to delete worker {workerId}?"))
         {
             var response = await _workerService.DeleteWorkerAsync(workerId);
             if (response.RequestFailed)
@@ -217,7 +217,7 @@ public class WorkerMenu : BaseMenu
         {
             DisplayService.DisplayInfo("Delete cancelled.");
         }
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task FilterWorkersAsync()
@@ -245,14 +245,14 @@ public class WorkerMenu : BaseMenu
             if (names.Any())
             {
                 string[] nameChoices = ["Any", .. names];
-                var selectedName = InputService.GetMenuChoice("Filter by Name:", nameChoices);
+                var selectedName = await InputService.GetMenuChoiceAsync("Filter by Name:", nameChoices);
                 if (selectedName != "Any")
                     name = selectedName;
             }
             if (emails.Any())
             {
                 string[] emailChoices = ["Any", .. emails.Select(s => s!)];
-                var selectedEmail = InputService.GetMenuChoice("Filter by Email:", emailChoices);
+                var selectedEmail = await InputService.GetMenuChoiceAsync("Filter by Email:", emailChoices);
                 if (selectedEmail != "Any")
                     email = selectedEmail;
             }
@@ -262,7 +262,7 @@ public class WorkerMenu : BaseMenu
         {
             Name = name,
             Email = email,
-            PhoneNumber = InputService.GetTextInput(
+            PhoneNumber = await InputService.GetTextInputAsync(
                 "Filter by phone (leave blank for any):",
                 false
             ),
@@ -278,13 +278,13 @@ public class WorkerMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, "Filtered Workers");
             DisplayService.DisplaySuccess($"Total filtered workers: {response.TotalCount}");
         }
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewWorkersByEmailDomainAsync()
     {
         DisplayService.DisplayHeader("Workers by Email Domain", "blue");
-        var domain = InputService.GetTextInput("Enter email domain (e.g. gmail.com):");
+        var domain = await InputService.GetTextInputAsync("Enter email domain (e.g. gmail.com):");
         var response = await _workerService.GetAllWorkersAsync();
         if (response.RequestFailed || response.Data == null)
         {
@@ -308,13 +308,13 @@ public class WorkerMenu : BaseMenu
                 DisplayService.DisplaySuccess($"Total: {filtered.Count}");
             }
         }
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewWorkersByPhoneAreaCodeAsync()
     {
         DisplayService.DisplayHeader("Workers by Phone Area Code", "blue");
-        var areaCode = InputService.GetTextInput("Enter phone area code:");
+        var areaCode = await InputService.GetTextInputAsync("Enter phone area code:");
         var response = await _workerService.GetAllWorkersAsync();
         if (response.RequestFailed || response.Data == null)
         {
@@ -337,6 +337,6 @@ public class WorkerMenu : BaseMenu
                 DisplayService.DisplaySuccess($"Total: {filtered.Count}");
             }
         }
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 }

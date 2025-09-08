@@ -14,7 +14,7 @@ public abstract class BaseEntityUi<T, TFilter>(IConsoleDisplayService display, I
     where T : class, new()
     where TFilter : class, new()
 {
-    private readonly IConsoleDisplayService _display =
+    public readonly IConsoleDisplayService _display =
         display ?? throw new ArgumentNullException(nameof(display));
     protected readonly ILogger Logger = logger ?? throw new ArgumentNullException(nameof(logger));
 

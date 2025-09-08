@@ -38,12 +38,12 @@ public class ShiftMenu : BaseMenu
         {
             dto.WorkerId = await _shiftInputHelper.SelectWorkerAsync(existing.WorkerId, true);
             dto.LocationId = await _shiftInputHelper.SelectLocationAsync(existing.LocationId, true);
-            dto.StartTime = _shiftInputHelper.GetDateTimeInput(
+            dto.StartTime = await _shiftInputHelper.GetDateTimeInputAsync(
                 "Start Time",
                 existing.StartTime,
                 true
             );
-            dto.EndTime = _shiftInputHelper.GetDateTimeInput("End Time", existing.EndTime, true);
+            dto.EndTime = await _shiftInputHelper.GetDateTimeInputAsync("End Time", existing.EndTime, true);
         }
 
         // Validation loop
@@ -76,7 +76,7 @@ public class ShiftMenu : BaseMenu
                 }
                 else if (error.Contains("Start time"))
                 {
-                    dto.StartTime = _shiftInputHelper.GetDateTimeInput(
+                    dto.StartTime = await _shiftInputHelper.GetDateTimeInputAsync(
                         "Start Time",
                         existing?.StartTime,
                         existing != null
@@ -84,7 +84,7 @@ public class ShiftMenu : BaseMenu
                 }
                 else if (error.Contains("End time"))
                 {
-                    dto.EndTime = _shiftInputHelper.GetDateTimeInput(
+                    dto.EndTime = await _shiftInputHelper.GetDateTimeInputAsync(
                         "End Time",
                         existing?.EndTime,
                         existing != null
@@ -179,14 +179,14 @@ public class ShiftMenu : BaseMenu
         )
         {
             DisplayService.DisplayError(workersResponse.Message ?? "No workers found.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
         var workerChoices = workersResponse
             .Data.Select((w, index) => $"{index + 1}. {w.Name}")
             .ToArray();
-        var selectedWorkerChoice = InputService.GetMenuChoice("Select Worker:", workerChoices);
+        var selectedWorkerChoice = await InputService.GetMenuChoiceAsync("Select Worker:", workerChoices);
         var workerCount = UiHelper.ExtractCountFromChoice(selectedWorkerChoice);
         var workerId = workersResponse.Data[workerCount - 1].WorkerId;
         var filter = new ShiftFilterOptions { WorkerId = workerId };
@@ -201,20 +201,20 @@ public class ShiftMenu : BaseMenu
             DisplayService.DisplaySuccess($"Total shifts: {response.TotalCount}");
         }
 
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewShiftsByDateRangeAsync()
     {
         DisplayService.DisplayHeader("Shifts by Date Range", "blue");
 
-        var startDate = _shiftInputHelper.GetDateTimeInput("Enter start date");
-        var endDate = _shiftInputHelper.GetDateTimeInput("Enter end date");
+        var startDate = await _shiftInputHelper.GetDateTimeInputAsync("Enter start date");
+        var endDate = await _shiftInputHelper.GetDateTimeInputAsync("Enter end date");
 
         if (endDate <= startDate)
         {
             DisplayService.DisplayError("End date must be after start date.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -231,7 +231,7 @@ public class ShiftMenu : BaseMenu
             DisplayService.DisplaySuccess($"Found {response.Data.Count()} shifts in date range");
         }
 
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     protected override async Task ShowMenuAsync()
@@ -240,7 +240,7 @@ public class ShiftMenu : BaseMenu
 
         while (!shouldExit)
         {
-            var choice = InputService.GetMenuChoice(
+            var choice = await InputService.GetMenuChoiceAsync(
                 "Select a shift operation:",
                 "View All Shifts",
                 "View Shift by ID",
@@ -271,7 +271,7 @@ public class ShiftMenu : BaseMenu
         else
         {
             DisplayService.DisplayError("Invalid choice");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return false;
         }
     }
@@ -280,7 +280,7 @@ public class ShiftMenu : BaseMenu
     {
         DisplayService.DisplayHeader("All Shifts", "blue");
         await _shiftUi.DisplayShiftsWithPaginationAsync();
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewShiftByIdAsync()
@@ -292,7 +292,7 @@ public class ShiftMenu : BaseMenu
         if (shiftId <= 0)
         {
             DisplayService.DisplayError("No shift selected.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -308,7 +308,7 @@ public class ShiftMenu : BaseMenu
             DisplayService.DisplaySuccess("Shift details loaded successfully.");
         }
 
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task CreateShiftAsync()
@@ -354,14 +354,14 @@ public class ShiftMenu : BaseMenu
                     break;
             }
 
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
         if (workersResponse.Data == null || !workersResponse.Data.Any())
         {
             DisplayService.DisplayError("No workers found (404). Please create workers first.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -406,14 +406,14 @@ public class ShiftMenu : BaseMenu
                     break;
             }
 
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
         if (locationsResponse.Data == null || !locationsResponse.Data.Any())
         {
             DisplayService.DisplayError("No locations found (404). Please create locations first.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -423,13 +423,13 @@ public class ShiftMenu : BaseMenu
             var workerChoices = workersResponse
                 .Data.Select((w, index) => $"{index + 1}. {w.Name}")
                 .ToArray();
-            var selectedWorkerChoice = InputService.GetMenuChoice("Select Worker:", workerChoices);
+            var selectedWorkerChoice = await InputService.GetMenuChoiceAsync("Select Worker:", workerChoices);
             var workerCount = UiHelper.ExtractCountFromChoice(selectedWorkerChoice);
             var workerId = workersResponse.Data[workerCount - 1].WorkerId;
             if (workerId <= 0)
             {
                 DisplayService.DisplayError("Invalid worker ID.");
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
 
@@ -437,7 +437,7 @@ public class ShiftMenu : BaseMenu
             var locationChoices = locationsResponse
                 .Data.Select((l, index) => $"{index + 1}. {l.Name}")
                 .ToArray();
-            var selectedLocationChoice = InputService.GetMenuChoice(
+            var selectedLocationChoice = await InputService.GetMenuChoiceAsync(
                 "Select Location:",
                 locationChoices
             );
@@ -446,7 +446,7 @@ public class ShiftMenu : BaseMenu
             if (locationId <= 0)
             {
                 DisplayService.DisplayError("Invalid location ID.");
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
 
@@ -462,7 +462,7 @@ public class ShiftMenu : BaseMenu
             if (endTime <= startTime)
             {
                 DisplayService.DisplayError("End time must be after start time.");
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
 
@@ -486,7 +486,7 @@ public class ShiftMenu : BaseMenu
                     errorDetails += $"\nDetails: {createResponse.Message}";
                 }
                 DisplayService.DisplayError(errorDetails);
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
 
@@ -507,7 +507,7 @@ public class ShiftMenu : BaseMenu
         {
             Logger.LogError(ex, "Error creating shift");
             DisplayService.DisplayError($"Failed to create shift: {ex.Message}");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
         }
     }
 
@@ -519,7 +519,7 @@ public class ShiftMenu : BaseMenu
         if (shiftId <= 0)
         {
             DisplayService.DisplayError("No shift selected.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -530,7 +530,7 @@ public class ShiftMenu : BaseMenu
             DisplayService.DisplayError(
                 shiftResponse.Message ?? "Failed to retrieve shift details."
             );
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -574,7 +574,7 @@ public class ShiftMenu : BaseMenu
             _shiftUi.DisplayShiftsTable([response.Data]);
         }
 
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task DeleteShiftAsync()
@@ -585,7 +585,7 @@ public class ShiftMenu : BaseMenu
         if (shiftId <= 0)
         {
             DisplayService.DisplayError("No shift selected.");
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -596,7 +596,7 @@ public class ShiftMenu : BaseMenu
             DisplayService.DisplayError(
                 shiftResponse.Message ?? "Failed to retrieve shift details."
             );
-            InputService.WaitForKeyPress();
+            await InputService.WaitForKeyPressAsync();
             return;
         }
 
@@ -616,7 +616,7 @@ public class ShiftMenu : BaseMenu
                 );
         }
 
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task FilterShiftsAsync()
@@ -625,21 +625,21 @@ public class ShiftMenu : BaseMenu
 
         // Decide whether to filter by worker
         int? workerId = null;
-        var filterByWorker = InputService.GetMenuChoice("Filter by worker?", "No", "Yes");
+        var filterByWorker = await InputService.GetMenuChoiceAsync("Filter by worker?", "No", "Yes");
         if (filterByWorker == "Yes")
         {
             workerId = await _shiftInputHelper.SelectWorkerAsync(null, false).ConfigureAwait(false);
             if (workerId <= 0)
             {
                 DisplayService.DisplayError("No worker selected.");
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
         }
 
         // Decide whether to filter by location
         int? locationId = null;
-        var filterByLocation = InputService.GetMenuChoice("Filter by location?", "No", "Yes");
+        var filterByLocation = await InputService.GetMenuChoiceAsync("Filter by location?", "No", "Yes");
         if (filterByLocation == "Yes")
         {
             locationId = await _shiftInputHelper
@@ -648,7 +648,7 @@ public class ShiftMenu : BaseMenu
             if (locationId <= 0)
             {
                 DisplayService.DisplayError("No location selected.");
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
         }
@@ -656,15 +656,15 @@ public class ShiftMenu : BaseMenu
         // Date filters
         DateTime? startDate = null;
         DateTime? endDate = null;
-        var wantDates = InputService.GetMenuChoice("Filter by date range?", "No", "Yes");
+        var wantDates = await InputService.GetMenuChoiceAsync("Filter by date range?", "No", "Yes");
         if (wantDates == "Yes")
         {
-            startDate = _shiftInputHelper.GetDateTimeInput("Start Date").DateTime;
-            endDate = _shiftInputHelper.GetDateTimeInput("End Date").DateTime;
+            startDate = (await _shiftInputHelper.GetDateTimeInputAsync("Start Date")).DateTime;
+            endDate = (await _shiftInputHelper.GetDateTimeInputAsync("End Date")).DateTime;
             if (endDate <= startDate)
             {
                 DisplayService.DisplayError("End date must be after start date.");
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
         }
@@ -672,7 +672,7 @@ public class ShiftMenu : BaseMenu
         // Duration filters
         int? minDurationMinutes = null;
         int? maxDurationMinutes = null;
-        var wantDuration = InputService.GetMenuChoice("Filter by duration?", "No", "Yes");
+        var wantDuration = await InputService.GetMenuChoiceAsync("Filter by duration?", "No", "Yes");
         if (wantDuration == "Yes")
         {
             var minDurationInput = AnsiConsole.Ask<string>(
@@ -710,7 +710,7 @@ public class ShiftMenu : BaseMenu
                 DisplayService.DisplayError(
                     "Minimum duration cannot be greater than maximum duration."
                 );
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
         }
@@ -736,6 +736,6 @@ public class ShiftMenu : BaseMenu
             DisplayService.DisplaySuccess($"Total filtered shifts: {response.TotalCount}");
         }
 
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 }

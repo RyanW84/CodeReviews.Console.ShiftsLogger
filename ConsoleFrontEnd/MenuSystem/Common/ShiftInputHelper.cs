@@ -17,12 +17,14 @@ public class ShiftInputHelper
     private readonly IWorkerService _workerService;
     private readonly ILocationService _locationService;
     private readonly IConsoleDisplayService _displayService;
+    private readonly IConsoleInputService _inputService;
     private readonly ILogger<ShiftInputHelper> _logger;
 
     public ShiftInputHelper(
         IWorkerService workerService,
         ILocationService locationService,
         IConsoleDisplayService displayService,
+        IConsoleInputService inputService,
         ILogger<ShiftInputHelper> logger
     )
     {
@@ -30,6 +32,7 @@ public class ShiftInputHelper
         _locationService =
             locationService ?? throw new ArgumentNullException(nameof(locationService));
         _displayService = displayService ?? throw new ArgumentNullException(nameof(displayService));
+        _inputService = inputService ?? throw new ArgumentNullException(nameof(inputService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -119,7 +122,7 @@ public class ShiftInputHelper
     /// <summary>
     /// Get datetime input with validation and current value handling
     /// </summary>
-    public DateTimeOffset GetDateTimeInput(
+    public async Task<DateTimeOffset> GetDateTimeInputAsync(
         string fieldName,
         DateTimeOffset? currentValue = null,
         bool allowKeepCurrent = false
@@ -132,7 +135,7 @@ public class ShiftInputHelper
                     ? $"Enter {fieldName} (current: {currentValue:dd/MM/yyyy HH:mm}, press Enter to keep):"
                     : $"Enter {fieldName} (dd/MM/yyyy HH:mm):";
 
-            var input = AnsiConsole.Ask<string>(prompt, "");
+            var input = await _inputService.GetTextInputAsync(prompt, false);
 
             if (string.IsNullOrWhiteSpace(input) && allowKeepCurrent && currentValue.HasValue)
             {

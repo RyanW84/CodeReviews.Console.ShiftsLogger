@@ -1,9 +1,10 @@
+using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.FilterOptions;
 
 namespace ConsoleFrontEnd.MenuSystem;
 
-public interface ILocationUi
+public interface ILocationUi : IEntityUi<Location, LocationFilterOptions>
 {
     Location CreateLocationUi();
     Location UpdateLocationUi(Location existingLocation);

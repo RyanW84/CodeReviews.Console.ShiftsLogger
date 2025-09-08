@@ -30,7 +30,7 @@ public class MainMenu : BaseMenu
             _firstRun = false;
         }
 
-        var choice = InputService.GetMenuChoice(
+        var choice = await InputService.GetMenuChoiceAsync(
             "Select an option:",
             "Shift Management",
             "Location Management",
@@ -64,12 +64,12 @@ public class MainMenu : BaseMenu
                 break;
 
             case "System Information":
-                ShowSystemInformation();
+                await ShowSystemInformationAsync();
                 break;
 
             default:
                 DisplayService.DisplayError("Invalid menu choice");
-                InputService.WaitForKeyPress();
+                await InputService.WaitForKeyPressAsync();
                 break;
         }
     }
@@ -81,10 +81,10 @@ public class MainMenu : BaseMenu
         DisplayService.DisplayInfo(""); // Empty line for spacing
     }
 
-    private void ShowSystemInformation()
+    private async Task ShowSystemInformationAsync()
     {
         DisplayService.DisplayHeader("System Information", "cyan");
         DisplayService.DisplaySystemInfo();
-        InputService.WaitForKeyPress();
+        await InputService.WaitForKeyPressAsync();
     }
 }
