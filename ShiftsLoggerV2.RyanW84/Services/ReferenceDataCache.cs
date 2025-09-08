@@ -1,25 +1,39 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using ShiftsLoggerV2.RyanW84.Data;
 using ShiftsLoggerV2.RyanW84.Models;
 
 namespace ShiftsLoggerV2.RyanW84.Services;
 
 /// <summary>
-/// Service for caching reference data to improve performance
+/// Enhanced service for caching reference data to improve performance
+/// with advanced caching strategies and monitoring
 /// </summary>
 public class ReferenceDataCache
 {
     private readonly IMemoryCache _cache;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<ReferenceDataCache> _logger;
     private const string WorkersCacheKey = "Workers";
     private const string LocationsCacheKey = "Locations";
+    private const string WorkerByIdCacheKeyPrefix = "Worker_";
+    private const string LocationByIdCacheKeyPrefix = "Location_";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan SlidingExpiration = TimeSpan.FromMinutes(2);
 
-    public ReferenceDataCache(IMemoryCache cache, IServiceProvider serviceProvider)
+    // Cache statistics
+    private long _cacheHits;
+    private long _cacheMisses;
+
+    public ReferenceDataCache(
+        IMemoryCache cache,
+        IServiceProvider serviceProvider,
+        ILogger<ReferenceDataCache> logger)
     {
-        _cache = cache;
-        _serviceProvider = serviceProvider;
+        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -29,14 +43,29 @@ public class ReferenceDataCache
     {
         if (!_cache.TryGetValue(WorkersCacheKey, out List<Worker>? workers))
         {
+            Interlocked.Increment(ref _cacheMisses);
+            _logger.LogDebug("Cache miss for workers, fetching from database");
+
             using var scope = _serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<Data.ShiftsLoggerDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ShiftsLoggerDbContext>();
 
             workers = await dbContext.Workers
                 .AsNoTracking()
+                .OrderBy(w => w.Name)
                 .ToListAsync();
 
-            _cache.Set(WorkersCacheKey, workers, CacheDuration);
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(CacheDuration)
+                .SetSlidingExpiration(SlidingExpiration)
+                .RegisterPostEvictionCallback(OnCacheEviction);
+
+            _cache.Set(WorkersCacheKey, workers, cacheOptions);
+            _logger.LogDebug("Cached {Count} workers", workers.Count);
+        }
+        else
+        {
+            Interlocked.Increment(ref _cacheHits);
+            _logger.LogTrace("Cache hit for workers");
         }
 
         return workers ?? new List<Worker>();
@@ -49,14 +78,29 @@ public class ReferenceDataCache
     {
         if (!_cache.TryGetValue(LocationsCacheKey, out List<Location>? locations))
         {
+            Interlocked.Increment(ref _cacheMisses);
+            _logger.LogDebug("Cache miss for locations, fetching from database");
+
             using var scope = _serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<Data.ShiftsLoggerDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<ShiftsLoggerDbContext>();
 
             locations = await dbContext.Locations
                 .AsNoTracking()
+                .OrderBy(l => l.Name)
                 .ToListAsync();
 
-            _cache.Set(LocationsCacheKey, locations, CacheDuration);
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(CacheDuration)
+                .SetSlidingExpiration(SlidingExpiration)
+                .RegisterPostEvictionCallback(OnCacheEviction);
+
+            _cache.Set(LocationsCacheKey, locations, cacheOptions);
+            _logger.LogDebug("Cached {Count} locations", locations.Count);
+        }
+        else
+        {
+            Interlocked.Increment(ref _cacheHits);
+            _logger.LogTrace("Cache hit for locations");
         }
 
         return locations ?? new List<Location>();
@@ -104,6 +148,7 @@ public class ReferenceDataCache
     public void InvalidateWorkersCache()
     {
         _cache.Remove(WorkersCacheKey);
+        _logger.LogDebug("Workers cache invalidated");
     }
 
     /// <summary>
@@ -112,5 +157,34 @@ public class ReferenceDataCache
     public void InvalidateLocationsCache()
     {
         _cache.Remove(LocationsCacheKey);
+        _logger.LogDebug("Locations cache invalidated");
+    }
+
+    /// <summary>
+    /// Get cache statistics
+    /// </summary>
+    public (long Hits, long Misses, double HitRate) GetCacheStatistics()
+    {
+        var total = _cacheHits + _cacheMisses;
+        var hitRate = total > 0 ? (double)_cacheHits / total : 0;
+        return (_cacheHits, _cacheMisses, hitRate);
+    }
+
+    /// <summary>
+    /// Clear all cache entries
+    /// </summary>
+    public void ClearAllCache()
+    {
+        InvalidateWorkersCache();
+        InvalidateLocationsCache();
+        _logger.LogInformation("All reference data cache cleared");
+    }
+
+    /// <summary>
+    /// Callback method for cache eviction events
+    /// </summary>
+    private void OnCacheEviction(object key, object? value, EvictionReason reason, object? state)
+    {
+        _logger.LogDebug("Cache entry '{Key}' was evicted. Reason: {Reason}", key, reason);
     }
 }
