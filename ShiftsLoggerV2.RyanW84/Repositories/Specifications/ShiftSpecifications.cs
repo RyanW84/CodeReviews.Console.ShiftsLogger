@@ -13,8 +13,8 @@ public class ShiftSpecification : BaseSpecification<Shift>
     public ShiftSpecification(ShiftFilterOptions filterOptions)
     {
         // Add includes for related entities
-        AddInclude(s => s.Location);
-        AddInclude(s => s.Worker);
+        AddInclude(s => s.Location!);
+        AddInclude(s => s.Worker!);
 
         // Build criteria based on filter options
         var criteria = BuildCriteria(filterOptions);
@@ -204,8 +204,8 @@ public class ShiftByIdSpecification : BaseSpecification<Shift>
     public ShiftByIdSpecification(int shiftId)
     {
         Criteria = s => s.ShiftId == shiftId;
-        AddInclude(s => s.Location);
-        AddInclude(s => s.Worker);
+        AddInclude(s => s.Location!);
+        AddInclude(s => s.Worker!);
     }
 }
 
