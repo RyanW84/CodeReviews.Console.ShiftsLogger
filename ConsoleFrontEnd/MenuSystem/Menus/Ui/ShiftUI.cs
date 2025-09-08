@@ -296,44 +296,134 @@ public class ShiftUI : IShiftUi
             choices.Add("Enter ID Manually");
             choices.Add("Cancel/Return to Menu");
 
-            var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title($"Select Shift (Page {response.PageNumber} of {response.TotalPages}):")
-                    .AddChoices(choices)
-            );
+            try
+            {
+                var selected = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .Title($"[bold blue]Select Shift (Page {response.PageNumber} of {response.TotalPages}):[/]")
+                        .PageSize(15)
+                        .AddChoices(choices)
+                );
 
-            if (selected == "Next Page...")
-            {
-                currentPage++;
-                continue;
-            }
-            else if (selected == "Previous Page...")
-            {
-                currentPage--;
-                continue;
-            }
-            else if (selected == "Enter ID Manually")
-            {
-                return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
-            }
-            else if (selected == "Cancel/Return to Menu")
-            {
-                return -1; // Signal cancellation
-            }
-            else
-            {
-                // Extract the count from the selected choice and get the corresponding shift
-                var displayNumber = UiHelper.ExtractCountFromChoice(selected);
-                // Convert global display number to local page index
-                var localIndex = displayNumber - startIndex - 1;
-                if (localIndex >= 0 && localIndex < response.Data.Count)
+                // Process the selection...
+                if (selected == "Next Page...")
                 {
-                    return response.Data[localIndex].ShiftId;
+                    currentPage++;
+                    continue;
+                }
+                else if (selected == "Previous Page...")
+                {
+                    currentPage--;
+                    continue;
+                }
+                else if (selected == "Enter ID Manually")
+                {
+                    var indexInput = await _input.GetIntegerInputAsync("[green]Enter the shift index number from the list above:[/]");
+                    if (indexInput <= 0)
+                    {
+                        _display.DisplayError("Invalid index. Please enter a positive number.");
+                        continue;
+                    }
+
+                    // Convert the display index to the actual shift ID
+                    // The index is 1-based and corresponds to the global numbering
+                    var globalIndex = indexInput - 1; // Convert to 0-based
+                    var pageIndex = globalIndex % pageSize;
+                    var targetPage = (globalIndex / pageSize) + 1;
+
+                    if (targetPage != currentPage)
+                    {
+                        // Load the correct page
+                        var targetResponse = await _shiftService
+                            .GetAllShiftsAsync(targetPage, pageSize)
+                            .ConfigureAwait(false);
+
+                        if (targetResponse.RequestFailed || targetResponse.Data == null ||
+                            pageIndex >= targetResponse.Data.Count)
+                        {
+                            _display.DisplayError("Invalid index. Shift not found.");
+                            continue;
+                        }
+
+                        return targetResponse.Data[pageIndex].ShiftId;
+                    }
+                    else
+                    {
+                        // Same page
+                        if (pageIndex >= response.Data.Count)
+                        {
+                            _display.DisplayError("Invalid index. Shift not found.");
+                            continue;
+                        }
+
+                        return response.Data[pageIndex].ShiftId;
+                    }
+                }
+                else if (selected == "Cancel/Return to Menu")
+                {
+                    return -1; // Signal cancellation
                 }
                 else
                 {
-                    _display.DisplayError("Invalid selection.");
+                    // Extract the count from the selected choice and get the corresponding shift
+                    var displayNumber = UiHelper.ExtractCountFromChoice(selected);
+                    // Convert global display number to local page index
+                    var localIndex = displayNumber - startIndex - 1;
+                    if (localIndex >= 0 && localIndex < response.Data.Count)
+                    {
+                        return response.Data[localIndex].ShiftId;
+                    }
+                    else
+                    {
+                        _display.DisplayError("Invalid selection.");
+                        continue;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _display.DisplayError($"Error with selection prompt: {ex.Message}");
+                _display.DisplayInfo("Falling back to manual input...");
+
+                // Fallback to manual input
+                var indexInput = await _input.GetIntegerInputAsync("[green]Enter the shift index number from the list above:[/]");
+                if (indexInput <= 0)
+                {
+                    _display.DisplayError("Invalid index. Please enter a positive number.");
                     continue;
+                }
+
+                // Convert the display index to the actual shift ID
+                var globalIndex = indexInput - 1; // Convert to 0-based
+                var pageIndex = globalIndex % pageSize;
+                var targetPage = (globalIndex / pageSize) + 1;
+
+                if (targetPage != currentPage)
+                {
+                    // Load the correct page
+                    var targetResponse = await _shiftService
+                        .GetAllShiftsAsync(targetPage, pageSize)
+                        .ConfigureAwait(false);
+
+                    if (targetResponse.RequestFailed || targetResponse.Data == null ||
+                        pageIndex >= targetResponse.Data.Count)
+                    {
+                        _display.DisplayError("Invalid index. Shift not found.");
+                        continue;
+                    }
+
+                    return targetResponse.Data[pageIndex].ShiftId;
+                }
+                else
+                {
+                    // Same page
+                    if (pageIndex >= response.Data.Count)
+                    {
+                        _display.DisplayError("Invalid index. Shift not found.");
+                        continue;
+                    }
+
+                    return response.Data[pageIndex].ShiftId;
                 }
             }
         }

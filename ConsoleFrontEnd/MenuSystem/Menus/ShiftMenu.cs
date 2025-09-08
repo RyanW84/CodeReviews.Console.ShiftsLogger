@@ -126,7 +126,7 @@ public class ShiftMenu : BaseMenu
 
                 if (workflowResult.ShouldSelectShift && workflowResult.ShiftData != null && workflowResult.ShiftData.Data != null)
                 {
-                    await HandleShiftSelection(workflowResult.ShiftData.Data, pageNumber, DefaultPageSize);
+                    await HandleShiftSelection(workflowResult.ShiftData.Data, pageNumber, DefaultPageSize, workflowResult.ShiftData.TotalCount);
                 }
             }
         }
@@ -408,8 +408,23 @@ public class ShiftMenu : BaseMenu
             return;
         }
 
+        // Get the shift details to display before confirmation
+        var getResult = await _controllerService.GetShiftByIdAsync(shiftId);
+        if (!getResult.IsSuccess || getResult.Data == null)
+        {
+            DisplayService.DisplayError($"Failed to retrieve shift details: {getResult.Message}");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        var shiftToDelete = getResult.Data;
+
+        // Display shift details in a panel
+        DisplayService.DisplayInfo("Shift to be deleted:");
+        await _shiftDisplayService.DisplayShiftDetailsAsync(shiftToDelete);
+
         // Confirm deletion
-        var confirm = await InputService.GetConfirmationAsync($"Are you sure you want to delete shift {shiftId}?");
+        var confirm = await InputService.GetConfirmationAsync("Are you sure you want to delete this shift?");
         if (!confirm)
         {
             DisplayService.DisplayInfo("Deletion cancelled.");
@@ -462,27 +477,68 @@ public class ShiftMenu : BaseMenu
         await InputService.WaitForKeyPressAsync();
     }
 
-    private async Task HandleShiftSelection(List<Shift> currentPageShifts, int pageNumber, int pageSize)
+    private async Task HandleShiftSelection(List<Shift> currentPageShifts, int pageNumber, int pageSize, int totalCount)
     {
         try
         {
-            DisplayService.DisplayInfo("Enter the Index number of the shift you want to view:");
-            var indexInput = await InputService.GetTextInputAsync("Index");
-
-            if (!int.TryParse(indexInput, out int selectedIndex) || selectedIndex < 1 || selectedIndex > currentPageShifts.Count)
+            if (currentPageShifts == null || !currentPageShifts.Any())
             {
-                DisplayService.DisplayError("Invalid index. Please enter a number between 1 and " + currentPageShifts.Count);
+                DisplayService.DisplayError("No shifts available to select from.");
+                await InputService.WaitForKeyPressAsync();
                 return;
             }
 
-            var selectedShift = currentPageShifts[selectedIndex - 1];
+            DisplayService.DisplayInfo($"Enter the index number (1-{totalCount}) of the shift you want to view:");
+            var globalIndex = await InputService.GetIntegerInputAsync("Index", 1, totalCount);
+
+            // Calculate which page the selected index belongs to
+            // Global index is 1-based, so we need to convert to 0-based for calculations
+            var zeroBasedIndex = globalIndex - 1;
+            var targetPage = (zeroBasedIndex / pageSize) + 1;
+            var indexInPage = zeroBasedIndex % pageSize;
+
+            List<Shift> targetPageShifts;
+
+            if (targetPage == pageNumber)
+            {
+                // Same page, use current data
+                targetPageShifts = currentPageShifts;
+            }
+            else
+            {
+                // Load the target page
+                DisplayService.DisplayInfo($"Loading page {targetPage}...");
+                var pageResult = await _controllerService.GetAllShiftsAsync(targetPage, pageSize);
+
+                if (!pageResult.IsSuccess || pageResult.Data == null || pageResult.Data.Data == null || !pageResult.Data.Data.Any())
+                {
+                    DisplayService.DisplayError("Failed to load the requested page.");
+                    await InputService.WaitForKeyPressAsync();
+                    return;
+                }
+
+                targetPageShifts = pageResult.Data.Data;
+            }
+
+            // Validate the index is within the target page bounds
+            if (indexInPage >= targetPageShifts.Count)
+            {
+                DisplayService.DisplayError("Invalid index for the selected page.");
+                await InputService.WaitForKeyPressAsync();
+                return;
+            }
+
+            var selectedShift = targetPageShifts[indexInPage];
 
             // Display the selected shift details
             await _shiftDisplayService.DisplayShiftDetailsAsync(selectedShift);
+
+            await InputService.WaitForKeyPressAsync();
         }
         catch (Exception ex)
         {
             DisplayService.DisplayError($"Error selecting shift: {ex.Message}");
+            await InputService.WaitForKeyPressAsync();
         }
     }
 
