@@ -5,7 +5,6 @@ using Scalar.AspNetCore;
 using ShiftsLoggerV2.RyanW84.Data;
 using ShiftsLoggerV2.RyanW84.Extensions;
 using ShiftsLoggerV2.RyanW84.HealthChecks;
-using ShiftsLoggerV2.RyanW84.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +43,6 @@ else
 
 // Register all application services
 builder.Services.AddApplicationServices();
-builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 // Add health checks
 builder
@@ -96,60 +94,23 @@ if (app.Environment.IsDevelopment())
 
     try
     {
-        // Check if database exists
-        if (!dbContext.Database.CanConnect())
-        {
-            Console.WriteLine("Database doesn't exist. Creating and applying migrations...");
-            dbContext.Database.Migrate();
-        }
-        else
-        {
-            Console.WriteLine("Database exists. Checking for pending migrations...");
-            var pendingMigrations = dbContext.Database.GetPendingMigrations();
-            if (pendingMigrations.Any())
-            {
-                Console.WriteLine($"Applying {pendingMigrations.Count()} pending migrations...");
-                dbContext.Database.Migrate();
-            }
-            else
-            {
-                Console.WriteLine("No pending migrations. Database is up to date.");
-            }
-        }
+        // Always delete and recreate the database in development for a fresh start
+        Console.WriteLine("Deleting existing database (if any)...");
+        dbContext.Database.EnsureDeleted();
+
+        Console.WriteLine("Creating new database and applying migrations...");
+        dbContext.Database.Migrate();
 
         var logger =
             scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ShiftsLoggerDbContext>>();
         dbContext.SeedData(logger);
 
-        Console.WriteLine("Database setup completed successfully");
+        Console.WriteLine("Database setup completed successfully - fresh database created");
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Database setup failed: {ex.Message}");
-
-        // If it's a migration error, try to recreate the database
-        if (ex.Message.Contains("already an object named") || ex.Message.Contains("already exists"))
-        {
-            Console.WriteLine("Detected existing database conflict. Recreating database...");
-            try
-            {
-                dbContext.Database.EnsureDeleted();
-                dbContext.Database.Migrate();
-
-                var logger =
-                    scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ShiftsLoggerDbContext>>();
-                dbContext.SeedData(logger);
-
-                Console.WriteLine("Database recreated successfully");
-            }
-            catch (Exception recreateEx)
-            {
-                Console.WriteLine($"Failed to recreate database: {recreateEx.Message}");
-                Console.WriteLine(
-                    "Please manually delete the database or check your connection string."
-                );
-            }
-        }
+        Console.WriteLine("Please check your connection string and database permissions.");
     }
 }
 

@@ -12,8 +12,8 @@ using ShiftsLoggerV2.RyanW84.Data;
 namespace ShiftsLoggerV2.RyanW84.Migrations
 {
     [DbContext(typeof(ShiftsLoggerDbContext))]
-    [Migration("20250827192032_AddPerformanceIndexes")]
-    partial class AddPerformanceIndexes
+    [Migration("20250908125640_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,6 +52,9 @@ namespace ShiftsLoggerV2.RyanW84.Migrations
                     b.Property<string>("PostCode")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("ShiftCount")
+                        .HasColumnType("int");
 
                     b.Property<string>("Town")
                         .IsRequired()
