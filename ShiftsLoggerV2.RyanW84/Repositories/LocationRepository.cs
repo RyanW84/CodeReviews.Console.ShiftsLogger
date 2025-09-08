@@ -126,7 +126,7 @@ public class LocationRepository
         if (string.IsNullOrWhiteSpace(createDto.County))
             throw new ArgumentException("Location county is required.");
 
-        if (string.IsNullOrWhiteSpace(createDto.PostCode))
+        if (string.IsNullOrWhiteSpace(createDto.Postcode))
             throw new ArgumentException("Location post code is required.");
 
         if (string.IsNullOrWhiteSpace(createDto.Country))
@@ -166,7 +166,7 @@ public class LocationRepository
         if (string.IsNullOrWhiteSpace(updateDto.County))
             throw new ArgumentException("Location county is required.");
 
-        if (string.IsNullOrWhiteSpace(updateDto.PostCode))
+        if (string.IsNullOrWhiteSpace(updateDto.Postcode))
             throw new ArgumentException("Location post code is required.");
 
         if (string.IsNullOrWhiteSpace(updateDto.Country))

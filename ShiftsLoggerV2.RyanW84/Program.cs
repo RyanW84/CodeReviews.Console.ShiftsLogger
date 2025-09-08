@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using ShiftsLoggerV2.RyanW84.Data;
 using ShiftsLoggerV2.RyanW84.Extensions;
+using ShiftsLoggerV2.RyanW84.Filters;
 using ShiftsLoggerV2.RyanW84.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +44,15 @@ else
 
 // Register all application services
 builder.Services.AddApplicationServices();
+
+// Add global exception filter for centralized error handling
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ApiExceptionFilter>();
+});
+
+// Add memory caching for reference data
+builder.Services.AddMemoryCache();
 
 // Add health checks
 builder

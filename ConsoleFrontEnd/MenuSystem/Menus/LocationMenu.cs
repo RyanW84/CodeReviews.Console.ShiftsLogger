@@ -320,7 +320,7 @@ public class LocationMenu : BaseMenu
             Address = await InputService.GetTextInputAsync("Filter by address (leave blank for any):", false),
             Town = await InputService.GetTextInputAsync("Filter by town (leave blank for any):", false),
             County = county,
-            PostCode = await InputService.GetTextInputAsync(
+            Postcode = await InputService.GetTextInputAsync(
                 "Filter by post code (leave blank for any):",
                 false
             ),

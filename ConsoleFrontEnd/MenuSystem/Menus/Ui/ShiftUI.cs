@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
+using ConsoleFrontEnd.Models.Dtos;
 using ConsoleFrontEnd.Models.FilterOptions;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
@@ -154,99 +155,149 @@ public class ShiftUI : IShiftUi
 
         while (true)
         {
-            _display.DisplayHeader($"Shifts (Page {currentPage})", "blue");
+            var response = await LoadShiftsPageAsync(currentPage, pageSize);
+            if (response == null) return;
 
-            var response = await _shiftService
-                .GetAllShiftsAsync(currentPage, pageSize)
-                .ConfigureAwait(false);
+            DisplayShiftsPage(response, currentPage, pageSize);
 
-            if (response.RequestFailed || response.Data == null || !response.Data.Any())
-            {
-                if (currentPage == 1)
-                {
-                    _display.DisplayError("No shifts found.");
-                    return;
-                }
-                else
-                {
-                    _display.DisplayError(
-                        $"No shifts found on page {currentPage}. Returning to page 1."
-                    );
-                    currentPage = 1;
-                    continue;
-                }
-            }
+            var choice = GetPaginationChoice(response);
+            var (shouldContinue, newPage, newPageSize) = await HandlePaginationChoiceAsync(choice, currentPage, pageSize, response);
 
-            // Calculate starting index for continuous numbering across pages
-            int startIndex = (currentPage - 1) * pageSize;
+            if (!shouldContinue) return;
 
+            currentPage = newPage;
+            pageSize = newPageSize;
+        }
+    }
+
+    private async Task<ApiResponseDto<List<Shift>>?> LoadShiftsPageAsync(int pageNumber, int pageSize)
+    {
+        _display.DisplayHeader($"Shifts (Page {pageNumber})", "blue");
+
+        var response = await _shiftService
+            .GetAllShiftsAsync(pageNumber, pageSize)
+            .ConfigureAwait(false);
+
+        if (response.RequestFailed || response.Data == null || !response.Data.Any())
+        {
+            HandleEmptyPage(response, pageNumber);
+            return null;
+        }
+
+        return response;
+    }
+
+    private void DisplayShiftsPage(ApiResponseDto<List<Shift>> response, int currentPage, int pageSize)
+    {
+        // Calculate starting index for continuous numbering across pages
+        int startIndex = (currentPage - 1) * pageSize;
+
+        if (response.Data != null)
+        {
             DisplayShiftsTable(response.Data, startIndex + 1);
+        }
 
-            // Display pagination info
-            _display.DisplayInfo(
-                $"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} shifts"
+        // Display pagination info
+        _display.DisplayInfo(
+            $"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} shifts"
+        );
+        _display.DisplayInfo(
+            $"Showing {(response.Data?.Count() ?? 0)} of {response.TotalCount} shifts"
+        );
+    }
+
+    private string GetPaginationChoice(ApiResponseDto<List<Shift>> response)
+    {
+        // Create pagination options
+        var options = new List<string>();
+
+        if (response.HasPreviousPage)
+            options.Add("Previous Page");
+
+        if (response.HasNextPage)
+            options.Add("Next Page");
+
+        options.Add("Go to Page");
+        options.Add("Change Page Size");
+        options.Add("Back to Menu");
+
+        return AnsiConsole.Prompt(
+            new SelectionPrompt<string>().Title("Choose an action:").AddChoices(options)
+        );
+    }
+
+    private async Task<(bool shouldContinue, int newPage, int newPageSize)> HandlePaginationChoiceAsync(
+        string choice,
+        int currentPage,
+        int pageSize,
+        ApiResponseDto<List<Shift>> response)
+    {
+        switch (choice)
+        {
+            case "Previous Page":
+                return (true, currentPage - 1, pageSize);
+            case "Next Page":
+                return (true, currentPage + 1, pageSize);
+            case "Go to Page":
+                var newPage = await HandleGoToPageAsync(currentPage, response);
+                return (true, newPage, pageSize);
+            case "Change Page Size":
+                var newPageSize = await HandleChangePageSizeAsync(pageSize);
+                return (true, 1, newPageSize); // Reset to first page when changing page size
+            case "Back to Menu":
+                return (false, currentPage, pageSize);
+            default:
+                return (true, currentPage, pageSize);
+        }
+    }
+
+    private async Task<int> HandleGoToPageAsync(int currentPage, ApiResponseDto<List<Shift>> response)
+    {
+        var pageInput = await _input.GetIntegerInputAsync(
+            $"Enter page number (1-{response.TotalPages}):",
+            1,
+            response.TotalPages
+        );
+        if (pageInput >= 1 && pageInput <= response.TotalPages)
+        {
+            return pageInput;
+        }
+        else
+        {
+            _display.DisplayError(
+                $"Invalid page number. Please enter a number between 1 and {response.TotalPages}."
             );
-            _display.DisplayInfo(
-                $"Showing {response.Data.Count()} of {response.TotalCount} shifts"
+            return currentPage;
+        }
+    }
+
+    private async Task<int> HandleChangePageSizeAsync(int currentPageSize)
+    {
+        var sizeInput = await _input.GetIntegerInputAsync("Enter new page size (1-100):", 1, 100);
+        if (sizeInput >= 1 && sizeInput <= 100)
+        {
+            return sizeInput;
+        }
+        else
+        {
+            _display.DisplayError(
+                "Invalid page size. Please enter a number between 1 and 100."
             );
+            return currentPageSize;
+        }
+    }
 
-            // Create pagination options
-            var options = new List<string>();
-
-            if (response.HasPreviousPage)
-                options.Add("Previous Page");
-
-            if (response.HasNextPage)
-                options.Add("Next Page");
-
-            options.Add("Go to Page");
-            options.Add("Change Page Size");
-            options.Add("Back to Menu");
-
-            var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>().Title("Choose an action:").AddChoices(options)
+    private void HandleEmptyPage(ApiResponseDto<List<Shift>> response, int pageNumber)
+    {
+        if (pageNumber == 1)
+        {
+            _display.DisplayError("No shifts found.");
+        }
+        else
+        {
+            _display.DisplayError(
+                $"No shifts found on page {pageNumber}. Returning to page 1."
             );
-
-            switch (choice)
-            {
-                case "Previous Page":
-                    currentPage--;
-                    break;
-
-                case "Next Page":
-                    currentPage++;
-                    break;
-
-                case "Go to Page":
-                    var pageInput = await _input.GetIntegerInputAsync(
-                        $"Enter page number (1-{response.TotalPages}):",
-                        1,
-                        response.TotalPages
-                    );
-                    if (pageInput >= 1 && pageInput <= response.TotalPages)
-                        currentPage = pageInput;
-                    else
-                        _display.DisplayError(
-                            $"Invalid page number. Please enter a number between 1 and {response.TotalPages}."
-                        );
-                    break;
-
-                case "Change Page Size":
-                    var sizeInput = await _input.GetIntegerInputAsync("Enter new page size (1-100):", 1, 100);
-                    if (sizeInput >= 1 && sizeInput <= 100)
-                    {
-                        pageSize = sizeInput;
-                        currentPage = 1; // Reset to first page
-                    }
-                    else
-                        _display.DisplayError(
-                            "Invalid page size. Please enter a number between 1 and 100."
-                        );
-                    break;
-
-                case "Back to Menu":
-                    return;
-            }
         }
     }
 
