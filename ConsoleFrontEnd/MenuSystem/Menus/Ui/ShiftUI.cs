@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using ConsoleFrontEnd.Core.Abstractions;
+using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.Dtos;
@@ -9,13 +10,13 @@ using Spectre.Console;
 
 namespace ConsoleFrontEnd.MenuSystem;
 
-public class ShiftUI : IShiftUi
+public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
 {
-    private readonly IConsoleDisplayService _display;
     private readonly IConsoleInputService _input;
     private readonly UiHelper _uiHelper;
     private readonly ShiftInputHelper _shiftInputHelper;
     private readonly ConsoleFrontEnd.Interfaces.IShiftService _shiftService;
+    private readonly PaginationHandler _paginationHandler;
 
     public ShiftUI(
         IConsoleDisplayService display,
@@ -23,29 +24,27 @@ public class ShiftUI : IShiftUi
         ILogger<ShiftUI> logger,
         ShiftInputHelper shiftInputHelper,
         ConsoleFrontEnd.Interfaces.IShiftService shiftService
-    )
+    ) : base(display, logger)
     {
-        _display = display;
         _input = input ?? throw new ArgumentNullException(nameof(input));
         _uiHelper = new UiHelper(display, logger);
-        _shiftInputHelper =
-            shiftInputHelper ?? throw new ArgumentNullException(nameof(shiftInputHelper));
+        _shiftInputHelper = shiftInputHelper ?? throw new ArgumentNullException(nameof(shiftInputHelper));
         _shiftService = shiftService ?? throw new ArgumentNullException(nameof(shiftService));
+        _paginationHandler = new PaginationHandler(display, input);
     }
+
+    protected override string EntityName => "Shift";
+    protected override string EntityPluralName => "Shifts";
 
     public async Task<Shift> CreateShiftUi(int workerId)
     {
-        _display.DisplayHeader("Create New Shift");
-
+        DisplayCreateHeader();
         var start = await _shiftInputHelper.GetDateTimeInputAsync("Start Time");
         var end = await _shiftInputHelper.GetDateTimeInputAsync("End Time");
-        var locationId = await _shiftInputHelper
-            .SelectLocationAsync(null, false)
-            .ConfigureAwait(false);
-
+        var locationId = await _shiftInputHelper.SelectLocationAsync(null, false);
         return new Shift
         {
-            ShiftId = 0, // Will be assigned by service
+            ShiftId = 0,
             WorkerId = workerId,
             LocationId = locationId,
             StartTime = start,
@@ -55,17 +54,11 @@ public class ShiftUI : IShiftUi
 
     public async Task<Shift> UpdateShiftUi(Shift existingShift)
     {
-        _display.DisplayHeader($"Update Shift ID: {existingShift.Id}");
-
-        var workerId = await _shiftInputHelper
-            .SelectWorkerAsync(existingShift.WorkerId, true)
-            .ConfigureAwait(false);
+        DisplayUpdateHeader(existingShift.Id.ToString());
+        var workerId = await _shiftInputHelper.SelectWorkerAsync(existingShift.WorkerId, true);
         var start = await _shiftInputHelper.GetDateTimeInputAsync("Start Time", existingShift.Start, true);
         var end = await _shiftInputHelper.GetDateTimeInputAsync("End Time", existingShift.End, true);
-        var locationId = await _shiftInputHelper
-            .SelectLocationAsync(existingShift.LocationId, true)
-            .ConfigureAwait(false);
-
+        var locationId = await _shiftInputHelper.SelectLocationAsync(existingShift.LocationId, true);
         return new Shift
         {
             ShiftId = existingShift.Id,
@@ -78,59 +71,29 @@ public class ShiftUI : IShiftUi
 
     public async Task<ShiftFilterOptions> FilterShiftsUi()
     {
-        _display.DisplayHeader("Filter Shifts");
-
+        DisplayFilterHeader();
         int? workerId = null;
-        var filterByWorker = await _input.GetMenuChoiceAsync("Filter by worker?", "No", "Yes");
-        if (filterByWorker == "Yes")
-            workerId = await _shiftInputHelper.SelectWorkerAsync(null, false).ConfigureAwait(false);
+        if (await _input.GetMenuChoiceAsync("Filter by worker?", "No", "Yes") == "Yes")
+            workerId = await _shiftInputHelper.SelectWorkerAsync(null, false);
 
         int? locationId = null;
-        var filterByLocation = await _input.GetMenuChoiceAsync("Filter by location?", "No", "Yes");
-        if (filterByLocation == "Yes")
-            locationId = await _shiftInputHelper
-                .SelectLocationAsync(null, false)
-                .ConfigureAwait(false);
+        if (await _input.GetMenuChoiceAsync("Filter by location?", "No", "Yes") == "Yes")
+            locationId = await _shiftInputHelper.SelectLocationAsync(null, false);
 
-        DateTime? startDate = null;
-        DateTime? endDate = null;
-        var wantDates = await _input.GetMenuChoiceAsync("Filter by date range?", "No", "Yes");
-        if (wantDates == "Yes")
+        DateTime? startDate = null, endDate = null;
+        if (await _input.GetMenuChoiceAsync("Filter by date range?", "No", "Yes") == "Yes")
         {
             startDate = (await _shiftInputHelper.GetDateTimeInputAsync("Start Date")).DateTime;
             endDate = (await _shiftInputHelper.GetDateTimeInputAsync("End Date")).DateTime;
         }
 
-        int? minDurationMinutes = null;
-        int? maxDurationMinutes = null;
-        var wantDuration = await _input.GetMenuChoiceAsync("Filter by duration?", "No", "Yes");
-        if (wantDuration == "Yes")
+        int? minDuration = null, maxDuration = null;
+        if (await _input.GetMenuChoiceAsync("Filter by duration?", "No", "Yes") == "Yes")
         {
-            var minDurationInput = await _input.GetTextInputAsync(
-                "Minimum duration in minutes (press Enter to skip):",
-                false
-            );
-            if (
-                !string.IsNullOrWhiteSpace(minDurationInput)
-                && int.TryParse(minDurationInput, out var minDuration)
-                && minDuration > 0
-            )
-            {
-                minDurationMinutes = minDuration;
-            }
-
-            var maxDurationInput = await _input.GetTextInputAsync(
-                "Maximum duration in minutes (press Enter to skip):",
-                false
-            );
-            if (
-                !string.IsNullOrWhiteSpace(maxDurationInput)
-                && int.TryParse(maxDurationInput, out var maxDuration)
-                && maxDuration > 0
-            )
-            {
-                maxDurationMinutes = maxDuration;
-            }
+            var minInput = await _input.GetTextInputAsync("Minimum duration in minutes (press Enter to skip):", false);
+            if (int.TryParse(minInput, out var min) && min > 0) minDuration = min;
+            var maxInput = await _input.GetTextInputAsync("Maximum duration in minutes (press Enter to skip):", false);
+            if (int.TryParse(maxInput, out var max) && max > 0) maxDuration = max;
         }
 
         return new ShiftFilterOptions
@@ -139,344 +102,125 @@ public class ShiftUI : IShiftUi
             LocationId = locationId,
             StartDate = startDate,
             EndDate = endDate,
-            MinDurationMinutes = minDurationMinutes,
-            MaxDurationMinutes = maxDurationMinutes,
+            MinDurationMinutes = minDuration,
+            MaxDurationMinutes = maxDuration,
         };
     }
 
     public void DisplayShiftsTable(IEnumerable<Shift> shifts, int startingRowNumber = 1)
     {
-        _display.DisplayTable(shifts, "Shifts", startingRowNumber);
+        _display.DisplayTable(shifts, EntityPluralName, startingRowNumber);
     }
 
     public async Task DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10)
     {
-        var currentPage = initialPageNumber;
-
-        while (true)
-        {
-            var response = await LoadShiftsPageAsync(currentPage, pageSize);
-            if (response == null) return;
-
-            DisplayShiftsPage(response, currentPage, pageSize);
-
-            var choice = GetPaginationChoice(response);
-            var (shouldContinue, newPage, newPageSize) = await HandlePaginationChoiceAsync(choice, currentPage, pageSize, response);
-
-            if (!shouldContinue) return;
-
-            currentPage = newPage;
-            pageSize = newPageSize;
-        }
+        await _paginationHandler.HandlePaginationAsync(
+            async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
+            (response, page, size) => DisplayPage(response, page, size),
+            null, // No selection
+            null, // No selection handler
+            initialPageNumber,
+            pageSize
+        );
     }
 
-    private async Task<ApiResponseDto<List<Shift>>?> LoadShiftsPageAsync(int pageNumber, int pageSize)
+    public async Task<(bool Selected, int ShiftId)> DisplayShiftsWithPaginationAndSelectionAsync(
+        int initialPageNumber = 1,
+        int pageSize = 10
+    )
     {
-        _display.DisplayHeader($"Shifts (Page {pageNumber})", "blue");
+        var result = await _paginationHandler.HandlePaginationAsync(
+            async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
+            (response, page, size) => DisplayPage(response, page, size),
+            BuildChoices,
+            async (selected, response, page, size) =>
+            {
+                await Task.CompletedTask;
+                if (selected == "Next Page...") return null; // Continue pagination
+                else if (selected == "Previous Page...") return null;
+                else if (selected == "Enter ID Manually") return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
+                else if (selected == "Cancel/Return to Menu") return -1;
+                else
+                {
+                    var choices = BuildChoices(response, page, size);
+                    var index = choices.IndexOf(selected);
+                    if (index >= 0 && response.Data != null && index < response.Data.Count)
+                    {
+                        return response.Data[index].ShiftId;
+                    }
+                }
+                return null;
+            },
+            initialPageNumber,
+            pageSize
+        );
 
-        var response = await _shiftService
-            .GetAllShiftsAsync(pageNumber, pageSize)
-            .ConfigureAwait(false);
-
-        if (response.RequestFailed || response.Data == null || !response.Data.Any())
-        {
-            HandleEmptyPage(response, pageNumber);
-            return null;
-        }
-
-        return response;
+        return result != null ? (true, (int)result) : (false, -1);
     }
 
-    private void DisplayShiftsPage(ApiResponseDto<List<Shift>> response, int currentPage, int pageSize)
+    private void DisplayPage(ApiResponseDto<List<Shift>> response, int currentPage, int pageSize)
     {
-        // Calculate starting index for continuous numbering across pages
         int startIndex = (currentPage - 1) * pageSize;
-
-        if (response.Data != null)
-        {
-            DisplayShiftsTable(response.Data, startIndex + 1);
-        }
-
-        // Display pagination info
-        _display.DisplayInfo(
-            $"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} shifts"
-        );
-        _display.DisplayInfo(
-            $"Showing {(response.Data?.Count() ?? 0)} of {response.TotalCount} shifts"
-        );
-    }
-
-    private string GetPaginationChoice(ApiResponseDto<List<Shift>> response)
-    {
-        // Create pagination options
-        var options = new List<string>();
-
-        if (response.HasPreviousPage)
-            options.Add("Previous Page");
-
-        if (response.HasNextPage)
-            options.Add("Next Page");
-
-        options.Add("Go to Page");
-        options.Add("Change Page Size");
-        options.Add("Back to Menu");
-
-        return AnsiConsole.Prompt(
-            new SelectionPrompt<string>().Title("Choose an action:").AddChoices(options)
-        );
-    }
-
-    private async Task<(bool shouldContinue, int newPage, int newPageSize)> HandlePaginationChoiceAsync(
-        string choice,
-        int currentPage,
-        int pageSize,
-        ApiResponseDto<List<Shift>> response)
-    {
-        switch (choice)
-        {
-            case "Previous Page":
-                return (true, currentPage - 1, pageSize);
-            case "Next Page":
-                return (true, currentPage + 1, pageSize);
-            case "Go to Page":
-                var newPage = await HandleGoToPageAsync(currentPage, response);
-                return (true, newPage, pageSize);
-            case "Change Page Size":
-                var newPageSize = await HandleChangePageSizeAsync(pageSize);
-                return (true, 1, newPageSize); // Reset to first page when changing page size
-            case "Back to Menu":
-                return (false, currentPage, pageSize);
-            default:
-                return (true, currentPage, pageSize);
-        }
-    }
-
-    private async Task<int> HandleGoToPageAsync(int currentPage, ApiResponseDto<List<Shift>> response)
-    {
-        var pageInput = await _input.GetIntegerInputAsync(
-            $"Enter page number (1-{response.TotalPages}):",
-            1,
-            response.TotalPages
-        );
-        if (pageInput >= 1 && pageInput <= response.TotalPages)
-        {
-            return pageInput;
-        }
-        else
-        {
-            _display.DisplayError(
-                $"Invalid page number. Please enter a number between 1 and {response.TotalPages}."
-            );
-            return currentPage;
-        }
-    }
-
-    private async Task<int> HandleChangePageSizeAsync(int currentPageSize)
-    {
-        var sizeInput = await _input.GetIntegerInputAsync("Enter new page size (1-100):", 1, 100);
-        if (sizeInput >= 1 && sizeInput <= 100)
-        {
-            return sizeInput;
-        }
-        else
-        {
-            _display.DisplayError(
-                "Invalid page size. Please enter a number between 1 and 100."
-            );
-            return currentPageSize;
-        }
-    }
-
-    private void HandleEmptyPage(ApiResponseDto<List<Shift>> response, int pageNumber)
-    {
-        if (pageNumber == 1)
-        {
-            _display.DisplayError("No shifts found.");
-        }
-        else
-        {
-            _display.DisplayError(
-                $"No shifts found on page {pageNumber}. Returning to page 1."
-            );
-        }
+        if (response.Data != null) DisplayShiftsTable(response.Data, startIndex + 1);
+        _display.DisplayInfo($"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} shifts");
     }
 
     public async Task<int> GetShiftByIdUi()
     {
-        _display.DisplayHeader("Select Shift", "blue");
-
-        var currentPage = 1;
-        const int pageSize = 10; // Display 10 items at a time
-
-        while (true)
-        {
-            var response = await _shiftService
-                .GetAllShiftsAsync(currentPage, pageSize)
-                .ConfigureAwait(false);
-            if (response.RequestFailed || response.Data == null || !response.Data.Any())
+        var result = await _paginationHandler.HandlePaginationAsync(
+            async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
+            (response, page, size) => DisplayPage(response, page, size),
+            BuildChoices,
+            async (selected, response, page, size) =>
             {
-                if (currentPage == 1)
-                {
-                    _uiHelper.DisplayValidationError(response.Message ?? "No shifts available.");
-                    // Fallback to manual entry
-                    return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
-                }
+                if (selected == "Next Page...") return null; // Continue pagination
+                else if (selected == "Previous Page...") return null;
+                else if (selected == "Enter ID Manually") return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
+                else if (selected == "Cancel/Return to Menu") return -1;
                 else
                 {
-                    currentPage = 1;
-                    continue;
-                }
-            }
-
-            // Calculate starting index for continuous numbering across pages
-            int startIndex = (currentPage - 1) * pageSize;
-
-            var choices = response
-                .Data.Select(
-                    (s, index) =>
-                        $"{startIndex + index + 1}. {s.StartTime:dd/MM/yyyy HH:mm} - {s.EndTime:dd/MM/yyyy HH:mm} ({s.Duration.TotalHours:F1}h)"
-                )
-                .ToList();
-
-            // Add navigation options if there are more pages
-            if (response.HasNextPage)
-                choices.Add("Next Page...");
-            if (response.HasPreviousPage)
-                choices.Add("Previous Page...");
-
-            choices.Add("Enter ID Manually");
-            choices.Add("Cancel/Return to Menu");
-
-            try
-            {
-                var selected = AnsiConsole.Prompt(
-                    new SelectionPrompt<string>()
-                        .Title($"[bold blue]Select Shift (Page {response.PageNumber} of {response.TotalPages}):[/]")
-                        .PageSize(15)
-                        .AddChoices(choices)
-                );
-
-                // Process the selection...
-                if (selected == "Next Page...")
-                {
-                    currentPage++;
-                    continue;
-                }
-                else if (selected == "Previous Page...")
-                {
-                    currentPage--;
-                    continue;
-                }
-                else if (selected == "Enter ID Manually")
-                {
-                    var indexInput = await _input.GetIntegerInputAsync("[green]Enter the shift index number from the list above:[/]");
-                    if (indexInput <= 0)
+                    var choices = BuildChoices(response, page, size);
+                    var index = choices.IndexOf(selected);
+                    if (index >= 0 && response.Data != null && index < response.Data.Count)
                     {
-                        _display.DisplayError("Invalid index. Please enter a positive number.");
-                        continue;
-                    }
-
-                    // Convert the display index to the actual shift ID
-                    // The index is 1-based and corresponds to the global numbering
-                    var globalIndex = indexInput - 1; // Convert to 0-based
-                    var pageIndex = globalIndex % pageSize;
-                    var targetPage = (globalIndex / pageSize) + 1;
-
-                    if (targetPage != currentPage)
-                    {
-                        // Load the correct page
-                        var targetResponse = await _shiftService
-                            .GetAllShiftsAsync(targetPage, pageSize)
-                            .ConfigureAwait(false);
-
-                        if (targetResponse.RequestFailed || targetResponse.Data == null ||
-                            pageIndex >= targetResponse.Data.Count)
-                        {
-                            _display.DisplayError("Invalid index. Shift not found.");
-                            continue;
-                        }
-
-                        return targetResponse.Data[pageIndex].ShiftId;
-                    }
-                    else
-                    {
-                        // Same page
-                        if (pageIndex >= response.Data.Count)
-                        {
-                            _display.DisplayError("Invalid index. Shift not found.");
-                            continue;
-                        }
-
-                        return response.Data[pageIndex].ShiftId;
+                        return response.Data[index].ShiftId;
                     }
                 }
-                else if (selected == "Cancel/Return to Menu")
-                {
-                    return -1; // Signal cancellation
-                }
-                else
-                {
-                    // Extract the count from the selected choice and get the corresponding shift
-                    var displayNumber = UiHelper.ExtractCountFromChoice(selected);
-                    // Convert global display number to local page index
-                    var localIndex = displayNumber - startIndex - 1;
-                    if (localIndex >= 0 && localIndex < response.Data.Count)
-                    {
-                        return response.Data[localIndex].ShiftId;
-                    }
-                    else
-                    {
-                        _display.DisplayError("Invalid selection.");
-                        continue;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _display.DisplayError($"Error with selection prompt: {ex.Message}");
-                _display.DisplayInfo("Falling back to manual input...");
+                return null;
+            },
+            1,
+            10
+        );
+        return result as int? ?? -1;
+    }
 
-                // Fallback to manual input
-                var indexInput = await _input.GetIntegerInputAsync("[green]Enter the shift index number from the list above:[/]");
-                if (indexInput <= 0)
-                {
-                    _display.DisplayError("Invalid index. Please enter a positive number.");
-                    continue;
-                }
+    private List<string> BuildChoices(ApiResponseDto<List<Shift>> response, int currentPage, int pageSize)
+    {
+        int startIndex = (currentPage - 1) * pageSize;
+        var choices = response.Data?.Select((s, index) =>
+            $"{startIndex + index + 1}. {s.StartTime:dd/MM/yyyy HH:mm} - {s.EndTime:dd/MM/yyyy HH:mm} ({s.Duration.TotalHours:F1}h)"
+        ).ToList() ?? new List<string>();
 
-                // Convert the display index to the actual shift ID
-                var globalIndex = indexInput - 1; // Convert to 0-based
-                var pageIndex = globalIndex % pageSize;
-                var targetPage = (globalIndex / pageSize) + 1;
+        if (response.HasNextPage) choices.Add("Next Page...");
+        if (response.HasPreviousPage) choices.Add("Previous Page...");
+        choices.Add("Enter ID Manually");
+        choices.Add("Cancel/Return to Menu");
+        return choices;
+    }
 
-                if (targetPage != currentPage)
-                {
-                    // Load the correct page
-                    var targetResponse = await _shiftService
-                        .GetAllShiftsAsync(targetPage, pageSize)
-                        .ConfigureAwait(false);
+    // Implement abstract methods
+    public override async Task<Shift> CreateUiAsync()
+    {
+        return await CreateShiftUi(0); // Adjust workerId as needed
+    }
 
-                    if (targetResponse.RequestFailed || targetResponse.Data == null ||
-                        pageIndex >= targetResponse.Data.Count)
-                    {
-                        _display.DisplayError("Invalid index. Shift not found.");
-                        continue;
-                    }
+    public override async Task<Shift> UpdateUiAsync(Shift existingEntity)
+    {
+        return await UpdateShiftUi(existingEntity);
+    }
 
-                    return targetResponse.Data[pageIndex].ShiftId;
-                }
-                else
-                {
-                    // Same page
-                    if (pageIndex >= response.Data.Count)
-                    {
-                        _display.DisplayError("Invalid index. Shift not found.");
-                        continue;
-                    }
-
-                    return response.Data[pageIndex].ShiftId;
-                }
-            }
-        }
+    public override async Task<ShiftFilterOptions> FilterUiAsync()
+    {
+        return await FilterShiftsUi();
     }
 }

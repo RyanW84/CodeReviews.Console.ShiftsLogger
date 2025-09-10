@@ -3,6 +3,7 @@ using ConsoleFrontEnd.Interfaces;
 using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
+using ConsoleFrontEnd.Models.Dtos;
 using ConsoleFrontEnd.Models.FilterOptions;
 using ConsoleFrontEnd.Services;
 using Microsoft.Extensions.Logging;
@@ -17,15 +18,18 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
 {
     private readonly UiHelper _uiHelper;
     private readonly IWorkerService _workerService;
+    private readonly PaginationHandler _paginationHandler;
 
     public WorkerUi(
         IConsoleDisplayService display,
+        IConsoleInputService input,
         ILogger<WorkerUi> logger,
         IWorkerService workerService
     ) : base(display, logger)
     {
         _uiHelper = new UiHelper(display, logger);
         _workerService = workerService;
+        _paginationHandler = new PaginationHandler(display, input);
     }
 
     protected override string EntityName => "Worker";
@@ -249,89 +253,53 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
 
     public async Task<int> GetWorkerByIdUi()
     {
-        _display.DisplayHeader("Select Worker", "blue");
-
-        var currentPage = 1;
-        const int pageSize = 10; // Display 10 items at a time
-
-        while (true)
-        {
-            var response = await _workerService
-                .GetAllWorkersAsync(currentPage, pageSize)
-                .ConfigureAwait(false);
-            if (response.RequestFailed || response.Data == null || !response.Data.Any())
+        var result = await _paginationHandler.HandlePaginationAsync(
+            async (page, size) => await _workerService.GetAllWorkersAsync(page, size),
+            (response, page, size) => DisplayPage(response, page, size),
+            BuildChoices,
+            async (selected, response, page, size) =>
             {
-                if (currentPage == 1)
-                {
-                    AnsiConsole.MarkupLine(
-                        "[red]No workers available or failed to fetch workers.[/]"
-                    );
-                    return -1;
-                }
+                await Task.CompletedTask;
+                if (selected == "Next Page...") return null; // Continue pagination
+                else if (selected == "Previous Page...") return null;
+                else if (selected == "Enter ID Manually") return AnsiConsole.Ask<int>("[green]Enter worker ID:[/]");
+                else if (selected == "Cancel/Return to Menu") return -1;
                 else
                 {
-                    currentPage = 1;
-                    continue;
+                    var choices = BuildChoices(response, page, size);
+                    var index = choices.IndexOf(selected);
+                    if (index >= 0 && response.Data != null && index < response.Data.Count)
+                    {
+                        return response.Data[index].WorkerId;
+                    }
                 }
-            }
+                return null;
+            },
+            1,
+            10
+        );
+        return result as int? ?? -1;
+    }
 
-            // Calculate starting index for continuous numbering across pages
-            int startIndex = (currentPage - 1) * pageSize;
+    private void DisplayPage(ApiResponseDto<List<Worker>> response, int currentPage, int pageSize)
+    {
+        int startIndex = (currentPage - 1) * pageSize;
+        if (response.Data != null) DisplayWorkersTable(response.Data, startIndex + 1);
+        _display.DisplayInfo($"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} workers");
+    }
 
-            var choices = response
-                .Data.Select((w, index) => $"{startIndex + index + 1}. {w.Name}")
-                .ToList();
+    private List<string> BuildChoices(ApiResponseDto<List<Worker>> response, int currentPage, int pageSize)
+    {
+        int startIndex = (currentPage - 1) * pageSize;
+        var choices = response.Data?.Select((w, index) =>
+            $"{startIndex + index + 1}. {w.Name}"
+        ).ToList() ?? new List<string>();
 
-            // Add navigation options if there are more pages
-            if (response.HasNextPage)
-                choices.Add("Next Page...");
-            if (response.HasPreviousPage)
-                choices.Add("Previous Page...");
-
-            choices.Add("Enter ID Manually");
-            choices.Add("Cancel/Return to Menu");
-
-            var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title($"Select Worker (Page {response.PageNumber} of {response.TotalPages}):")
-                    .AddChoices(choices)
-            );
-
-            if (selected == "Next Page...")
-            {
-                currentPage++;
-                continue;
-            }
-            else if (selected == "Previous Page...")
-            {
-                currentPage--;
-                continue;
-            }
-            else if (selected == "Enter ID Manually")
-            {
-                return AnsiConsole.Ask<int>("[green]Enter worker ID:[/]");
-            }
-            else if (selected == "Cancel/Return to Menu")
-            {
-                return -1; // Signal cancellation
-            }
-            else
-            {
-                // Extract the count from the selected choice and get the corresponding worker
-                var displayNumber = UiHelper.ExtractCountFromChoice(selected);
-                // Convert global display number to local page index
-                var localIndex = displayNumber - startIndex - 1;
-                if (localIndex >= 0 && localIndex < response.Data.Count)
-                {
-                    return response.Data[localIndex].WorkerId;
-                }
-                else
-                {
-                    AnsiConsole.MarkupLine("[red]Invalid selection.[/]");
-                    continue;
-                }
-            }
-        }
+        if (response.HasNextPage) choices.Add("Next Page...");
+        if (response.HasPreviousPage) choices.Add("Previous Page...");
+        choices.Add("Enter ID Manually");
+        choices.Add("Cancel/Return to Menu");
+        return choices;
     }
 
     public async Task<int> SelectWorker()

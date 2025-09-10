@@ -3,6 +3,7 @@ using ConsoleFrontEnd.Interfaces;
 using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
+using ConsoleFrontEnd.Models.Dtos;
 using ConsoleFrontEnd.Models.FilterOptions;
 using ConsoleFrontEnd.Services;
 using Microsoft.Extensions.Logging;
@@ -14,9 +15,11 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
 {
     private readonly UiHelper _uiHelper;
     private readonly ILocationService _locationService;
+    private readonly PaginationHandler _paginationHandler;
 
     public LocationUI(
         IConsoleDisplayService display,
+        IConsoleInputService input,
         ILogger<LocationUI> logger,
         ILocationService locationService
     ) : base(display, logger)
@@ -24,6 +27,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
         _uiHelper = new UiHelper(display, logger);
         _locationService =
             locationService ?? throw new ArgumentNullException(nameof(locationService));
+        _paginationHandler = new PaginationHandler(display, input);
     }
 
     protected override string EntityName => "Location";
@@ -242,181 +246,57 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
 
     public async Task<int> GetLocationByIdUi()
     {
-        _display.DisplayHeader("Select Location", "blue");
-
-        var currentPage = 1;
-        const int pageSize = 10;
-
-        while (true)
-        {
-            var response = await _locationService
-                .GetAllLocationsAsync(currentPage, pageSize)
-                .ConfigureAwait(false);
-            if (response.RequestFailed || response.Data == null || !response.Data.Any())
+        var result = await _paginationHandler.HandlePaginationAsync(
+            async (page, size) => await _locationService.GetAllLocationsAsync(page, size),
+            (response, page, size) => DisplayPage(response, page, size),
+            BuildChoices,
+            async (selected, response, page, size) =>
             {
-                if (currentPage == 1)
-                {
-                    _uiHelper.DisplayValidationError(response.Message ?? "No locations available.");
-                    // Fallback to manual entry
-                    return AnsiConsole.Ask<int>("[green]Enter location ID:[/]");
-                }
+                await Task.CompletedTask;
+                if (selected == "Next Page...") return null; // Continue pagination
+                else if (selected == "Previous Page...") return null;
+                else if (selected == "Enter ID Manually") return AnsiConsole.Ask<int>("[green]Enter location ID:[/]");
+                else if (selected == "Cancel/Return to Menu") return -1;
                 else
                 {
-                    currentPage = 1;
-                    continue;
+                    var choices = BuildChoices(response, page, size);
+                    var index = choices.IndexOf(selected);
+                    if (index >= 0 && response.Data != null && index < response.Data.Count)
+                    {
+                        return response.Data[index].LocationId;
+                    }
                 }
-            }
+                return null;
+            },
+            1,
+            10
+        );
+        return result as int? ?? -1;
+    }
 
-            // Calculate starting index for continuous numbering across pages
-            int startIndex = (currentPage - 1) * pageSize;
+    private void DisplayPage(ApiResponseDto<List<Location>> response, int currentPage, int pageSize)
+    {
+        int startIndex = (currentPage - 1) * pageSize;
+        if (response.Data != null) DisplayLocationsTable(response.Data, startIndex + 1);
+        _display.DisplayInfo($"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} locations");
+    }
 
-            var choices = response
-                .Data.Select(
-                    (l, index) => $"{startIndex + index + 1}. {l.Name} - {l.Town}, {l.Country}"
-                )
-                .ToList();
+    private List<string> BuildChoices(ApiResponseDto<List<Location>> response, int currentPage, int pageSize)
+    {
+        int startIndex = (currentPage - 1) * pageSize;
+        var choices = response.Data?.Select((l, index) =>
+            $"{startIndex + index + 1}. {l.Name} - {l.Town}, {l.Country}"
+        ).ToList() ?? new List<string>();
 
-            // Add navigation options if there are more pages
-            if (response.HasNextPage)
-                choices.Add("Next Page...");
-            if (response.HasPreviousPage)
-                choices.Add("Previous Page...");
-
-            choices.Add("Enter ID Manually");
-            choices.Add("Cancel/Return to Menu");
-
-            var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title(
-                        $"Select Location (Page {response.PageNumber} of {response.TotalPages}):"
-                    )
-                    .AddChoices(choices)
-            );
-
-            if (selected == "Next Page...")
-            {
-                currentPage++;
-                continue;
-            }
-            else if (selected == "Previous Page...")
-            {
-                currentPage--;
-                continue;
-            }
-            else if (selected == "Enter ID Manually")
-            {
-                return AnsiConsole.Ask<int>("[green]Enter location ID:[/]");
-            }
-            else if (selected == "Cancel/Return to Menu")
-            {
-                return -1;
-            }
-            else
-            {
-                // Extract the count from the selected choice and get the corresponding location
-                var displayNumber = UiHelper.ExtractCountFromChoice(selected);
-                // Convert global display number to local page index
-                var localIndex = displayNumber - startIndex - 1;
-                if (localIndex >= 0 && localIndex < response.Data.Count)
-                {
-                    return response.Data[localIndex].LocationId;
-                }
-                else
-                {
-                    _display.DisplayError("Invalid selection.");
-                    continue;
-                }
-            }
-        }
+        if (response.HasNextPage) choices.Add("Next Page...");
+        if (response.HasPreviousPage) choices.Add("Previous Page...");
+        choices.Add("Enter ID Manually");
+        choices.Add("Cancel/Return to Menu");
+        return choices;
     }
 
     public async Task<int> SelectLocation()
     {
-        _display.DisplayHeader("Select Location", "blue");
-
-        var currentPage = 1;
-        const int pageSize = 10;
-
-        while (true)
-        {
-            var response = await _locationService
-                .GetAllLocationsAsync(currentPage, pageSize)
-                .ConfigureAwait(false);
-            if (response.RequestFailed || response.Data == null || !response.Data.Any())
-            {
-                if (currentPage == 1)
-                {
-                    _uiHelper.DisplayValidationError(response.Message ?? "No locations available.");
-                    // Fallback to manual entry
-                    return AnsiConsole.Ask<int>("[green]Select location ID:[/]");
-                }
-                else
-                {
-                    currentPage = 1;
-                    continue;
-                }
-            }
-
-            // Calculate starting index for continuous numbering across pages
-            int startIndex = (currentPage - 1) * pageSize;
-
-            var choices = response
-                .Data.Select(
-                    (l, index) => $"{startIndex + index + 1}. {l.Name} - {l.Town}, {l.Country}"
-                )
-                .ToList();
-
-            // Add navigation options if there are more pages
-            if (response.HasNextPage)
-                choices.Add("Next Page...");
-            if (response.HasPreviousPage)
-                choices.Add("Previous Page...");
-
-            choices.Add("Enter ID Manually");
-            choices.Add("Cancel/Return to Menu");
-
-            var selected = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title(
-                        $"Select Location (Page {response.PageNumber} of {response.TotalPages}):"
-                    )
-                    .AddChoices(choices)
-            );
-
-            if (selected == "Next Page...")
-            {
-                currentPage++;
-                continue;
-            }
-            else if (selected == "Previous Page...")
-            {
-                currentPage--;
-                continue;
-            }
-            else if (selected == "Enter ID Manually")
-            {
-                return AnsiConsole.Ask<int>("[green]Enter location ID:[/]");
-            }
-            else if (selected == "Cancel/Return to Menu")
-            {
-                return -1;
-            }
-            else
-            {
-                // Extract the count from the selected choice and get the corresponding location
-                var displayNumber = UiHelper.ExtractCountFromChoice(selected);
-                // Convert global display number to local page index
-                var localIndex = displayNumber - startIndex - 1;
-                if (localIndex >= 0 && localIndex < response.Data.Count)
-                {
-                    return response.Data[localIndex].LocationId;
-                }
-                else
-                {
-                    _display.DisplayError("Invalid selection.");
-                    continue;
-                }
-            }
-        }
+        return await GetLocationByIdUi();
     }
 }
