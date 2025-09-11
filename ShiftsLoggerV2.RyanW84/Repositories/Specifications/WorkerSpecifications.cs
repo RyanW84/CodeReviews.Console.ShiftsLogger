@@ -138,7 +138,7 @@ public class WorkerSpecification : BaseSpecification<Worker>
             _parameter = parameter;
         }
 
-        protected override Expression VisitParameter(ParameterExpression node)
+        protected override Expression VisitParameter(ParameterExpression _)
         {
             return _parameter;
         }

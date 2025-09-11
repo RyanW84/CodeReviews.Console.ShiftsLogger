@@ -189,7 +189,7 @@ public class ShiftSpecification : BaseSpecification<Shift>
             _parameter = parameter;
         }
 
-        protected override Expression VisitParameter(ParameterExpression node)
+        protected override Expression VisitParameter(ParameterExpression _)
         {
             return _parameter;
         }
@@ -255,7 +255,7 @@ public class OverlappingShiftSpecification : BaseSpecification<Shift>
             _parameter = parameter;
         }
 
-        protected override Expression VisitParameter(ParameterExpression node)
+        protected override Expression VisitParameter(ParameterExpression _)
         {
             return _parameter;
         }

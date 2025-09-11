@@ -173,6 +173,16 @@ public class ServiceHealthCheck : IHealthCheck
 
             stopwatch.Stop();
 
+            if (!testResult.IsSuccess)
+            {
+                return HealthCheckResult.Unhealthy(
+                    "Service operation failed",
+                    data: new Dictionary<string, object>
+                    {
+                        ["ResponseTimeMs"] = stopwatch.ElapsedMilliseconds
+                    });
+            }
+
             // Consider slow response as degraded (adjust threshold as needed)
             const int slowResponseThresholdMs = 5000;
 

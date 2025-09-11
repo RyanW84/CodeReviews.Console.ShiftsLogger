@@ -6,7 +6,6 @@ using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.Dtos;
 using ConsoleFrontEnd.Models.FilterOptions;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
 
 namespace ConsoleFrontEnd.MenuSystem;
 

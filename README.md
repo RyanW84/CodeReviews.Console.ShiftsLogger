@@ -136,8 +136,6 @@ concerns:
 
 - **.NET 9.0** - Latest .NET framework
 
-### Web API Project (ShiftsLoggerV2.RyanW84)
-
 ### Entity Framework & Database
 
 - `Microsoft.EntityFrameworkCore` (9.0.8) - ORM framework
@@ -154,7 +152,7 @@ concerns:
 - `Microsoft.OpenApi` (1.6.24) - OpenAPI specifications
 - `Scalar.AspNetCore` (2.7.2) - Modern API documentation
 
-### Mapping & DI
+### Mapping & Dependency Injection
 
 - `AutoMapper` (15.0.1) - Object-to-object mapping
 - `Microsoft.Extensions.DependencyInjection` (9.0.8) - Dependency injection
@@ -164,24 +162,20 @@ concerns:
 
 - `Spectre.Console` (0.50.0) - Rich console applications
 
-### Console Frontend Project (ConsoleFrontEnd)
-
-### Core Dependencies
+### Core Dependencies (Console Frontend)
 
 - `AutoMapper` (15.0.1) - Object mapping
 
-### Hosting & Configuration
+### Hosting & Configuration (Console Frontend)
 
 - `Microsoft.Extensions.DependencyInjection` (9.0.8) - DI container
 - `Microsoft.Extensions.Hosting` (9.0.8) - Host builder
 - `Microsoft.Extensions.Http` (9.0.8) - HTTP client factory
 - `Microsoft.Extensions.Logging` (9.0.8) - Logging
 
-### UI & Console
+### UI & Console (Console Frontend)
 
 - `Spectre.Console` (0.50.0) - Console UI
-
-### Test Project (ShiftsLoggerV2.RyanW84.Tests)
 
 ### Testing Framework
 
@@ -357,7 +351,7 @@ GET /api/locations?pageNumber=1&pageSize=5&country=USA
    dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" \
      "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YOUR_PASSWORD;
      TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
-   
+
 
 4. **Set up the database**
 

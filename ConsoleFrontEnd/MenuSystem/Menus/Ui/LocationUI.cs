@@ -52,6 +52,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
             Address = address,
             Town = town,
             County = county,
+            Country = country,
             Postcode = postcode,
         };
     }
