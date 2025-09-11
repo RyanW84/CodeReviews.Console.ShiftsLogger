@@ -1,5 +1,4 @@
 using ConsoleFrontEnd.Core.Abstractions;
-using ConsoleFrontEnd.Interfaces;
 using ConsoleFrontEnd.MenuSystem.Base;
 using ConsoleFrontEnd.MenuSystem.Common;
 using ConsoleFrontEnd.Models;
