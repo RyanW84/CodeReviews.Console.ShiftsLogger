@@ -110,13 +110,13 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
         _display.DisplayTable(shifts, EntityPluralName, startingRowNumber);
     }
 
-    public async Task DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10)
+    public async Task DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 50)
     {
         await _paginationHandler.HandlePaginationAsync(
             async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
             (response, page, size) => DisplayPage(response, page, size),
-            null, // No selection
-            null, // No selection handler
+            null, // Don't provide buildChoicesFunc to use pagination mode
+            null, // Don't provide handleSelectionFunc to use pagination mode
             initialPageNumber,
             pageSize
         );
@@ -124,36 +124,66 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
 
     public async Task<(bool Selected, int ShiftId)> DisplayShiftsWithPaginationAndSelectionAsync(
         int initialPageNumber = 1,
-        int pageSize = 10
+        int pageSize = 50
     )
     {
-        var result = await _paginationHandler.HandlePaginationAsync(
-            async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
-            (response, page, size) => DisplayPage(response, page, size),
-            BuildChoices,
-            async (selected, response, page, size) =>
-            {
-                await Task.CompletedTask;
-                if (selected == "Next Page...") return null; // Continue pagination
-                else if (selected == "Previous Page...") return null;
-                else if (selected == "Enter ID Manually") return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
-                else if (selected == "Cancel/Return to Menu") return -1;
-                else
-                {
-                    var choices = BuildChoices(response, page, size);
-                    var index = choices.IndexOf(selected);
-                    if (index >= 0 && response.Data != null && index < response.Data.Count)
-                    {
-                        return response.Data[index].ShiftId;
-                    }
-                }
-                return null;
-            },
-            initialPageNumber,
-            pageSize
-        );
+        var currentPage = initialPageNumber;
 
-        return result != null ? (true, (int)result) : (false, -1);
+        while (true)
+        {
+            var response = await _shiftService.GetAllShiftsAsync(currentPage, pageSize);
+            if (response == null || response.RequestFailed || response.Data == null || !response.Data.Any())
+            {
+                if (response != null) HandleEmptyPage(response, currentPage);
+                else _display.DisplayError("Failed to load page.");
+                if (currentPage == 1) return (false, await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]"));
+                return (false, -1);
+            }
+
+            DisplayPage(response, currentPage, pageSize);
+
+            var choices = BuildChoices(response, currentPage, pageSize);
+            var selected = await _input.GetMenuChoiceAsync($"Select Item (Page {response.PageNumber} of {response.TotalPages}):", choices.ToArray());
+
+            if (selected == "Next Page..." && response.HasNextPage)
+            {
+                currentPage++;
+                continue;
+            }
+            else if (selected == "Previous Page..." && response.HasPreviousPage)
+            {
+                currentPage--;
+                continue;
+            }
+            else if (selected == "Enter ID Manually")
+            {
+                return (true, await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]"));
+            }
+            else if (selected == "Cancel/Return to Menu")
+            {
+                return (false, -1);
+            }
+            else
+            {
+                var index = choices.IndexOf(selected);
+                if (index >= 0 && response.Data != null && index < response.Data.Count)
+                {
+                    return (true, response.Data[index].ShiftId);
+                }
+            }
+        }
+    }
+
+    private void HandleEmptyPage(ApiResponseDto<List<Shift>> response, int pageNumber)
+    {
+        if (response.TotalCount == 0)
+        {
+            _display.DisplayInfo("No shifts found.");
+        }
+        else
+        {
+            _display.DisplayInfo($"Page {pageNumber} is empty. Total shifts: {response.TotalCount}");
+        }
     }
 
     private void DisplayPage(ApiResponseDto<List<Shift>> response, int currentPage, int pageSize)
@@ -165,31 +195,52 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
 
     public async Task<int> GetShiftByIdUi()
     {
-        var result = await _paginationHandler.HandlePaginationAsync(
-            async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
-            (response, page, size) => DisplayPage(response, page, size),
-            BuildChoices,
-            async (selected, response, page, size) =>
+        var currentPage = 1;
+        var pageSize = 50;
+
+        while (true)
+        {
+            var response = await _shiftService.GetAllShiftsAsync(currentPage, pageSize);
+            if (response == null || response.RequestFailed || response.Data == null || !response.Data.Any())
             {
-                if (selected == "Next Page...") return null; // Continue pagination
-                else if (selected == "Previous Page...") return null;
-                else if (selected == "Enter ID Manually") return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
-                else if (selected == "Cancel/Return to Menu") return -1;
-                else
+                if (response != null) HandleEmptyPage(response, currentPage);
+                else _display.DisplayError("Failed to load page.");
+                if (currentPage == 1) return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
+                return -1;
+            }
+
+            DisplayPage(response, currentPage, pageSize);
+
+            var choices = BuildChoices(response, currentPage, pageSize);
+            var selected = await _input.GetMenuChoiceAsync($"Select Item (Page {response.PageNumber} of {response.TotalPages}):", choices.ToArray());
+
+            if (selected == "Next Page..." && response.HasNextPage)
+            {
+                currentPage++;
+                continue;
+            }
+            else if (selected == "Previous Page..." && response.HasPreviousPage)
+            {
+                currentPage--;
+                continue;
+            }
+            else if (selected == "Enter ID Manually")
+            {
+                return await _input.GetIntegerInputAsync("[green]Enter shift ID:[/]");
+            }
+            else if (selected == "Cancel/Return to Menu")
+            {
+                return -1;
+            }
+            else
+            {
+                var index = choices.IndexOf(selected);
+                if (index >= 0 && response.Data != null && index < response.Data.Count)
                 {
-                    var choices = BuildChoices(response, page, size);
-                    var index = choices.IndexOf(selected);
-                    if (index >= 0 && response.Data != null && index < response.Data.Count)
-                    {
-                        return response.Data[index].ShiftId;
-                    }
+                    return response.Data[index].ShiftId;
                 }
-                return null;
-            },
-            1,
-            10
-        );
-        return result as int? ?? -1;
+            }
+        }
     }
 
     private List<string> BuildChoices(ApiResponseDto<List<Shift>> response, int currentPage, int pageSize)

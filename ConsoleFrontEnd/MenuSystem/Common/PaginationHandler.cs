@@ -1,7 +1,6 @@
 using ConsoleFrontEnd.Core.Abstractions;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.Dtos;
-using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -47,7 +46,7 @@ public class PaginationHandler
             if (isSelectionMode)
             {
                 var choices = buildChoicesFunc!(response, currentPage, pageSize);
-                var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().Title($"Select Item (Page {response.PageNumber} of {response.TotalPages}):").AddChoices(choices));
+                var selected = await _input.GetMenuChoiceAsync($"Select Item (Page {response.PageNumber} of {response.TotalPages}):", choices.ToArray());
 
                 var result = await handleSelectionFunc!(selected, response, currentPage, pageSize);
                 if (result != null) return result;
@@ -70,7 +69,7 @@ public class PaginationHandler
         if (response.HasPreviousPage) options.Add("Previous Page");
         if (response.HasNextPage) options.Add("Next Page");
         options.AddRange(new[] { "Go to Page", "Change Page Size", "Back to Menu" });
-        return AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Choose an action:").AddChoices(options));
+        return _input.GetMenuChoice("Choose an action:", options.ToArray());
     }
 
     private async Task<(bool, int, int)> HandleChoiceAsync<T>(string choice, int currentPage, int pageSize, ApiResponseDto<List<T>> response)
@@ -93,8 +92,8 @@ public class PaginationHandler
 
     private async Task<int> HandleChangePageSizeAsync(int currentSize)
     {
-        var size = await _input.GetIntegerInputAsync("Enter new page size (1-100):", 1, 100);
-        return size >= 1 && size <= 100 ? size : currentSize;
+        var size = await _input.GetIntegerInputAsync("Enter new page size (1-1000):", 1, 1000);
+        return size >= 1 && size <= 1000 ? size : currentSize;
     }
 
     private void HandleEmptyPage<T>(ApiResponseDto<List<T>> response, int pageNumber)
