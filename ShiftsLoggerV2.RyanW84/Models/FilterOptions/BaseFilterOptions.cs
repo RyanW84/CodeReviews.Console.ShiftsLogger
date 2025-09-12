@@ -16,7 +16,7 @@ public abstract class BaseFilterOptions
         if (PageNumber < 1)
             PageNumber = 1;
         if (PageSize < 1)
-            PageSize = 50;
+            PageSize = 10;
         if (PageSize > 1000)
             PageSize = 1000; // Max page size to prevent abuse
     }

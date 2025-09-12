@@ -87,8 +87,8 @@ public static class ServiceCollectionExtensions
                 var hostEnvironment = sp.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
 
                 // Use HTTP in development, HTTPS in production
-                var protocol = hostEnvironment.IsDevelopment() ? "http" : "https";
-                var port = hostEnvironment.IsDevelopment() ? "5009" : "7009";
+                var protocol = "http"; // hostEnvironment.IsDevelopment() ? "http" : "https";
+                var port = "5009"; // hostEnvironment.IsDevelopment() ? "5009" : "7009";
                 var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? $"{protocol}://localhost:{port}";
                 client.BaseAddress = new Uri(baseUrl);
             }

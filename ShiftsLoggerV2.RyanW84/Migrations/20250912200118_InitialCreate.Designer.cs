@@ -12,7 +12,7 @@ using ShiftsLoggerV2.RyanW84.Data;
 namespace ShiftsLoggerV2.RyanW84.Migrations
 {
     [DbContext(typeof(ShiftsLoggerDbContext))]
-    [Migration("20250908125640_InitialCreate")]
+    [Migration("20250912200118_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace ShiftsLoggerV2.RyanW84.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);

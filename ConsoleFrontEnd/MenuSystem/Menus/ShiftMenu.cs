@@ -19,7 +19,7 @@ namespace ConsoleFrontEnd.MenuSystem.Menus;
 public class ShiftMenu : BaseMenu
 {
     // Configuration constants
-    private const int DefaultPageSize = 50;
+    private const int DefaultPageSize = 10;
 
     // Use inherited DisplayService, InputService, NavigationService and Logger from BaseMenu
     // Private fields for services specific to this menu (use underscore names because methods reference them)

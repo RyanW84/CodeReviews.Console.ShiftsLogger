@@ -110,7 +110,7 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
         _display.DisplayTable(shifts, EntityPluralName, startingRowNumber);
     }
 
-    public async Task DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 50)
+    public async Task DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10)
     {
         await _paginationHandler.HandlePaginationAsync(
             async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
@@ -124,7 +124,7 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
 
     public async Task<(bool Selected, int ShiftId)> DisplayShiftsWithPaginationAndSelectionAsync(
         int initialPageNumber = 1,
-        int pageSize = 50
+        int pageSize = 10
     )
     {
         var currentPage = initialPageNumber;
@@ -196,7 +196,7 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
     public async Task<int> GetShiftByIdUi()
     {
         var currentPage = 1;
-        var pageSize = 50;
+        var pageSize = 10;
 
         while (true)
         {

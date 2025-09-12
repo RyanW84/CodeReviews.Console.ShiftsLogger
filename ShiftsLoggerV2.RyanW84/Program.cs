@@ -22,8 +22,10 @@ builder.Services.AddOpenApi();
 builder
     .Services.AddControllers()
     .AddJsonOptions(opts =>
-        opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
-    );
+    {
+        opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        opts.JsonSerializerOptions.MaxDepth = 64; // Increase max depth to handle large collections
+    });
 
 // Configure DbContext based on environment and OS platform
 if (builder.Environment.EnvironmentName == "Testing")
