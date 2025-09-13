@@ -62,8 +62,8 @@ public class ShiftDisplayService : IShiftDisplayService
 
             table.AddRow("Worker", shift.Worker?.Name ?? "Unknown");
             table.AddRow("Location", shift.Location?.Name ?? "Unknown");
-            table.AddRow("Start Time", shift.StartTime.ToString("yyyy-MM-dd HH:mm:ss"));
-            table.AddRow("End Time", shift.EndTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            table.AddRow("Start Time", shift.StartTime.ToString("dd/MM/yyyy HH:mm:ss"));
+            table.AddRow("End Time", shift.EndTime.ToString("dd/MM/yyyy HH:mm:ss"));
             table.AddRow("Duration", shift.Duration.ToString(@"hh\:mm\:ss"));
 
             AnsiConsole.Write(table);
@@ -122,8 +122,8 @@ public class ShiftDisplayService : IShiftDisplayService
                 DisplayIndex = startIndex + i,
                 Shift = shift,
                 FormattedDuration = shift.Duration.ToString(@"hh\:mm"),
-                FormattedStartTime = shift.StartTime.ToString("yyyy-MM-dd HH:mm"),
-                FormattedEndTime = shift.EndTime.ToString("yyyy-MM-dd HH:mm")
+                FormattedStartTime = shift.StartTime.ToString("dd/MM/yyyy HH:mm"),
+                FormattedEndTime = shift.EndTime.ToString("dd/MM/yyyy HH:mm")
             };
 
             displayData.Shifts.Add(displayItem);
