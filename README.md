@@ -1,6 +1,6 @@
 # ShiftsLogger
 
-A comprehensive shift management system built with .NET 9.0, featuring a Web API
+A comprehensive shift management system built with .NET 10.0 Preview, featuring a Web API
 backend, console frontend, and extensive testing suite. The application follows
 SOLID principles and clean architecture patterns to provide a robust solution
 for recording, storing, and managing work shifts.
@@ -130,37 +130,51 @@ concerns:
 - ✅ **Response Standardization**: Consistent API response formatting
 - ✅ **Integration Tests**: Enabled and fixed integration test suite
 
+### User Experience & Interface
+
+- ✅ **Date Format Consistency**: Standardized date display format from dd-MM-yyyy to dd/MM/yyyy across all UI components
+- ✅ **Clean Console Output**: Suppressed HTTP client logging messages for improved user experience
+- ✅ **Pagination Navigation**: Added automatic screen clearing when navigating between paginated result pages
+- ✅ **UI Header Consistency**: Ensured all entity views (shifts, workers, locations) have consistent headers with page numbers
+- ✅ **System Information Display**: Fixed system information functionality to properly await user input
+
+### Code Quality & Performance
+
+- ✅ **Async/Await Patterns**: Eliminated dangerous .Wait() calls and implemented proper async/await patterns throughout the application
+- ✅ **Type Safety**: Removed dynamic types and added AOT compilation compatibility with proper type annotations
+- ✅ **Memory Management**: Improved async operation handling to prevent potential deadlocks
+
 ## Technologies & NuGet Packages
 
 ### Core Framework
 
-- **.NET 9.0** - Latest .NET framework
+- **.NET 10.0 Preview** - Latest .NET framework preview
 
 ### Entity Framework & Database
 
-- `Microsoft.EntityFrameworkCore` (9.0.8) - ORM framework
-- `Microsoft.EntityFrameworkCore.Abstractions` (9.0.8) - EF Core abstractions
-- `Microsoft.EntityFrameworkCore.Design` (9.0.8) - Design-time tools
-- `Microsoft.EntityFrameworkCore.SqlServer` (9.0.8) - SQL Server provider
-- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8) - In-memory provider
+- `Microsoft.EntityFrameworkCore` (10.0.x) - ORM framework
+- `Microsoft.EntityFrameworkCore.Abstractions` (10.0.x) - EF Core abstractions
+- `Microsoft.EntityFrameworkCore.Design` (10.0.x) - Design-time tools
+- `Microsoft.EntityFrameworkCore.SqlServer` (10.0.x) - SQL Server provider
+- `Microsoft.EntityFrameworkCore.InMemory` (10.0.x) - In-memory provider
   for testing
-- `Microsoft.EntityFrameworkCore.Tools` (9.0.8) - Migration tools
+- `Microsoft.EntityFrameworkCore.Tools` (10.0.x) - Migration tools
 
 ### API & Documentation
 
-- `Microsoft.AspNetCore.OpenApi` (9.0.8) - OpenAPI support
+- `Microsoft.AspNetCore.OpenApi` (10.0.x) - OpenAPI support
 - `Microsoft.OpenApi` (1.6.24) - OpenAPI specifications
 - `Scalar.AspNetCore` (2.7.2) - Modern API documentation
 
 ### Mapping & Dependency Injection
 
 - `AutoMapper` (15.0.1) - Object-to-object mapping
-- `Microsoft.Extensions.DependencyInjection` (9.0.8) - Dependency injection
-- `Microsoft.Extensions.Logging` (9.0.8) - Logging framework
+- `Microsoft.Extensions.DependencyInjection` (10.0.x) - Dependency injection
+- `Microsoft.Extensions.Logging` (10.0.x) - Logging framework
 
 ### UI & Console Packages
 
-- `Spectre.Console` (0.50.0) - Rich console applications
+- `Spectre.Console` (0.51.1) - Rich console applications
 
 ### Core Dependencies (Console Frontend)
 
@@ -168,14 +182,14 @@ concerns:
 
 ### Hosting & Configuration (Console Frontend)
 
-- `Microsoft.Extensions.DependencyInjection` (9.0.8) - DI container
-- `Microsoft.Extensions.Hosting` (9.0.8) - Host builder
-- `Microsoft.Extensions.Http` (9.0.8) - HTTP client factory
-- `Microsoft.Extensions.Logging` (9.0.8) - Logging
+- `Microsoft.Extensions.DependencyInjection` (10.0.x) - DI container
+- `Microsoft.Extensions.Hosting` (10.0.x) - Host builder
+- `Microsoft.Extensions.Http` (10.0.x) - HTTP client factory
+- `Microsoft.Extensions.Logging` (10.0.x) - Logging
 
 ### UI & Console (Console Frontend)
 
-- `Spectre.Console` (0.50.0) - Console UI
+- `Spectre.Console` (0.51.1) - Console UI
 
 ### Testing Framework
 
@@ -190,8 +204,8 @@ concerns:
 
 ### Integration Testing
 
-- `Microsoft.AspNetCore.Mvc.Testing` (9.0.8) - ASP.NET Core testing
-- `Microsoft.EntityFrameworkCore.InMemory` (9.0.8) - In-memory database
+- `Microsoft.AspNetCore.Mvc.Testing` (10.0.x) - ASP.NET Core testing
+- `Microsoft.EntityFrameworkCore.InMemory` (10.0.x) - In-memory database
   for tests
 
 ### Code Coverage
@@ -319,7 +333,7 @@ GET /api/locations?pageNumber=1&pageSize=5&country=USA
 
 ### Prerequisites
 
-- .NET 9.0 SDK
+- .NET 10.0 Preview SDK
 - SQL Server (Windows) or SQL Server for Linux
 - Visual Studio 2022 or VS Code
 
@@ -429,14 +443,15 @@ dotnet ef migrations add <MigrationName> --project ShiftsLoggerV2.RyanW84
 
 ## Testing
 
-The project includes a comprehensive test suite with **55+ tests** covering:
+The project includes a comprehensive test suite with **104 tests** covering:
 
 ### Test Categories
 
-- **Model Tests** (24 tests) - Entity validation and behavior
-- **Service Tests** (29+ tests) - Business logic and data operations
+- **Model Tests** - Entity validation and behavior
+- **Service Tests** - Business logic and data operations
 - **Controller Tests** - API endpoint behavior
 - **Integration Tests** - End-to-end API testing
+- **Utility Tests** - Helper function validation
 
 ### Running Tests
 
