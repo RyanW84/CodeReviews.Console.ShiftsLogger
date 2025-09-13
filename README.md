@@ -1,7 +1,8 @@
 # ShiftsLogger
 
-A comprehensive shift management system built with .NET 10.0 Preview, featuring a Web API
-backend, console frontend, and extensive testing suite. The application follows
+A comprehensive shift management system built with .NET 10.0 Preview, featuring
+a Web API backend, console frontend, and extensive testing suite. The
+application follows
 SOLID principles and clean architecture patterns to provide a robust solution
 for recording, storing, and managing work shifts.
 
@@ -132,17 +133,25 @@ concerns:
 
 ### User Experience & Interface
 
-- ✅ **Date Format Consistency**: Standardized date display format from dd-MM-yyyy to dd/MM/yyyy across all UI components
-- ✅ **Clean Console Output**: Suppressed HTTP client logging messages for improved user experience
-- ✅ **Pagination Navigation**: Added automatic screen clearing when navigating between paginated result pages
-- ✅ **UI Header Consistency**: Ensured all entity views (shifts, workers, locations) have consistent headers with page numbers
-- ✅ **System Information Display**: Fixed system information functionality to properly await user input
+- ✅ **Date Format Consistency**: Standardized date display format from
+  dd-MM-yyyy to dd/MM/yyyy across all UI components
+- ✅ **Clean Console Output**: Suppressed HTTP client logging messages for
+  improved user experience
+- ✅ **Pagination Navigation**: Added automatic screen clearing when
+  navigating between paginated result pages
+- ✅ **UI Header Consistency**: Ensured all entity views (shifts, workers,
+  locations) have consistent headers with page numbers
+- ✅ **System Information Display**: Fixed system information functionality to
+  properly await user input
 
 ### Code Quality & Performance
 
-- ✅ **Async/Await Patterns**: Eliminated dangerous .Wait() calls and implemented proper async/await patterns throughout the application
-- ✅ **Type Safety**: Removed dynamic types and added AOT compilation compatibility with proper type annotations
-- ✅ **Memory Management**: Improved async operation handling to prevent potential deadlocks
+- ✅ **Async/Await Patterns**: Eliminated dangerous .Wait() calls and
+  implemented proper async/await patterns throughout the application
+- ✅ **Type Safety**: Removed dynamic types and added AOT compilation
+  compatibility with proper type annotations
+- ✅ **Memory Management**: Improved async operation handling to prevent
+  potential deadlocks
 
 ## Technologies & NuGet Packages
 
@@ -363,8 +372,8 @@ GET /api/locations?pageNumber=1&pageSize=5&country=USA
    # Then set your connection string
    cd ShiftsLoggerV2.RyanW84
    dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" \
-     "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YOUR_PASSWORD;
-     TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
+     "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YOUR_PASSWORD;\
+TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
 
 
 4. **Set up the database**
@@ -417,8 +426,8 @@ cd ShiftsLoggerV2.RyanW84
 
 # Set the Linux SQL Server connection string in user secrets
 dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" \
-  "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YourSecurePassword;
-  TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
+  "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YourSecurePassword;\
+TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
 ```
 
 **Security Note**: Never commit database passwords to source control. Always use
@@ -479,7 +488,8 @@ dotnet test --collect:"XPlat Code Coverage"
 - **Microsoft.AspNetCore.Mvc.Testing** - Integration testing
 - **InMemory Database** - Isolated test database
 
-For detailed testing information, see [TEST_DOCUMENTATION.md](./TEST_DOCUMENTATION.md).
+For detailed testing information, see
+[TEST_DOCUMENTATION.md](./TEST_DOCUMENTATION.md).
 
 ## Contributing
 
@@ -499,7 +509,8 @@ For detailed testing information, see [TEST_DOCUMENTATION.md](./TEST_DOCUMENTATI
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE)
+file for details.
 
 ## Author
 

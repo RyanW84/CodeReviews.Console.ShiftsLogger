@@ -35,7 +35,7 @@ public class PaginationHandler
             var response = await loadPageFunc(currentPage, pageSize);
             if (response == null || response.RequestFailed || response.Data == null || !response.Data.Any())
             {
-                if (response != null) HandleEmptyPage(response, currentPage);
+                if (response != null) HandleEmptyPage(currentPage);
                 else _display.DisplayError("Failed to load page.");
                 if (isSelectionMode && currentPage == 1) return await _input.GetIntegerInputAsync("[green]Enter ID:[/]") as object;
                 return null;
@@ -99,7 +99,7 @@ public class PaginationHandler
         return size >= 1 && size <= 1000 ? size : currentSize;
     }
 
-    private void HandleEmptyPage<T>(ApiResponseDto<List<T>> response, int pageNumber)
+    private void HandleEmptyPage(int pageNumber)
     {
         if (pageNumber == 1) _display.DisplayError("No items found.");
         else _display.DisplayError($"No items found on page {pageNumber}. Returning to page 1.");

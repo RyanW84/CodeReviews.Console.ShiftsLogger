@@ -242,7 +242,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
                     Markup.Escape(locationName),
                     startTime,
                     endTime,
-                    duration.ToString(),
+                    duration,
                 }
             );
             rowCount++;
