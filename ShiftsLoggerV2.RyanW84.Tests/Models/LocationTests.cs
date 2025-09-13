@@ -18,7 +18,7 @@ public class LocationTests
         location.Address.Should().Be(string.Empty);
         location.Town.Should().Be(string.Empty);
         location.County.Should().Be(string.Empty);
-        location.PostCode.Should().Be(string.Empty);
+        location.Postcode.Should().Be(string.Empty);
         location.Country.Should().Be(string.Empty);
         location.Shifts.Should().NotBeNull().And.BeEmpty();
     }
@@ -45,7 +45,7 @@ public class LocationTests
         string address,
         string town,
         string county,
-        string postCode,
+        string postcode,
         string country
     )
     {
@@ -57,7 +57,7 @@ public class LocationTests
             Address = address,
             Town = town,
             County = county,
-            PostCode = postCode,
+            Postcode = postcode,
             Country = country,
         };
 
@@ -67,7 +67,7 @@ public class LocationTests
         location.Address.Should().Be(address);
         location.Town.Should().Be(town);
         location.County.Should().Be(county);
-        location.PostCode.Should().Be(postCode);
+        location.Postcode.Should().Be(postcode);
         location.Country.Should().Be(country);
         location.Id.Should().Be(1);
     }
@@ -116,7 +116,7 @@ public class LocationTests
             Address = null!,
             Town = null!,
             County = null!,
-            PostCode = null!,
+            Postcode = null!,
             Country = null!,
         };
 
@@ -126,7 +126,7 @@ public class LocationTests
             Address = "",
             Town = "",
             County = "",
-            PostCode = "",
+            Postcode = "",
             Country = "",
         };
 

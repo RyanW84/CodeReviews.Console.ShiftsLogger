@@ -11,5 +11,6 @@ public interface IShiftUi
     Task<ShiftFilterOptions> FilterShiftsUi();
     void DisplayShiftsTable(IEnumerable<Shift> shifts, int startingRowNumber = 1);
     Task<int> GetShiftByIdUi();
-    Task DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10);
+    Task<object?> DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10);
+    Task<(bool Selected, int ShiftId)> DisplayShiftsWithPaginationAndSelectionAsync(int initialPageNumber = 1, int pageSize = 10);
 }

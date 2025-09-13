@@ -93,8 +93,25 @@ public class LocationMenu : BaseMenu
     private async Task ViewAllLocationsAsync()
     {
         DisplayService.DisplayHeader("All Locations", "blue");
-        await _locationUi.DisplayLocationsWithPaginationAsync();
-        await InputService.WaitForKeyPressAsync();
+        var (selected, locationId) = await _locationUi.DisplayLocationsWithPaginationAsync();
+
+        if (selected && locationId > 0)
+        {
+            // User selected a location, display its details
+            var response = await _locationService.GetLocationByIdAsync(locationId);
+            if (response.RequestFailed)
+            {
+                DisplayService.DisplayError($"Failed to retrieve location: {response.Message}");
+            }
+            else if (response.Data == null)
+            {
+                DisplayService.DisplayError("Location not found.");
+            }
+            else
+            {
+                DisplayLocationDetails(response.Data);
+            }
+        }
     }
 
     private async Task ViewLocationByIdAsync()
@@ -127,7 +144,7 @@ public class LocationMenu : BaseMenu
                 return;
             }
 
-            await DisplayLocationDetails(response.Data);
+            DisplayLocationDetails(response.Data);
         }
         catch (Exception ex)
         {
@@ -159,8 +176,6 @@ public class LocationMenu : BaseMenu
             Logger.LogError(ex, "Error creating location");
             DisplayService.DisplayError($"Failed to create location: {ex.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task UpdateLocationAsync()
@@ -198,7 +213,6 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplaySuccess("Location updated successfully.");
             DisplayService.DisplayTable([response.Data], "Updated Location");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task DeleteLocationAsync()
@@ -213,17 +227,37 @@ public class LocationMenu : BaseMenu
             return;
         }
 
-        if (await InputService.GetConfirmationAsync($"Are you sure you want to delete location {locationId}?"))
+        // Get location details for confirmation
+        var response = await _locationService.GetLocationByIdAsync(locationId);
+        if (response.RequestFailed)
         {
-            var response = await _locationService.DeleteLocationAsync(locationId);
-            if (response.RequestFailed)
+            DisplayService.DisplayError($"Failed to retrieve location: {response.Message}");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        if (response.Data == null)
+        {
+            DisplayService.DisplayError("Location not found.");
+            await InputService.WaitForKeyPressAsync();
+            return;
+        }
+
+        // Display location details before confirmation
+        DisplayService.DisplayHeader("Location to Delete", "yellow");
+        DisplayService.DisplayTable([response.Data], "Location Details");
+
+        if (await InputService.GetConfirmationAsync($"Are you sure you want to delete this location?"))
+        {
+            var deleteResponse = await _locationService.DeleteLocationAsync(locationId);
+            if (deleteResponse.RequestFailed)
             {
-                DisplayService.DisplayError(response.Message ?? "Failed to delete location.");
+                DisplayService.DisplayError(deleteResponse.Message ?? "Failed to delete location.");
             }
             else
             {
                 DisplayService.DisplaySuccess(
-                    response.Message ?? $"Location {locationId} deleted successfully."
+                    deleteResponse.Message ?? $"Location deleted successfully."
                 );
             }
         }
@@ -231,7 +265,6 @@ public class LocationMenu : BaseMenu
         {
             DisplayService.DisplayInfo("Delete cancelled.");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task FilterLocationsAsync()
@@ -281,7 +314,7 @@ public class LocationMenu : BaseMenu
             Address = await InputService.GetTextInputAsync("Filter by address (leave blank for any):", false),
             Town = await InputService.GetTextInputAsync("Filter by town (leave blank for any):", false),
             County = county,
-            PostCode = await InputService.GetTextInputAsync(
+            Postcode = await InputService.GetTextInputAsync(
                 "Filter by post code (leave blank for any):",
                 false
             ),
@@ -298,7 +331,6 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, "Filtered Locations");
             DisplayService.DisplaySuccess($"Total filtered locations: {response.TotalCount}");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewLocationsByCountryAsync()
@@ -318,7 +350,6 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, $"Locations in '{country}'");
             DisplayService.DisplaySuccess($"Total: {response.TotalCount}");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewLocationsByCountyAsync()
@@ -338,13 +369,11 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, $"Locations in '{county}'");
             DisplayService.DisplaySuccess($"Total: {response.TotalCount}");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
-    private async Task DisplayLocationDetails(Location location)
+    private void DisplayLocationDetails(Location location)
     {
         DisplayService.DisplayHeader("Location Details", "green");
         DisplayService.DisplayTable([location], "Location Details");
-        await InputService.WaitForKeyPressAsync();
     }
 }

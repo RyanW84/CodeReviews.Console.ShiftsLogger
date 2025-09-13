@@ -21,10 +21,10 @@ public static class LocationValidation
             errors.Add("Town is required.");
         if (string.IsNullOrWhiteSpace(dto.County))
             errors.Add("County is required.");
-        if (string.IsNullOrWhiteSpace(dto.PostCode))
-            errors.Add("PostCode is required.");
-        if (dto.PostCode.Length < 3)
-            errors.Add("PostCode must be at least 3 characters.");
+        if (string.IsNullOrWhiteSpace(dto.Postcode))
+            errors.Add("Postcode is required.");
+        if (dto.Postcode.Length < 3)
+            errors.Add("Postcode must be at least 3 characters.");
         if (string.IsNullOrWhiteSpace(dto.Country))
             errors.Add("Country is required.");
         if (dto.Country.Length < 2)

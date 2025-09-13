@@ -38,7 +38,7 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
 
         modelBuilder.Entity<Location>().HasIndex(l => l.Name);
         modelBuilder.Entity<Location>().HasIndex(l => l.Town);
-        modelBuilder.Entity<Location>().HasIndex(l => l.PostCode);
+        modelBuilder.Entity<Location>().HasIndex(l => l.Postcode);
     }
 
     public void SeedData(ILogger<ShiftsLoggerDbContext>? logger)
@@ -115,7 +115,7 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
             ("Cardiff Hub", "12 Cardiff Bay", "Cardiff", "Wales", "CF10 4PA", "UK"),
         };
 
-        foreach (var (name, address, town, county, postCode, country) in locationData)
+        foreach (var (name, address, town, county, postcode, country) in locationData)
         {
             if (!Locations.Any(l => l.Name.ToLower() == name.ToLower()))
             {
@@ -126,7 +126,7 @@ public class ShiftsLoggerDbContext(DbContextOptions options) : DbContext(options
                         Address = address,
                         Town = town,
                         County = county,
-                        PostCode = postCode,
+                        Postcode = postcode,
                         Country = country,
                     }
                 );

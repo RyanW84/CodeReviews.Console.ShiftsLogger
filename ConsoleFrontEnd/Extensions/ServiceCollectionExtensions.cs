@@ -7,6 +7,8 @@ using ConsoleFrontEnd.MenuSystem.Menus;
 using ConsoleFrontEnd.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System.Net.Http;
 
 namespace ConsoleFrontEnd.Extensions;
 
@@ -22,34 +24,11 @@ public static class ServiceCollectionExtensions
     {
         // HTTP Client Factory and typed clients
         services.AddHttpClient();
-        // Typed client for ShiftService - sets BaseAddress from configuration via named setting
-        services.AddHttpClient<IShiftService, ShiftService>(
-            (sp, client) =>
-            {
-                var config = sp.GetRequiredService<IConfiguration>();
-                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009";
-                client.BaseAddress = new Uri(baseUrl);
-            }
-        );
 
-        // Typed clients for other API services
-        services.AddHttpClient<IWorkerService, WorkerService>(
-            (sp, client) =>
-            {
-                var config = sp.GetRequiredService<IConfiguration>();
-                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009";
-                client.BaseAddress = new Uri(baseUrl);
-            }
-        );
-
-        services.AddHttpClient<ILocationService, LocationService>(
-            (sp, client) =>
-            {
-                var config = sp.GetRequiredService<IConfiguration>();
-                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? "https://localhost:7009";
-                client.BaseAddress = new Uri(baseUrl);
-            }
-        );
+        // Configure API services with common setup
+        services.ConfigureApiService<IShiftService, ShiftService>();
+        services.ConfigureApiService<IWorkerService, WorkerService>();
+        services.ConfigureApiService<ILocationService, LocationService>();
 
         // Console services (Spectre.Console-based)
         services.AddSingleton<IConsoleDisplayService, SpectreConsoleDisplayService>();
@@ -90,6 +69,36 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMenu, ShiftMenu>();
         services.AddScoped<IMenu, WorkerMenu>();
         services.AddScoped<IMenu, LocationMenu>();
+
+        return services;
+    }
+
+    /// <summary>
+    ///     Configure an API service with common HTTP client setup
+    /// </summary>
+    private static IServiceCollection ConfigureApiService<TInterface, TImplementation>(this IServiceCollection services)
+        where TInterface : class
+        where TImplementation : class, TInterface
+    {
+        services.AddHttpClient<TInterface, TImplementation>(
+            (sp, client) =>
+            {
+                var config = sp.GetRequiredService<IConfiguration>();
+                var hostEnvironment = sp.GetRequiredService<Microsoft.Extensions.Hosting.IHostEnvironment>();
+
+                // Use HTTP in development, HTTPS in production
+                var protocol = "http"; // hostEnvironment.IsDevelopment() ? "http" : "https";
+                var port = "5009"; // hostEnvironment.IsDevelopment() ? "5009" : "7009";
+                var baseUrl = config.GetValue<string>("ApiBaseUrl") ?? $"{protocol}://localhost:{port}";
+                client.BaseAddress = new Uri(baseUrl);
+            }
+        ).ConfigurePrimaryHttpMessageHandler(() =>
+        {
+            return new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+        });
 
         return services;
     }

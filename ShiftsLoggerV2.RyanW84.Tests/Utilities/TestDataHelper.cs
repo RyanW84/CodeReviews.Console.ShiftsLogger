@@ -60,7 +60,7 @@ public static class TestDataHelper
             Address = "123 Test Street",
             Town = "Test Town",
             County = "Test County",
-            PostCode = "12345",
+            Postcode = "12345",
             Country = "Test Country",
         };
     }
@@ -122,7 +122,7 @@ public static class TestDataHelper
             Address = "123 Test Street",
             Town = "Test Town",
             County = "Test County",
-            PostCode = "12345",
+            Postcode = "12345",
             Country = "Test Country",
         };
     }

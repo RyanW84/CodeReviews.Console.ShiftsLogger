@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ShiftsLoggerV2.RyanW84.Dtos;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
@@ -28,59 +29,20 @@ public class ShiftsController : BaseController
         [FromQuery] ShiftFilterOptions shiftOptions
     )
     {
-        try
-        {
-            // Use the new SOLID business service for enhanced functionality
-            var result = await _shiftBusinessService
-                .GetAllAsync(shiftOptions)
-                .ConfigureAwait(false);
-            return HandlePaginatedResult(result, shiftOptions, "Shifts retrieved successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to retrieve all shifts");
-            var (status, message) = ShiftsLoggerV2.RyanW84.Common.ErrorMapper.Map(ex);
-            return StatusCode(
-                (int)status,
-                new PaginatedApiResponseDto<List<Shift>>
-                {
-                    RequestFailed = true,
-                    ResponseCode = status,
-                    Message = message,
-                    Data = null,
-                    TotalCount = 0,
-                    PageNumber = shiftOptions.PageNumber,
-                    PageSize = shiftOptions.PageSize,
-                }
-            );
-        }
+        // Use the new SOLID business service for enhanced functionality
+        var result = await _shiftBusinessService
+            .GetAllAsync(shiftOptions)
+            .ConfigureAwait(false);
+        return HandlePaginatedResult(result, shiftOptions, "Shifts retrieved successfully");
     }
 
     // This is the route for getting a createdShift by ID
     [HttpGet("{id}")] // This will be added to the API URI (send some data during the request
     public async Task<ActionResult<ApiResponseDto<Shift>>> GetShiftById(int id)
     {
-        try
-        {
-            // Use the new SOLID business service for enhanced functionality
-            var result = await _shiftBusinessService.GetByIdAsync(id).ConfigureAwait(false);
-            return HandleResult<Shift>(result, "Shift retrieved successfully");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to retrieve shift by ID {ShiftId}", id);
-            var (status, message) = ShiftsLoggerV2.RyanW84.Common.ErrorMapper.Map(ex);
-            return StatusCode(
-                (int)status,
-                new ApiResponseDto<Shift>
-                {
-                    RequestFailed = true,
-                    ResponseCode = status,
-                    Message = message,
-                    Data = null,
-                }
-            );
-        }
+        // Use the new SOLID business service for enhanced functionality
+        var result = await _shiftBusinessService.GetByIdAsync(id).ConfigureAwait(false);
+        return HandleResult<Shift>(result, "Shift retrieved successfully");
     }
 
     // This is the route for creating a createdShift
@@ -89,78 +51,60 @@ public class ShiftsController : BaseController
         [FromBody] ShiftApiRequestDto shift
     )
     {
-        try
+        if (!ModelState.IsValid)
         {
-            if (!ModelState.IsValid)
-            {
-                _logger.LogWarning(
-                    "CreateShift failed due to invalid model state: {Errors}",
-                    string.Join(
-                        ", ",
-                        ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
-                    )
-                );
-                return BadRequestModelState();
-            }
-
-            // Ensure end is after start (JSON converter handles parsing automatically)
-            if (shift.EndTime <= shift.StartTime)
-            {
-                ModelState.AddModelError("EndTime", "End time must be after start time.");
-                return BadRequestModelState();
-            }
-
-            var result = await _shiftBusinessService.CreateAsync(shift).ConfigureAwait(false);
-
-            if (!result.IsSuccess)
-            {
-                _logger.LogWarning("CreateShift validation failed: {Message}", result.Message);
-                return StatusCode(
-                    (int)result.StatusCode,
-                    new ApiResponseDto<Shift>
-                    {
-                        RequestFailed = true,
-                        ResponseCode = result.StatusCode,
-                        Message = result.Message,
-                        Data = null,
-                    }
-                );
-            }
-
-            _logger.LogInformation(
-                "Shift created successfully for WorkerId={WorkerId}, LocationId={LocationId}, Start={StartTime}, End={EndTime}",
-                shift.WorkerId,
-                shift.LocationId,
-                shift.StartTime,
-                shift.EndTime
+            _logger.LogWarning(
+                "CreateShift failed due to invalid model state: {Errors}",
+                string.Join(
+                    ", ",
+                    ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                )
             );
-            return StatusCode(
-                201,
-                new ApiResponseDto<Shift>
-                {
-                    RequestFailed = false,
-                    ResponseCode = System.Net.HttpStatusCode.Created,
-                    Message = "Shift created successfully",
-                    Data = result.Data,
-                    TotalCount = 1,
-                }
-            );
+            return BadRequestModelState();
         }
-        catch (Exception ex)
+
+        // Ensure end is after start (JSON converter handles parsing automatically)
+        if (shift.EndTime <= shift.StartTime)
         {
-            _logger.LogError(ex, "CreateShift failed with exception");
-            var (status, message) = ShiftsLoggerV2.RyanW84.Common.ErrorMapper.Map(ex);
+            ModelState.AddModelError("EndTime", "End time must be after start time.");
+            return BadRequestModelState();
+        }
+
+        var result = await _shiftBusinessService.CreateAsync(shift).ConfigureAwait(false);
+
+        if (!result.IsSuccess)
+        {
+            _logger.LogWarning("CreateShift validation failed: {Message}", result.Message);
             return StatusCode(
-                (int)status,
+                (int)result.StatusCode,
                 new ApiResponseDto<Shift>
                 {
                     RequestFailed = true,
-                    ResponseCode = status,
-                    Message = message + $" Exception: {ex.Message}",
+                    ResponseCode = result.StatusCode,
+                    Message = result.Message,
                     Data = null,
                 }
             );
         }
+
+        _logger.LogInformation(
+            "Shift created successfully for WorkerId={WorkerId}, LocationId={LocationId}, Start={StartTime}, End={EndTime}",
+            shift.WorkerId,
+            shift.LocationId,
+            shift.StartTime,
+            shift.EndTime
+        );
+        return StatusCode(
+            201,
+            new ApiResponseDto<Shift>
+            {
+                RequestFailed = false,
+                ResponseCode = System.Net.HttpStatusCode.Created,
+                Message = "Shift created successfully",
+                Data = result.Data,
+                TotalCount = 1,
+            }
+        );
     }
 
     // This is the route for updating a createdShift

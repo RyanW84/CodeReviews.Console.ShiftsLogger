@@ -32,7 +32,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
             "Address",
             "Town",
             "County",
-            "PostCode",
+            "Postcode",
             "Country",
             "ShiftCount",
         ],
@@ -333,7 +333,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
             var locationName = location.Name ?? "N/A";
             var town = location.Town ?? "N/A";
             var county = location.County ?? "N/A";
-            var postCode = location.PostCode ?? "N/A";
+            var postCode = location.Postcode ?? "N/A";
             var country = location.Country ?? "N/A";
 
             TableExtensions.AddRow(

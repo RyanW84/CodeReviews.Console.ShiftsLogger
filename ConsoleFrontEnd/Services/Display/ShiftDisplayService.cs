@@ -46,6 +46,8 @@ public class ShiftDisplayService : IShiftDisplayService
             _logger.LogError(ex, "Error displaying shifts table");
             _displayService.DisplayError("Failed to display shifts table");
         }
+
+        await Task.CompletedTask;
     }
 
     public async Task DisplayShiftDetailsAsync(Shift shift)
@@ -71,6 +73,8 @@ public class ShiftDisplayService : IShiftDisplayService
             _logger.LogError(ex, "Error displaying shift details for shift {ShiftId}", shift.ShiftId);
             _displayService.DisplayError("Failed to display shift details");
         }
+
+        await Task.CompletedTask;
     }
 
     public Table CreateShiftsTable(IEnumerable<ShiftDisplayItem> displayItems)

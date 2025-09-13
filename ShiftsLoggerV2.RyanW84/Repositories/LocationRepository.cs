@@ -38,8 +38,8 @@ public class LocationRepository
         if (!string.IsNullOrEmpty(filterOptions.County))
             query = query.Where(l => EF.Functions.Like(l.County, $"%{filterOptions.County}%"));
 
-        if (!string.IsNullOrEmpty(filterOptions.PostCode))
-            query = query.Where(l => EF.Functions.Like(l.PostCode, $"%{filterOptions.PostCode}%"));
+        if (!string.IsNullOrEmpty(filterOptions.Postcode))
+            query = query.Where(l => EF.Functions.Like(l.Postcode, $"%{filterOptions.Postcode}%"));
 
         if (!string.IsNullOrEmpty(filterOptions.Country))
             query = query.Where(l => EF.Functions.Like(l.Country, $"%{filterOptions.Country}%"));
@@ -51,7 +51,7 @@ public class LocationRepository
                 || EF.Functions.Like(l.Address, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.Town, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.County, $"%{filterOptions.Search}%")
-                || EF.Functions.Like(l.PostCode, $"%{filterOptions.Search}%")
+                || EF.Functions.Like(l.Postcode, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.Country, $"%{filterOptions.Search}%")
                 || l.LocationId.ToString().Contains(filterOptions.Search)
             );
@@ -80,8 +80,8 @@ public class LocationRepository
                     ? query.OrderBy(l => l.County)
                     : query.OrderByDescending(l => l.County),
                 "postcode" => sortOrder == "asc"
-                    ? query.OrderBy(l => l.PostCode)
-                    : query.OrderByDescending(l => l.PostCode),
+                    ? query.OrderBy(l => l.Postcode)
+                    : query.OrderByDescending(l => l.Postcode),
                 "country" => sortOrder == "asc"
                     ? query.OrderBy(l => l.Country)
                     : query.OrderByDescending(l => l.Country),
@@ -113,25 +113,6 @@ public class LocationRepository
         LocationApiRequestDto createDto
     )
     {
-        // Business validation
-        if (string.IsNullOrWhiteSpace(createDto.Name))
-            throw new ArgumentException("Location name is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.Address))
-            throw new ArgumentException("Location address is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.Town))
-            throw new ArgumentException("Location town is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.County))
-            throw new ArgumentException("Location county is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.PostCode))
-            throw new ArgumentException("Location post code is required.");
-
-        if (string.IsNullOrWhiteSpace(createDto.Country))
-            throw new ArgumentException("Location country is required.");
-
         // Check for duplicate location name
         var nameExists = await DbContext.Locations.AnyAsync(l => l.Name == createDto.Name.Trim());
         if (nameExists)
@@ -143,7 +124,7 @@ public class LocationRepository
             Address = createDto.Address.Trim(),
             Town = createDto.Town.Trim(),
             County = createDto.County.Trim(),
-            PostCode = createDto.PostCode.Trim(),
+            Postcode = createDto.Postcode.Trim(),
             Country = createDto.Country.Trim(),
         };
     }
@@ -153,25 +134,6 @@ public class LocationRepository
         LocationApiRequestDto updateDto
     )
     {
-        // Business validation
-        if (string.IsNullOrWhiteSpace(updateDto.Name))
-            throw new ArgumentException("Location name is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.Address))
-            throw new ArgumentException("Location address is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.Town))
-            throw new ArgumentException("Location town is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.County))
-            throw new ArgumentException("Location county is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.PostCode))
-            throw new ArgumentException("Location post code is required.");
-
-        if (string.IsNullOrWhiteSpace(updateDto.Country))
-            throw new ArgumentException("Location country is required.");
-
         // Check for duplicate location name if different from current
         if (updateDto.Name.Trim() != entity.Name)
         {
@@ -188,7 +150,7 @@ public class LocationRepository
         entity.Address = updateDto.Address.Trim();
         entity.Town = updateDto.Town.Trim();
         entity.County = updateDto.County.Trim();
-        entity.PostCode = updateDto.PostCode.Trim();
+        entity.Postcode = updateDto.Postcode.Trim();
         entity.Country = updateDto.Country.Trim();
     }
 

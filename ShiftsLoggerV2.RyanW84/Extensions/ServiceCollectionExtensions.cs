@@ -43,6 +43,9 @@ public static class ServiceCollectionExtensions
     {
         services.AddRepositories().AddBusinessServices();
 
+        // Add caching service for reference data
+        services.AddScoped<ReferenceDataCache>();
+
         return services;
     }
 }

@@ -14,19 +14,49 @@ public abstract class BaseService<TEntity, TFilter, TCreateDto, TUpdateDto>
     : IService<TEntity, TFilter, TCreateDto, TUpdateDto>
     where TEntity : class, IEntity
 {
+    /// <summary>
+    /// The repository instance used for data access operations
+    /// </summary>
     protected readonly IRepository<TEntity, TFilter, TCreateDto, TUpdateDto> Repository;
 
+    /// <summary>
+    /// Initializes a new instance of the BaseService class
+    /// </summary>
+    /// <param name="repository">The repository to use for data operations</param>
+    /// <exception cref="ArgumentNullException">Thrown when repository is null</exception>
     protected BaseService(IRepository<TEntity, TFilter, TCreateDto, TUpdateDto> repository)
     {
-        Repository = repository;
+        Repository = repository ?? throw new ArgumentNullException(nameof(repository));
     }
 
+    /// <summary>
+    /// Retrieves all entities matching the specified filter criteria
+    /// </summary>
+    /// <param name="filterOptions">The filter options to apply to the query</param>
+    /// <returns>A result containing the list of entities or an error</returns>
+    /// <example>
+    /// <code>
+    /// var filter = new MyFilterOptions { PageNumber = 1, PageSize = 10 };
+    /// var result = await service.GetAllAsync(filter);
+    /// if (result.IsSuccess)
+    /// {
+    ///     var entities = result.Data;
+    ///     // Process entities
+    /// }
+    /// </code>
+    /// </example>
     public virtual async Task<Result<List<TEntity>>> GetAllAsync(TFilter filterOptions)
     {
         // Add any business logic validation here if needed
         return await Repository.GetAllAsync(filterOptions).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Retrieves a single entity by its unique identifier
+    /// </summary>
+    /// <param name="id">The unique identifier of the entity</param>
+    /// <returns>A result containing the entity or an error if not found</returns>
+    /// <exception cref="ArgumentException">Thrown when id is less than or equal to zero</exception>
     public virtual async Task<Result<TEntity>> GetByIdAsync(int id)
     {
         // Add any business logic validation here if needed
@@ -36,6 +66,15 @@ public abstract class BaseService<TEntity, TFilter, TCreateDto, TUpdateDto>
         return await Repository.GetByIdAsync(id).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Creates a new entity based on the provided creation data
+    /// </summary>
+    /// <param name="createDto">The data transfer object containing creation information</param>
+    /// <returns>A result containing the created entity or validation errors</returns>
+    /// <remarks>
+    /// This method performs business logic validation before creating the entity.
+    /// Override <see cref="ValidateForCreateAsync(TCreateDto)"/> to add custom validation logic.
+    /// </remarks>
     public virtual async Task<Result<TEntity>> CreateAsync(TCreateDto createDto)
     {
         // Add any business logic validation here if needed
@@ -73,16 +112,39 @@ public abstract class BaseService<TEntity, TFilter, TCreateDto, TUpdateDto>
     }
 
     // Virtual methods for business logic validation - can be overridden by derived classes
+    /// <summary>
+    /// Validates business rules before creating an entity.
+    /// Override this method in derived classes to add custom validation logic.
+    /// </summary>
+    /// <param name="createDto">The creation data to validate</param>
+    /// <returns>A result indicating whether validation passed or failed</returns>
+    /// <remarks>
+    /// Return <see cref="Result.Success"/> if validation passes,
+    /// or <see cref="Result.Failure(string)"/> with an error message if validation fails.
+    /// </remarks>
     protected virtual ValueTask<Result> ValidateForCreateAsync(TCreateDto createDto)
     {
         return ValueTask.FromResult(Result.Success());
     }
 
+    /// <summary>
+    /// Validates business rules before updating an entity.
+    /// Override this method in derived classes to add custom validation logic.
+    /// </summary>
+    /// <param name="id">The identifier of the entity being updated</param>
+    /// <param name="updateDto">The update data to validate</param>
+    /// <returns>A result indicating whether validation passed or failed</returns>
     protected virtual ValueTask<Result> ValidateForUpdateAsync(int id, TUpdateDto updateDto)
     {
         return ValueTask.FromResult(Result.Success());
     }
 
+    /// <summary>
+    /// Validates business rules before deleting an entity.
+    /// Override this method in derived classes to add custom validation logic.
+    /// </summary>
+    /// <param name="id">The identifier of the entity being deleted</param>
+    /// <returns>A result indicating whether validation passed or failed</returns>
     protected virtual async Task<Result> ValidateForDeleteAsync(int id)
     {
         await Task.CompletedTask; // Placeholder for async consistency

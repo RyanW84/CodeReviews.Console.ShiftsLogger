@@ -3,9 +3,7 @@ using System.Net.Http.Json;
 using ConsoleFrontEnd.Interfaces;
 using ConsoleFrontEnd.Models;
 using ConsoleFrontEnd.Models.Dtos;
-using ConsoleFrontEnd.Models.FilterOptions;
 using ConsoleFrontEnd.Services.Infrastructure;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace ConsoleFrontEnd.Services;

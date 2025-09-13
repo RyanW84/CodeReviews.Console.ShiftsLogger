@@ -31,7 +31,7 @@ public static class ShiftValidation
         if ((dto.EndTime - dto.StartTime).TotalHours > 24)
             errors.Add("Shift duration cannot exceed 24 hours.");
         // Allow shifts to span multiple calendar days (e.g., overnight shifts)
-        // More forgiving tolerance for past-start (30 minutes instead of 5)
+        // Very forgiving tolerance for past-start (30 minutes instead of 5)
         if (dto.StartTime < DateTimeOffset.Now.AddMinutes(-30))
             errors.Add("Shift cannot start more than 30 minutes in the past.");
 
