@@ -54,8 +54,9 @@ public class PaginationHandler
             }
             else
             {
-                var choice = GetPaginationChoice(response);
-                var (shouldContinue, newPage, newSize) = await HandleChoiceAsync(choice, currentPage, pageSize, response);
+                var choice = await GetPaginationChoiceAsync(response);
+                var (shouldContinue, newPage, newSize, result) = await HandleChoiceAsync(choice, currentPage, pageSize, response);
+                if (result != null) return result;
                 if (!shouldContinue) return null;
                 currentPage = newPage;
                 pageSize = newSize;
@@ -63,24 +64,25 @@ public class PaginationHandler
         }
     }
 
-    private string GetPaginationChoice<T>(ApiResponseDto<List<T>> response)
+    private async Task<string> GetPaginationChoiceAsync<T>(ApiResponseDto<List<T>> response)
     {
         var options = new List<string>();
         if (response.HasPreviousPage) options.Add("Previous Page");
         if (response.HasNextPage) options.Add("Next Page");
-        options.AddRange(new[] { "Go to Page", "Change Page Size", "Back to Menu" });
-        return _input.GetMenuChoice("Choose an action:", options.ToArray());
+        options.AddRange(new[] { "Go to Page", "Change Page Size", "Enter ID Manually", "Back to Menu" });
+        return await _input.GetMenuChoiceAsync("Choose an action:", options.ToArray());
     }
 
-    private async Task<(bool, int, int)> HandleChoiceAsync<T>(string choice, int currentPage, int pageSize, ApiResponseDto<List<T>> response)
+    private async Task<(bool, int, int, object?)> HandleChoiceAsync<T>(string choice, int currentPage, int pageSize, ApiResponseDto<List<T>> response)
     {
         switch (choice)
         {
-            case "Previous Page": return (true, currentPage - 1, pageSize);
-            case "Next Page": return (true, currentPage + 1, pageSize);
-            case "Go to Page": return (true, await HandleGoToPageAsync(response), pageSize);
-            case "Change Page Size": return (true, 1, await HandleChangePageSizeAsync(pageSize));
-            default: return (false, currentPage, pageSize);
+            case "Previous Page": return (true, currentPage - 1, pageSize, null);
+            case "Next Page": return (true, currentPage + 1, pageSize, null);
+            case "Go to Page": return (true, await HandleGoToPageAsync(response), pageSize, null);
+            case "Change Page Size": return (true, 1, await HandleChangePageSizeAsync(pageSize), null);
+            case "Enter ID Manually": return (false, currentPage, pageSize, await _input.GetIntegerInputAsync("[green]Enter ID:[/]") as object);
+            default: return (false, currentPage, pageSize, null);
         }
     }
 

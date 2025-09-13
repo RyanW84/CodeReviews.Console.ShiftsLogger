@@ -25,12 +25,7 @@ public class LocationSpecification : BaseSpecification<Location>
         // Apply sorting
         ApplySorting(filterOptions);
 
-        // Apply paging if specified
-        if (filterOptions.PageNumber > 0 && filterOptions.PageSize > 0)
-        {
-            var skip = (filterOptions.PageNumber - 1) * filterOptions.PageSize;
-            ApplyPaging(skip, filterOptions.PageSize);
-        }
+        // Note: Paging is handled by BaseRepository, not here
     }
 
     private Expression<Func<Location, bool>>? BuildCriteria(LocationFilterOptions filterOptions)

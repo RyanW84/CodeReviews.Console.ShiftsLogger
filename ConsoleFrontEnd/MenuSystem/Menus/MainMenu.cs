@@ -64,7 +64,7 @@ public class MainMenu : BaseMenu
                 break;
 
             case "System Information":
-                await ShowSystemInformationAsync();
+                ShowSystemInformationAsync();
                 break;
 
             default:
@@ -81,10 +81,9 @@ public class MainMenu : BaseMenu
         DisplayService.DisplayInfo(""); // Empty line for spacing
     }
 
-    private async Task ShowSystemInformationAsync()
+    private void ShowSystemInformationAsync()
     {
         DisplayService.DisplayHeader("System Information", "cyan");
         DisplayService.DisplaySystemInfo();
-        await InputService.WaitForKeyPressAsync();
     }
 }

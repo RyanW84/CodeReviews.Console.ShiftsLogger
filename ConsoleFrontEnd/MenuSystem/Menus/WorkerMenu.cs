@@ -111,8 +111,6 @@ public class WorkerMenu : BaseMenu
                 await DisplayWorkerDetails(response.Data);
             }
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewWorkerByIdAsync()
@@ -177,8 +175,6 @@ public class WorkerMenu : BaseMenu
             Logger.LogError(ex, "Error creating worker");
             DisplayService.DisplayError($"Failed to create worker: {ex.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task UpdateWorkerAsync()
@@ -216,7 +212,6 @@ public class WorkerMenu : BaseMenu
             DisplayService.DisplaySuccess("Worker updated successfully.");
             DisplayService.DisplayTable([response.Data], "Updated Worker");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task DeleteWorkerAsync()
@@ -269,7 +264,6 @@ public class WorkerMenu : BaseMenu
         {
             DisplayService.DisplayInfo("Delete cancelled.");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task FilterWorkersAsync()
@@ -330,7 +324,6 @@ public class WorkerMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, "Filtered Workers");
             DisplayService.DisplaySuccess($"Total filtered workers: {response.TotalCount}");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewWorkersByEmailDomainAsync()
@@ -360,7 +353,6 @@ public class WorkerMenu : BaseMenu
                 DisplayService.DisplaySuccess($"Total: {filtered.Count}");
             }
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewWorkersByPhoneAreaCodeAsync()
@@ -389,7 +381,6 @@ public class WorkerMenu : BaseMenu
                 DisplayService.DisplaySuccess($"Total: {filtered.Count}");
             }
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task DisplayWorkerDetails(Worker worker)

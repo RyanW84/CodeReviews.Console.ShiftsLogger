@@ -109,11 +109,9 @@ public class LocationMenu : BaseMenu
             }
             else
             {
-                await DisplayLocationDetails(response.Data);
+                DisplayLocationDetails(response.Data);
             }
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewLocationByIdAsync()
@@ -146,7 +144,7 @@ public class LocationMenu : BaseMenu
                 return;
             }
 
-            await DisplayLocationDetails(response.Data);
+            DisplayLocationDetails(response.Data);
         }
         catch (Exception ex)
         {
@@ -178,8 +176,6 @@ public class LocationMenu : BaseMenu
             Logger.LogError(ex, "Error creating location");
             DisplayService.DisplayError($"Failed to create location: {ex.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task UpdateLocationAsync()
@@ -217,7 +213,6 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplaySuccess("Location updated successfully.");
             DisplayService.DisplayTable([response.Data], "Updated Location");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task DeleteLocationAsync()
@@ -270,7 +265,6 @@ public class LocationMenu : BaseMenu
         {
             DisplayService.DisplayInfo("Delete cancelled.");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task FilterLocationsAsync()
@@ -337,7 +331,6 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, "Filtered Locations");
             DisplayService.DisplaySuccess($"Total filtered locations: {response.TotalCount}");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewLocationsByCountryAsync()
@@ -357,7 +350,6 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, $"Locations in '{country}'");
             DisplayService.DisplaySuccess($"Total: {response.TotalCount}");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task ViewLocationsByCountyAsync()
@@ -377,13 +369,11 @@ public class LocationMenu : BaseMenu
             DisplayService.DisplayTable(response.Data, $"Locations in '{county}'");
             DisplayService.DisplaySuccess($"Total: {response.TotalCount}");
         }
-        await InputService.WaitForKeyPressAsync();
     }
 
-    private async Task DisplayLocationDetails(Location location)
+    private void DisplayLocationDetails(Location location)
     {
         DisplayService.DisplayHeader("Location Details", "green");
         DisplayService.DisplayTable([location], "Location Details");
-        await InputService.WaitForKeyPressAsync();
     }
 }

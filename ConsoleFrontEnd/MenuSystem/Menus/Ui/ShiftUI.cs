@@ -110,9 +110,9 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
         _display.DisplayTable(shifts, EntityPluralName, startingRowNumber);
     }
 
-    public async Task DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10)
+    public async Task<object?> DisplayShiftsWithPaginationAsync(int initialPageNumber = 1, int pageSize = 10)
     {
-        await _paginationHandler.HandlePaginationAsync(
+        return await _paginationHandler.HandlePaginationAsync(
             async (page, size) => await _shiftService.GetAllShiftsAsync(page, size),
             (response, page, size) => DisplayPage(response, page, size),
             null, // Don't provide buildChoicesFunc to use pagination mode

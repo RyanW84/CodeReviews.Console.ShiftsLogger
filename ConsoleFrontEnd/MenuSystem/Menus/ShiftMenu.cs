@@ -106,7 +106,17 @@ public class ShiftMenu : BaseMenu
     {
         try
         {
-            await _shiftUi.DisplayShiftsWithPaginationAsync(1, DefaultPageSize);
+            var result = await _shiftUi.DisplayShiftsWithPaginationAsync(1, DefaultPageSize);
+            if (result is int shiftId && shiftId > 0)
+            {
+                // User entered a shift ID, view its details
+                await HandleOperationAsync(
+                    "View Shift Details",
+                    () => _controllerService.GetShiftByIdAsync(shiftId),
+                    shift => _shiftDisplayService.DisplayShiftDetailsAsync(shift).Wait(),
+                    "blue"
+                );
+            }
         }
         catch (Exception ex)
         {
@@ -184,8 +194,6 @@ public class ShiftMenu : BaseMenu
             Logger.LogError(ex, "Error creating shift");
             DisplayService.DisplayError($"Failed to create shift: {ex.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task UpdateShiftAsync()
@@ -245,8 +253,6 @@ public class ShiftMenu : BaseMenu
         {
             DisplayService.DisplayError($"Failed to update shift: {updateResult.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task DeleteShiftAsync()
@@ -295,8 +301,6 @@ public class ShiftMenu : BaseMenu
         {
             DisplayService.DisplayError($"Failed to delete shift: {deleteResult.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task FilterShiftsAsync()
@@ -326,8 +330,6 @@ public class ShiftMenu : BaseMenu
         {
             DisplayService.DisplayError($"Failed to filter shifts: {filterResult.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 
     private async Task HandleShiftSelection(List<Shift> currentPageShifts, int pageNumber, int pageSize, int totalCount)
@@ -385,8 +387,6 @@ public class ShiftMenu : BaseMenu
 
             // Display the selected shift details
             await _shiftDisplayService.DisplayShiftDetailsAsync(selectedShift);
-
-            await InputService.WaitForKeyPressAsync();
         }
         catch (Exception ex)
         {
@@ -422,7 +422,5 @@ public class ShiftMenu : BaseMenu
             Logger.LogError(ex, "Error in {OperationName}", operationName);
             DisplayService.DisplayError($"Failed to {operationName.ToLower()}: {ex.Message}");
         }
-
-        await InputService.WaitForKeyPressAsync();
     }
 }
