@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using ConsoleFrontEnd.Core.Abstractions;
+using ConsoleFrontEnd.Models;
 using Spectre.Console;
 
 namespace ConsoleFrontEnd.Core.Infrastructure;
@@ -137,7 +139,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         }
     }
 
-    public void DisplayTable<T>(
+    public void DisplayTable<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(
         IEnumerable<T> data,
         string? title = null,
         int startingRowNumber = 1
@@ -166,13 +168,13 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
             switch (modelName)
             {
                 case "Shift":
-                    DisplayShiftsTable(data.Cast<dynamic>(), title, startingRowNumber);
+                    DisplayShiftsTable(data.Cast<Shift>(), title, startingRowNumber);
                     return;
                 case "Worker":
-                    DisplayWorkersTable(data.Cast<dynamic>(), title, startingRowNumber);
+                    DisplayWorkersTable(data.Cast<Worker>(), title, startingRowNumber);
                     return;
                 case "Location":
-                    DisplayLocationsTable(data.Cast<dynamic>(), title, startingRowNumber);
+                    DisplayLocationsTable(data.Cast<Location>(), title, startingRowNumber);
                     return;
             }
 
@@ -201,7 +203,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
     }
 
     private void DisplayShiftsTable(
-        IEnumerable<dynamic> shifts,
+        IEnumerable<Shift> shifts,
         string? title = "Shifts",
         int startingRowNumber = 1
     )
@@ -251,7 +253,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
     }
 
     private void DisplayWorkersTable(
-        IEnumerable<dynamic> workers,
+        IEnumerable<Worker> workers,
         string? title = "Workers",
         int startingRowNumber = 1
     )
@@ -302,7 +304,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
     }
 
     private void DisplayLocationsTable(
-        IEnumerable<dynamic> locations,
+        IEnumerable<Location> locations,
         string? title = "Locations",
         int startingRowNumber = 1
     )
@@ -356,7 +358,7 @@ public class SpectreConsoleDisplayService : IConsoleDisplayService
         AnsiConsole.WriteLine();
     }
 
-    private PropertyInfo[] GetFilteredProperties<T>(string modelName)
+    private PropertyInfo[] GetFilteredProperties<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(string modelName)
     {
         var allProperties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
