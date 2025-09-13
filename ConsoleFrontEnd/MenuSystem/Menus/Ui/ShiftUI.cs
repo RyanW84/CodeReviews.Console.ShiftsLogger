@@ -188,6 +188,7 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
 
     private void DisplayPage(ApiResponseDto<List<Shift>> response, int currentPage, int pageSize)
     {
+        _display.DisplayHeader($"Shifts (Page {currentPage})", "blue");
         int startIndex = (currentPage - 1) * pageSize;
         if (response.Data != null) DisplayShiftsTable(response.Data, startIndex + 1);
         _display.DisplayInfo($"Page {response.PageNumber} of {response.TotalPages} | Total: {response.TotalCount} shifts");
@@ -209,6 +210,7 @@ public class ShiftUI : BaseEntityUi<Shift, ShiftFilterOptions>, IShiftUi
                 return -1;
             }
 
+            _display.Clear();
             DisplayPage(response, currentPage, pageSize);
 
             var choices = BuildChoices(response, currentPage, pageSize);

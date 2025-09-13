@@ -41,6 +41,7 @@ public class PaginationHandler
                 return null;
             }
 
+            _display.Clear();
             displayPageFunc(response, currentPage, pageSize);
 
             if (isSelectionMode)

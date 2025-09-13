@@ -113,7 +113,7 @@ public class ShiftMenu : BaseMenu
                 await HandleOperationAsync(
                     "View Shift Details",
                     () => _controllerService.GetShiftByIdAsync(shiftId),
-                    shift => _shiftDisplayService.DisplayShiftDetailsAsync(shift).Wait(),
+                    async shift => await _shiftDisplayService.DisplayShiftDetailsAsync(shift),
                     "blue"
                 );
             }
@@ -141,7 +141,7 @@ public class ShiftMenu : BaseMenu
         await HandleOperationAsync(
             "View Shift by ID",
             () => _controllerService.GetShiftByIdAsync(shiftId),
-            shift => _shiftDisplayService.DisplayShiftDetailsAsync(shift).Wait(),
+            async shift => await _shiftDisplayService.DisplayShiftDetailsAsync(shift),
             "blue"
         );
     }
@@ -397,7 +397,7 @@ public class ShiftMenu : BaseMenu
     private async Task HandleOperationAsync<T>(
         string operationName,
         Func<Task<OperationResult<T>>> operation,
-        Action<T>? onSuccess = null,
+        Func<T, Task>? onSuccess = null,
         string headerColor = "green")
     {
         DisplayService.DisplayHeader(operationName, headerColor);
@@ -409,7 +409,8 @@ public class ShiftMenu : BaseMenu
             if (result.IsSuccess)
             {
                 DisplayService.DisplaySuccess(result.Message);
-                onSuccess?.Invoke(result.Data!);
+                if (onSuccess != null)
+                    await onSuccess(result.Data!);
             }
             else
             {

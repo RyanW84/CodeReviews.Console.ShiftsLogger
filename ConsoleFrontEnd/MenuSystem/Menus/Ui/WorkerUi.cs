@@ -232,6 +232,7 @@ public class WorkerUi : BaseEntityUi<Worker, WorkerFilterOptions>, IWorkerUi
                     {
                         pageSize = sizeInput;
                         currentPage = 1; // Reset to first page
+                        _display.Clear();
                     }
                     else
                         _display.DisplayError(

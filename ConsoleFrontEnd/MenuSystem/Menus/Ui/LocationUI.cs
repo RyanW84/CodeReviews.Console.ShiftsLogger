@@ -227,6 +227,7 @@ public class LocationUI : BaseEntityUi<Location, LocationFilterOptions>, ILocati
                     {
                         pageSize = sizeInput;
                         currentPage = 1; // Reset to first page
+                        _display.Clear();
                     }
                     else
                         _display.DisplayError(
