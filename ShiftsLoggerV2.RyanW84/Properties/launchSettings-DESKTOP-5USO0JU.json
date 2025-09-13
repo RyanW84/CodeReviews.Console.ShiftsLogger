@@ -1,0 +1,30 @@
+{
+  "profiles": {
+    "https": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\Ryanw\\OneDrive\\Documents\\GitHub\\ShiftsLogger",
+      "launchBrowser": true,
+      "launchUrl": "scalar",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://127.0.0.1:7009;http://127.0.0.1:5009",
+      "externalConsole": true,
+      "sqlDebugging": true
+    },
+    "http": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Users\\Ryanw\\OneDrive\\Documents\\GitHub\\ShiftsLogger",
+      "launchBrowser": true,
+      "launchUrl": "scalar",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://127.0.0.1:5009",
+      "externalConsole": true,
+      "sqlDebugging": true
+    }
+  }
+}

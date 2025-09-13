@@ -36,17 +36,15 @@ public class ShiftBusinessService
         if (createDto.StartTime >= createDto.EndTime)
             return Result.Failure("Start time must be before end time.");
 
-        // Allowed date range: +/- 5 years from now (more forgiving)
-        if (
-            createDto.StartTime < DateTimeOffset.Now.AddYears(-5)
-            || createDto.StartTime > DateTimeOffset.Now.AddYears(5)
-        )
-            return Result.Failure("Start time is out of allowed range (5 years past/future).");
-        if (
-            createDto.EndTime < DateTimeOffset.Now.AddYears(-5)
-            || createDto.EndTime > DateTimeOffset.Now.AddYears(5)
-        )
-            return Result.Failure("End time is out of allowed range (5 years past/future).");
+        // Allowed date range: up to 28 days in the future, 5 years in the past
+        if (createDto.StartTime < DateTimeOffset.Now.AddYears(-5))
+            return Result.Failure("Start time cannot be more than 5 years in the past.");
+        if (createDto.StartTime > DateTimeOffset.Now.AddDays(28))
+            return Result.Failure("Start time cannot be more than 28 days in the future.");
+        if (createDto.EndTime < DateTimeOffset.Now.AddYears(-5))
+            return Result.Failure("End time cannot be more than 5 years in the past.");
+        if (createDto.EndTime > DateTimeOffset.Now.AddDays(28))
+            return Result.Failure("End time cannot be more than 28 days in the future.");
 
         // More forgiving past-start tolerance: 30 minutes instead of 5
         if (createDto.StartTime < DateTimeOffset.Now.AddMinutes(-30))
