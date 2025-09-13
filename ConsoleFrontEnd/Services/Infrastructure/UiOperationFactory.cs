@@ -22,8 +22,6 @@ public static class UiOperationFactory
     {
         try
         {
-            display.DisplayInfo($"Performing {operationName}...");
-
             var response = await operation();
 
             if (response.RequestFailed || response.Data == null)
@@ -60,8 +58,6 @@ public static class UiOperationFactory
     {
         try
         {
-            display.DisplayInfo($"Loading {entityPluralName.ToLower()}...");
-
             var response = await operation();
 
             if (response.RequestFailed || response.Data == null || !response.Data.Any())
@@ -115,8 +111,6 @@ public static class UiOperationFactory
                 display.DisplayInfo("Delete operation cancelled.");
                 return;
             }
-
-            display.DisplayInfo($"Deleting {entityName.ToLower()}...");
 
             var response = await deleteOperation();
 

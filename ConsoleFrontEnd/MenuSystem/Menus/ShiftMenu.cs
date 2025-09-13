@@ -362,7 +362,6 @@ public class ShiftMenu : BaseMenu
             else
             {
                 // Load the target page
-                DisplayService.DisplayInfo($"Loading page {targetPage}...");
                 var pageResult = await _controllerService.GetAllShiftsAsync(targetPage, pageSize);
 
                 if (!pageResult.IsSuccess || pageResult.Data == null || pageResult.Data.Data == null || !pageResult.Data.Data.Any())
