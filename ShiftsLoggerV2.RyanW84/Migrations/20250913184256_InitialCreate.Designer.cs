@@ -12,7 +12,7 @@ using ShiftsLoggerV2.RyanW84.Data;
 namespace ShiftsLoggerV2.RyanW84.Migrations
 {
     [DbContext(typeof(ShiftsLoggerDbContext))]
-    [Migration("20250912200118_InitialCreate")]
+    [Migration("20250913184256_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
