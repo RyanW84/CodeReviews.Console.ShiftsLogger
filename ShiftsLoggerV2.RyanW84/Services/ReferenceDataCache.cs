@@ -183,7 +183,7 @@ public class ReferenceDataCache
     /// <summary>
     /// Callback method for cache eviction events
     /// </summary>
-    private void OnCacheEviction(object key, object? value, EvictionReason reason, object? state)
+    private void OnCacheEviction(object key, object? _, EvictionReason reason, object? __)
     {
         _logger.LogDebug("Cache entry '{Key}' was evicted. Reason: {Reason}", key, reason);
     }

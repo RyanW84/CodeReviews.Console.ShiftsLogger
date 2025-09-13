@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
+using ShiftsLoggerV2.RyanW84.Repositories.Specifications.Common;
 
 namespace ShiftsLoggerV2.RyanW84.Repositories.Specifications;
 
@@ -36,63 +37,63 @@ public class ShiftSpecification : BaseSpecification<Shift>
         // Apply filters
         if (filterOptions.ShiftId is not 0)
         {
-            criteria = And(criteria, s => s.ShiftId == filterOptions.ShiftId);
+            criteria = ExpressionCombiner.And(criteria, s => s.ShiftId == filterOptions.ShiftId, "s");
         }
 
         if (filterOptions.WorkerId is not null and not 0)
         {
-            criteria = And(criteria, s => s.WorkerId == filterOptions.WorkerId);
+            criteria = ExpressionCombiner.And(criteria, s => s.WorkerId == filterOptions.WorkerId, "s");
         }
 
         if (filterOptions.LocationId is not null and not 0)
         {
-            criteria = And(criteria, s => s.LocationId == filterOptions.LocationId);
+            criteria = ExpressionCombiner.And(criteria, s => s.LocationId == filterOptions.LocationId, "s");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.LocationName))
         {
-            criteria = And(criteria, s =>
+            criteria = ExpressionCombiner.And(criteria, s =>
                 s.Location != null
-                && EF.Functions.Like(s.Location.Name, $"%{filterOptions.LocationName}%"));
+                && EF.Functions.Like(s.Location.Name, $"%{filterOptions.LocationName}%"), "s");
         }
 
         // Date filters
         if (filterOptions.StartTime is not null)
         {
-            criteria = And(criteria, s => s.StartTime.Date >= filterOptions.StartTime.Value.Date);
+            criteria = ExpressionCombiner.And(criteria, s => s.StartTime.Date >= filterOptions.StartTime.Value.Date, "s");
         }
 
         if (filterOptions.EndTime is not null)
         {
-            criteria = And(criteria, s => s.EndTime.Date <= filterOptions.EndTime.Value.Date);
+            criteria = ExpressionCombiner.And(criteria, s => s.EndTime.Date <= filterOptions.EndTime.Value.Date, "s");
         }
 
         // Duration filters
         if (filterOptions.MinDurationMinutes is not null and > 0)
         {
-            criteria = And(criteria, s =>
+            criteria = ExpressionCombiner.And(criteria, s =>
                 EF.Functions.DateDiffMinute(s.StartTime, s.EndTime)
-                >= filterOptions.MinDurationMinutes);
+                >= filterOptions.MinDurationMinutes, "s");
         }
 
         if (filterOptions.MaxDurationMinutes is not null and > 0)
         {
-            criteria = And(criteria, s =>
+            criteria = ExpressionCombiner.And(criteria, s =>
                 EF.Functions.DateDiffMinute(s.StartTime, s.EndTime)
-                <= filterOptions.MaxDurationMinutes);
+                <= filterOptions.MaxDurationMinutes, "s");
         }
 
         // Search implementation
         if (!string.IsNullOrWhiteSpace(filterOptions.Search))
         {
-            criteria = And(criteria, s =>
+            criteria = ExpressionCombiner.And(criteria, s =>
                 s.WorkerId.ToString().Contains(filterOptions.Search)
                 || s.LocationId.ToString().Contains(filterOptions.Search)
                 || (s.Location != null && EF.Functions.Like(s.Location.Name, $"%{filterOptions.Search}%"))
                 || (s.Location != null && EF.Functions.Like(s.Location.Town, $"%{filterOptions.Search}%"))
                 || (s.Location != null && EF.Functions.Like(s.Location.Country, $"%{filterOptions.Search}%"))
                 || s.StartTime.ToString().Contains(filterOptions.Search)
-                || s.EndTime.ToString().Contains(filterOptions.Search));
+                || s.EndTime.ToString().Contains(filterOptions.Search), "s");
         }
 
         return criteria;
@@ -159,36 +160,6 @@ public class ShiftSpecification : BaseSpecification<Shift>
             ApplyOrderBy(s => s.ShiftId); // Default sorting
         }
     }
-
-    private Expression<Func<Shift, bool>> And(
-        Expression<Func<Shift, bool>>? left,
-        Expression<Func<Shift, bool>> right)
-    {
-        if (left == null)
-            return right;
-
-        var parameter = Expression.Parameter(typeof(Shift), "s");
-        var leftBody = new ParameterReplacer(parameter).Visit(left.Body);
-        var rightBody = new ParameterReplacer(parameter).Visit(right.Body);
-        var andExpression = Expression.AndAlso(leftBody, rightBody);
-
-        return Expression.Lambda<Func<Shift, bool>>(andExpression, parameter);
-    }
-
-    private class ParameterReplacer : ExpressionVisitor
-    {
-        private readonly ParameterExpression _parameter;
-
-        public ParameterReplacer(ParameterExpression parameter)
-        {
-            _parameter = parameter;
-        }
-
-        protected override Expression VisitParameter(ParameterExpression _)
-        {
-            return _parameter;
-        }
-    }
 }
 
 /// <summary>
@@ -223,36 +194,9 @@ public class OverlappingShiftSpecification : BaseSpecification<Shift>
 
         if (excludeShiftId.HasValue)
         {
-            criteria = And(criteria, s => s.ShiftId != excludeShiftId.Value);
+            criteria = ExpressionCombiner.And(criteria, s => s.ShiftId != excludeShiftId.Value, "s");
         }
 
         Criteria = criteria;
-    }
-
-    private Expression<Func<Shift, bool>> And(
-        Expression<Func<Shift, bool>> left,
-        Expression<Func<Shift, bool>> right)
-    {
-        var parameter = Expression.Parameter(typeof(Shift), "s");
-        var leftBody = new ParameterReplacer(parameter).Visit(left.Body);
-        var rightBody = new ParameterReplacer(parameter).Visit(right.Body);
-        var andExpression = Expression.AndAlso(leftBody, rightBody);
-
-        return Expression.Lambda<Func<Shift, bool>>(andExpression, parameter);
-    }
-
-    private class ParameterReplacer : ExpressionVisitor
-    {
-        private readonly ParameterExpression _parameter;
-
-        public ParameterReplacer(ParameterExpression parameter)
-        {
-            _parameter = parameter;
-        }
-
-        protected override Expression VisitParameter(ParameterExpression _)
-        {
-            return _parameter;
-        }
     }
 }

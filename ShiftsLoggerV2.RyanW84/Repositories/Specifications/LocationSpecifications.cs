@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
+using ShiftsLoggerV2.RyanW84.Repositories.Specifications.Common;
 
 namespace ShiftsLoggerV2.RyanW84.Repositories.Specifications;
 
@@ -35,45 +36,45 @@ public class LocationSpecification : BaseSpecification<Location>
         // Apply filters
         if (filterOptions.LocationId.HasValue && filterOptions.LocationId.Value > 0)
         {
-            criteria = And(criteria, l => l.LocationId == filterOptions.LocationId.Value);
+            criteria = ExpressionCombiner.And(criteria, l => l.LocationId == filterOptions.LocationId.Value, "l");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.Name))
         {
-            criteria = And(criteria, l => EF.Functions.Like(l.Name, $"%{filterOptions.Name}%"));
+            criteria = ExpressionCombiner.And(criteria, l => EF.Functions.Like(l.Name, $"%{filterOptions.Name}%"), "l");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.Town))
         {
-            criteria = And(criteria, l => EF.Functions.Like(l.Town, $"%{filterOptions.Town}%"));
+            criteria = ExpressionCombiner.And(criteria, l => EF.Functions.Like(l.Town, $"%{filterOptions.Town}%"), "l");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.County))
         {
-            criteria = And(criteria, l => EF.Functions.Like(l.County, $"%{filterOptions.County}%"));
+            criteria = ExpressionCombiner.And(criteria, l => EF.Functions.Like(l.County, $"%{filterOptions.County}%"), "l");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.Postcode))
         {
-            criteria = And(criteria, l => EF.Functions.Like(l.Postcode, $"%{filterOptions.Postcode}%"));
+            criteria = ExpressionCombiner.And(criteria, l => EF.Functions.Like(l.Postcode, $"%{filterOptions.Postcode}%"), "l");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.Country))
         {
-            criteria = And(criteria, l => EF.Functions.Like(l.Country, $"%{filterOptions.Country}%"));
+            criteria = ExpressionCombiner.And(criteria, l => EF.Functions.Like(l.Country, $"%{filterOptions.Country}%"), "l");
         }
 
         // Search implementation
         if (!string.IsNullOrWhiteSpace(filterOptions.Search))
         {
-            criteria = And(criteria, l =>
+            criteria = ExpressionCombiner.And(criteria, l =>
                 EF.Functions.Like(l.Name, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.Address, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.Town, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.County, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.Postcode, $"%{filterOptions.Search}%")
                 || EF.Functions.Like(l.Country, $"%{filterOptions.Search}%")
-                || l.LocationId.ToString().Contains(filterOptions.Search));
+                || l.LocationId.ToString().Contains(filterOptions.Search), "l");
         }
 
         return criteria;
@@ -138,36 +139,6 @@ public class LocationSpecification : BaseSpecification<Location>
         else
         {
             ApplyOrderBy(l => l.Name); // Default sorting by name
-        }
-    }
-
-    private Expression<Func<Location, bool>> And(
-        Expression<Func<Location, bool>>? left,
-        Expression<Func<Location, bool>> right)
-    {
-        if (left == null)
-            return right;
-
-        var parameter = Expression.Parameter(typeof(Location), "l");
-        var leftBody = new ParameterReplacer(parameter).Visit(left.Body);
-        var rightBody = new ParameterReplacer(parameter).Visit(right.Body);
-        var andExpression = Expression.AndAlso(leftBody, rightBody);
-
-        return Expression.Lambda<Func<Location, bool>>(andExpression, parameter);
-    }
-
-    private class ParameterReplacer : ExpressionVisitor
-    {
-        private readonly ParameterExpression _parameter;
-
-        public ParameterReplacer(ParameterExpression parameter)
-        {
-            _parameter = parameter;
-        }
-
-        protected override Expression VisitParameter(ParameterExpression _)
-        {
-            return _parameter;
         }
     }
 }

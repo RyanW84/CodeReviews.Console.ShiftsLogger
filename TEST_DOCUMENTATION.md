@@ -5,6 +5,7 @@ for the ShiftsLogger project running on .NET 10.0 Preview.
 
 ## Test Project Structure
 
+```
 ShiftsLoggerV2.RyanW84.Tests/
 ├── Controllers/
 │   ├── LocationsControllerTests.cs ✅
@@ -30,6 +31,7 @@ ShiftsLoggerV2.RyanW84.Tests/
 │   └── CustomWebApplicationFactory.cs ✅
 ├── debug_test.cs (🔧 Debug/Test Development)
 └── ShiftsLoggerV2.RyanW84.Tests.csproj
+```
 
 ## Test Coverage
 
@@ -193,8 +195,7 @@ The `test-config.json` file provides centralized test configuration:
   },
   "IntegrationTests": {
     "Enabled": true,
-    "Reason": "Database provider conflicts resolved with
-    CustomWebApplicationFactory"
+    "Reason": "Database provider conflicts resolved with CustomWebApplicationFactory"
   }
 }
 ```
@@ -203,27 +204,40 @@ The `test-config.json` file provides centralized test configuration:
 
 ### Code Quality & Testing Enhancements
 
-- ✅ **Async Pattern Validation**: All tests verify proper async/await patterns throughout the codebase
-- ✅ **Type Safety Testing**: Tests ensure removal of dynamic types and AOT compilation compatibility
-- ✅ **Memory Management Validation**: Tests verify elimination of dangerous .Wait() calls that could cause deadlocks
-- ✅ **UI Component Testing**: Comprehensive validation of console UI components with Spectre.Console integration
-- ✅ **Error Handling Coverage**: Extended test coverage for exception scenarios and edge cases
+- ✅ **Async Pattern Validation**: All tests verify proper async/await patterns
+  throughout the codebase
+- ✅ **Type Safety Testing**: Tests ensure removal of dynamic types and AOT
+  compilation compatibility
+- ✅ **Memory Management Validation**: Tests verify elimination of dangerous
+  .Wait() calls that could cause deadlocks
+- ✅ **UI Component Testing**: Comprehensive validation of console UI components
+  with Spectre.Console integration
+- ✅ **Error Handling Coverage**: Extended test coverage for exception scenarios
+  and edge cases
 
 ### Test Infrastructure Improvements
 
 - ✅ **Enhanced Mocking**: Updated Moq usage patterns for better test isolation
-- ✅ **Fluent Assertions**: Leveraged advanced assertion patterns for clearer test intent
-- ✅ **Integration Test Stability**: Improved integration test reliability with proper test fixtures
-- ✅ **Test Data Management**: Centralized test data creation through TestDataHelper utilities
-- ✅ **Configuration Testing**: Added validation for application configuration and dependency injection
-- ✅ **Package Updates**: Updated to latest stable versions (Spectre.Console 0.51.1, latest .NET 10.0 preview packages)
+- ✅ **Fluent Assertions**: Leveraged advanced assertion patterns for clearer
+  test intent
+- ✅ **Integration Test Stability**: Improved integration test reliability with
+  proper test fixtures
+- ✅ **Test Data Management**: Centralized test data creation through
+  TestDataHelper utilities
+- ✅ **Configuration Testing**: Added validation for application configuration
+  and dependency injection
+- ✅ **Package Updates**: Updated to latest stable versions (Spectre.Console
+  0.51.1, latest .NET 10.0 preview packages)
 
 ### Performance & Reliability
 
-- ✅ **Test Execution Speed**: Optimized test suite to maintain fast execution times (~5.7s for 104 tests)
+- ✅ **Test Execution Speed**: Optimized test suite to maintain fast execution
+  times (~5.7s for 104 tests)
 - ✅ **Parallel Test Support**: Tests designed for safe parallel execution
-- ✅ **Memory Efficiency**: Tests utilize in-memory databases for optimal resource usage
-- ✅ **CI/CD Compatibility**: Test suite optimized for continuous integration environments
+- ✅ **Memory Efficiency**: Tests utilize in-memory databases for optimal
+  resource usage
+- ✅ **CI/CD Compatibility**: Test suite optimized for continuous integration
+  environments
 
 ## Known Issues and Future Improvements
 

@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ShiftsLoggerV2.RyanW84.Models;
 using ShiftsLoggerV2.RyanW84.Models.FilterOptions;
+using ShiftsLoggerV2.RyanW84.Repositories.Specifications.Common;
 
 namespace ShiftsLoggerV2.RyanW84.Repositories.Specifications;
 
@@ -32,34 +33,34 @@ public class WorkerSpecification : BaseSpecification<Worker>
         // Apply filters
         if (filterOptions.WorkerId.HasValue && filterOptions.WorkerId.Value > 0)
         {
-            criteria = And(criteria, w => w.WorkerId == filterOptions.WorkerId.Value);
+            criteria = ExpressionCombiner.And(criteria, w => w.WorkerId == filterOptions.WorkerId.Value, "w");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.Name))
         {
-            criteria = And(criteria, w => EF.Functions.Like(w.Name, $"%{filterOptions.Name}%"));
+            criteria = ExpressionCombiner.And(criteria, w => EF.Functions.Like(w.Name, $"%{filterOptions.Name}%"), "w");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.Email))
         {
-            criteria = And(criteria, w =>
-                w.Email != null && EF.Functions.Like(w.Email, $"%{filterOptions.Email}%"));
+            criteria = ExpressionCombiner.And(criteria, w =>
+                w.Email != null && EF.Functions.Like(w.Email, $"%{filterOptions.Email}%"), "w");
         }
 
         if (!string.IsNullOrEmpty(filterOptions.PhoneNumber))
         {
-            criteria = And(criteria, w =>
-                w.PhoneNumber != null && EF.Functions.Like(w.PhoneNumber, $"%{filterOptions.PhoneNumber}%"));
+            criteria = ExpressionCombiner.And(criteria, w =>
+                w.PhoneNumber != null && EF.Functions.Like(w.PhoneNumber, $"%{filterOptions.PhoneNumber}%"), "w");
         }
 
         // Search implementation
         if (!string.IsNullOrWhiteSpace(filterOptions.Search))
         {
-            criteria = And(criteria, w =>
+            criteria = ExpressionCombiner.And(criteria, w =>
                 EF.Functions.Like(w.Name, $"%{filterOptions.Search}%")
                 || (w.Email != null && EF.Functions.Like(w.Email, $"%{filterOptions.Search}%"))
                 || (w.PhoneNumber != null && EF.Functions.Like(w.PhoneNumber, $"%{filterOptions.Search}%"))
-                || w.WorkerId.ToString().Contains(filterOptions.Search));
+                || w.WorkerId.ToString().Contains(filterOptions.Search), "w");
         }
 
         return criteria;
@@ -106,36 +107,6 @@ public class WorkerSpecification : BaseSpecification<Worker>
         else
         {
             ApplyOrderBy(w => w.WorkerId); // Default sorting
-        }
-    }
-
-    private Expression<Func<Worker, bool>> And(
-        Expression<Func<Worker, bool>>? left,
-        Expression<Func<Worker, bool>> right)
-    {
-        if (left == null)
-            return right;
-
-        var parameter = Expression.Parameter(typeof(Worker), "w");
-        var leftBody = new ParameterReplacer(parameter).Visit(left.Body);
-        var rightBody = new ParameterReplacer(parameter).Visit(right.Body);
-        var andExpression = Expression.AndAlso(leftBody, rightBody);
-
-        return Expression.Lambda<Func<Worker, bool>>(andExpression, parameter);
-    }
-
-    private class ParameterReplacer : ExpressionVisitor
-    {
-        private readonly ParameterExpression _parameter;
-
-        public ParameterReplacer(ParameterExpression parameter)
-        {
-            _parameter = parameter;
-        }
-
-        protected override Expression VisitParameter(ParameterExpression _)
-        {
-            return _parameter;
         }
     }
 }

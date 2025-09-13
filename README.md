@@ -372,9 +372,8 @@ GET /api/locations?pageNumber=1&pageSize=5&country=USA
    # Then set your connection string
    cd ShiftsLoggerV2.RyanW84
    dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" \
-     "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YOUR_PASSWORD;\
-TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
-
+     "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YOUR_PASSWORD;TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
+   ```
 
 4. **Set up the database**
 
@@ -412,8 +411,9 @@ the operating system:
 ### Windows (LocalDB)
 
 ```json
-"DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ShiftsLoggerDb;
-Trusted_Connection=yes;TrustServerCertificate=yes;"
+{
+  "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=ShiftsLoggerDb;Trusted_Connection=yes;TrustServerCertificate=yes;"
+}
 ```
 
 ### Linux (SQL Server)
@@ -426,8 +426,7 @@ cd ShiftsLoggerV2.RyanW84
 
 # Set the Linux SQL Server connection string in user secrets
 dotnet user-secrets set "ConnectionStrings:LinuxSqlServer" \
-  "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YourSecurePassword;\
-TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
+  "Server=127.0.0.1,1433;Database=ShiftsLoggerDb;User Id=sa;Password=YourSecurePassword;TrustServerCertificate=yes;Encrypt=false;MultipleActiveResultSets=yes"
 ```
 
 **Security Note**: Never commit database passwords to source control. Always use
