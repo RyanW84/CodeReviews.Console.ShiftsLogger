@@ -2,7 +2,6 @@
   "profiles": {
     "https": {
       "commandName": "Project",
-      "workingDirectory": "C:\\Users\\Ryanw\\OneDrive\\Documents\\GitHub\\ShiftsLogger",
       "launchBrowser": true,
       "launchUrl": "scalar",
       "environmentVariables": {
@@ -15,7 +14,6 @@
     },
     "http": {
       "commandName": "Project",
-      "workingDirectory": "C:\\Users\\Ryanw\\OneDrive\\Documents\\GitHub\\ShiftsLogger",
       "launchBrowser": true,
       "launchUrl": "scalar",
       "environmentVariables": {

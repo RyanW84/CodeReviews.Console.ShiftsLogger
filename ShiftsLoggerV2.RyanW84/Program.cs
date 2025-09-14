@@ -127,15 +127,23 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapOpenApi();
-app.MapScalarApiReference(options =>
+app.MapScalarApiReference("/scalar", options =>
 {
     options
         .WithTitle("Shifts Logger API")
         .WithTheme(ScalarTheme.BluePlanet)
         .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
         .WithModels()
-        .WithLayout(ScalarLayout.Classic);
+        .WithLayout(ScalarLayout.Classic)
+        .WithOpenApiRoutePattern("/openapi/{documentName}.json");
 });
+
+// Configure to automatically open Scalar in development
+if (app.Environment.IsDevelopment())
+{
+    Console.WriteLine("Scalar API documentation available at: /scalar");
+    Console.WriteLine("OpenAPI specification available at: /openapi/v1.json");
+}
 
 // Map health check endpoints
 app.MapHealthChecks("/health");
